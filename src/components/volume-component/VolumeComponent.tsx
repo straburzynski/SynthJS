@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import '../../App.css';
+import RangeInput from '../shared/range-input/RangeInput';
 
 const VolumeComponent = ({ name, gainNode }: any) => {
-
     const [masterVolumeLevel, setMasterVolumeLevel] = useState<number>(0.2);
 
     const handleVolumeChange = (event: any) => {
@@ -15,8 +14,8 @@ const VolumeComponent = ({ name, gainNode }: any) => {
     return (
         <div>
             <p>Volume for OSC: {name}</p>
-            <input type='range' id='volume-control' min={0} max={1} step={0.05}
-                   value={masterVolumeLevel} onChange={handleVolumeChange} /><br />
+            <RangeInput min={0} max={1} step={0.05} value={masterVolumeLevel} onChange={handleVolumeChange} />
+            <br />
         </div>
     );
 };
