@@ -1,80 +1,124 @@
 import React, { useEffect, useRef, useState } from 'react';
 import VolumeComponent from './components/volume-component/VolumeComponent';
 import { WaveformEnum } from './models/WaveformEnum';
-import './App.css';
 import FrequencyComponent from './components/frequency-component/FrequencyComponent';
+import './App.css';
 
 const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
 
 function App() {
     const audioContextRef = useRef<any>();
-    const lfoRef = useRef<any>();
+    const vcoRef = useRef<any>();
     const vcaRef = useRef<any>();
+    const lfoRef = useRef<any>();
+    const masterVcaRef = useRef<any>();
 
     const [playing, setPlaying] = useState(false);
     const [waveform, setWaveform] = useState<OscillatorType>(WaveformEnum.SINE);
-    const [attack, setAttack] = useState<number>(0.3);
-    const [release, setRelease] = useState<number>(0.3);
-    const [sustain, setSustain] = useState<number>(0.8);
-    const [noteLength, setNoteLength] = useState<number>(1);
+    const [masterVolume, setMasterVolume] = useState<number>(0.5);
+
+    const [attack, setAttack] = useState<number>(0.1);
+    const [decay, setDecay] = useState<number>(0.1);
+    const [release, setRelease] = useState<number>(0.1);
+    const [sustain, setSustain] = useState<number>(1);
+
     const [frequency, setFrequency] = useState<number>(440);
-    const [synthesizerActive, setSynthesizerActive] = useState<boolean>(false);
 
     useEffect(() => {
         // new context
         const audioContext = new AudioContext();
-        // VCA - gain node
-        let VCA = audioContext.createGain();
         audioContext.suspend();
-        // connect
-        VCA.connect(audioContext.destination);
+
+        // create osc and gain
+        let VCO = audioContext.createOscillator();
+        let VCA = audioContext.createGain();
+        let masterVCA = audioContext.createGain();
+
+        // connect modules
+        VCO.connect(VCA);
+        VCA.connect(masterVCA);
+        masterVCA.connect(audioContext.destination);
+
+        // set volume
+        masterVCA.gain.value = masterVolume;
+        VCA.gain.value = 0;
+        VCO.start(0);
+
         audioContextRef.current = audioContext;
+        masterVcaRef.current = masterVCA;
+        vcoRef.current = VCO;
         vcaRef.current = VCA;
     }, []);
 
-    const toggleSynthesizer = () => {
-        if (synthesizerActive) {
-            audioContextRef.current.suspend();
-        } else {
-            audioContextRef.current.resume();
+    const handleNote = (e: any) => {
+        audioContextRef.current.resume();
+        switch (e.type) {
+            case 'mousedown':
+                console.log('mouse down freq', frequency);
+                vcoRef.current.type = waveform;
+                vcoRef.current.frequency.setValueAtTime(frequency, 0);
+                vcaRef.current.gain.value = 1;
+                envelopeOn(vcaRef.current.gain, attack, decay, sustain);
+                break;
+            case 'mouseup':
+                vcoRef.current.type = waveform;
+                envelopeOff(vcaRef.current.gain, release);
+                break;
         }
-        setSynthesizerActive((active) => !active);
     };
+
+    function envelopeOn(vcaGain: any, a: number, d: number, s: number) {
+        const now = audioContextRef.current.currentTime;
+        vcaGain.cancelScheduledValues(0);
+        vcaGain.setValueAtTime(0, now);
+        vcaGain.linearRampToValueAtTime(1, now + a);
+        vcaGain.linearRampToValueAtTime(s, now + a + d);
+    }
+
+    function envelopeOff(vcaGain: any, r: number) {
+        const now = audioContextRef.current.currentTime;
+        vcaGain.cancelScheduledValues(0);
+        vcaGain.setValueAtTime(vcaGain.value, now);
+        vcaGain.linearRampToValueAtTime(0, now + r);
+    }
+
     const toggleOscillator = () => {
         if (playing) {
             lfoRef.current.stop();
         } else {
-            // LFO - oscillator node
             let LFO = audioContextRef.current.createOscillator();
             LFO.type = waveform;
-            // LFO.frequency.value = 440;
-            LFO.connect(vcaRef.current);
+            LFO.connect(masterVcaRef.current);
             lfoRef.current = LFO;
             lfoRef.current.start();
         }
         setPlaying((play) => !play);
     };
 
-    const createOscillator = () => {
-        const osc = audioContextRef.current.createOscillator();
-        const noteGain = audioContextRef.current.createGain();
-        noteGain.gain.setValueAtTime(0, 0);
-        noteGain.gain.linearRampToValueAtTime(sustain, audioContextRef.current.currentTime + noteLength * attack);
-        noteGain.gain.setValueAtTime(sustain, audioContextRef.current.currentTime + noteLength - noteLength * release);
-        noteGain.gain.linearRampToValueAtTime(0, audioContextRef.current.currentTime + noteLength);
+    const handleFrequencyChange = (value: number) => {
+        console.log('update freq', value);
+        if (lfoRef.current) {
+            lfoRef.current.frequency.setValueAtTime(value, 0);
+        }
+        setFrequency(value);
+    };
 
-        osc.type = waveform;
-        osc.frequency.setValueAtTime(600, 0);
-        osc.start(0);
-        osc.stop(audioContextRef.current.currentTime + 1);
-        osc.connect(noteGain);
-        noteGain.connect(audioContextRef.current.destination);
+    const handleMasterVolumeChange = (value: number) => {
+        console.log('master vol', value);
+        masterVcaRef.current.gain.value = value;
+        setMasterVolume(value);
     };
 
     const handleAttackChange = (event: any) => {
         const changedAttack: number = event.target.valueAsNumber;
         console.log('attack: ', changedAttack);
         setAttack(changedAttack);
+    };
+
+    const handleDecayChange = (event: any) => {
+        const changedDecay: number = event.target.valueAsNumber;
+        console.log('decay: ', changedDecay);
+        setDecay(changedDecay);
     };
 
     const handleSustainChange = (event: any) => {
@@ -101,16 +145,13 @@ function App() {
     return (
         <div className="App">
             <br />
-            <button onClick={toggleSynthesizer}>
-                <span>{synthesizerActive ? 'On' : 'Off'}</span>
-            </button>
             <div>
                 <br />
-                <button onClick={toggleOscillator} disabled={!synthesizerActive}>
+                <button onClick={toggleOscillator}>
                     <span>{playing ? 'Pause' : 'Play'}</span>
                 </button>
-                <button onClick={createOscillator} disabled={!synthesizerActive}>
-                    <span>Play one</span>
+                <button id="play-note" onMouseDown={handleNote} onMouseUp={handleNote}>
+                    Play note
                 </button>
                 <br />
                 <br />
@@ -124,11 +165,21 @@ function App() {
                     value={attack}
                     onChange={handleAttackChange}
                 />
-                <label htmlFor="attack-control">Attack Time</label>
+                <label htmlFor="attack-control">Attack Time: {attack}</label>
+                <br />
+                <input
+                    type="range"
+                    id="decay-control"
+                    name="decay-control"
+                    min={0}
+                    max={1}
+                    step={0.05}
+                    value={decay}
+                    onChange={handleDecayChange}
+                />
+                <label htmlFor="decay-control">Decay Time: {decay}</label>
 
                 <br />
-                <br />
-
                 <input
                     type="range"
                     id="release-control"
@@ -139,10 +190,8 @@ function App() {
                     value={release}
                     onChange={handleReleaseChange}
                 />
-                <label htmlFor="release-control">Release Time</label>
+                <label htmlFor="release-control">Release Time: {release}</label>
                 <br />
-                <br />
-
                 <input
                     type="range"
                     id="sustain-control"
@@ -153,12 +202,20 @@ function App() {
                     value={sustain}
                     onChange={handleSustainChange}
                 />
-                <label htmlFor="sustain-control">Sustain Time</label>
+                <label htmlFor="sustain-control">Sustain Time: {sustain}</label>
                 <br />
                 <hr />
-                <FrequencyComponent name={'frequency'} nodeRef={lfoRef} />
+                <FrequencyComponent
+                    name={'Frequency'}
+                    frequency={frequency}
+                    onFrequencyChange={handleFrequencyChange}
+                />
                 <hr />
-                <VolumeComponent name={'main value'} gainNode={vcaRef} />
+                <VolumeComponent
+                    name={'Master value'}
+                    volume={masterVolume}
+                    onVolumeChange={handleMasterVolumeChange}
+                />
                 <hr />
                 <p>Waveform select</p>
                 {Object.values(WaveformEnum).map((w, i) => {

@@ -1,19 +1,18 @@
-import React, { useState } from 'react';
+import React from 'react';
 import RangeInput from '../shared/range-input/RangeInput';
 
-const FrequencyComponent = ({ name, nodeRef }: any) => {
-    const [frequency, setFrequency] = useState<number>(440);
-
+const FrequencyComponent = ({ name, frequency, onFrequencyChange }: any) => {
     const handleFrequencyChange = (event: any) => {
-        const changedFrequency: number = event.target.value;
+        const changedFrequency: number = event.target.valueAsNumber;
         console.log('frequency change: ', name, changedFrequency);
-        setFrequency(changedFrequency);
-        nodeRef.current.frequency.value = changedFrequency;
+        onFrequencyChange(changedFrequency);
     };
 
     return (
         <div>
-            <p>{name}</p>
+            <p>
+                {name}: {frequency}
+            </p>
             <RangeInput min={220} max={1200} step={10} value={frequency} onChange={handleFrequencyChange} />
             <br />
         </div>
