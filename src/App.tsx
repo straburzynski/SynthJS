@@ -77,6 +77,12 @@ function App() {
         setAttack(changedAttack);
     };
 
+    const handleSustainChange = (event: any) => {
+        const changedSustain: number = event.target.valueAsNumber;
+        console.log('sustain: ', changedSustain);
+        setSustain(changedSustain);
+    };
+
     const handleReleaseChange = (event: any) => {
         const changedRelease: number = event.target.valueAsNumber;
         console.log('release: ', changedRelease);
@@ -134,6 +140,20 @@ function App() {
                     onChange={handleReleaseChange}
                 />
                 <label htmlFor="release-control">Release Time</label>
+                <br />
+                <br />
+
+                <input
+                    type="range"
+                    id="sustain-control"
+                    name="sustain-control"
+                    min={0}
+                    max={1}
+                    step={0.05}
+                    value={sustain}
+                    onChange={handleSustainChange}
+                />
+                <label htmlFor="sustain-control">Sustain Time</label>
                 <br />
                 <hr />
                 <FrequencyComponent name={'frequency'} nodeRef={lfoRef} />
