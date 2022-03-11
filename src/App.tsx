@@ -3,6 +3,8 @@ import VolumeComponent from './components/volume-component/VolumeComponent';
 import { WaveformEnum } from './models/WaveformEnum';
 import FrequencyComponent from './components/frequency-component/FrequencyComponent';
 import './App.css';
+import KeysComponent from './components/keys/KeysComponent';
+import { NOTES } from './models/Notes';
 
 const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
 
@@ -13,7 +15,6 @@ function App() {
     const lfoRef = useRef<any>();
     const masterVcaRef = useRef<any>();
 
-    const [playing, setPlaying] = useState(false);
     const [waveform, setWaveform] = useState<OscillatorType>(WaveformEnum.SINE);
     const [masterVolume, setMasterVolume] = useState<number>(0.5);
 
@@ -50,13 +51,12 @@ function App() {
         vcaRef.current = VCA;
     }, []);
 
-    const handleNote = (e: any) => {
+    const handleKey = (e: any, note: string) => {
         audioContextRef.current.resume();
         switch (e.type) {
             case 'mousedown':
-                console.log('mouse down freq', frequency);
                 vcoRef.current.type = waveform;
-                vcoRef.current.frequency.setValueAtTime(frequency, 0);
+                vcoRef.current.frequency.setValueAtTime(NOTES[note], 0);
                 vcaRef.current.gain.value = 1;
                 envelopeOn(vcaRef.current.gain, attack, decay, sustain);
                 break;
@@ -81,19 +81,6 @@ function App() {
         vcaGain.setValueAtTime(vcaGain.value, now);
         vcaGain.linearRampToValueAtTime(0, now + r);
     }
-
-    const toggleOscillator = () => {
-        if (playing) {
-            lfoRef.current.stop();
-        } else {
-            let LFO = audioContextRef.current.createOscillator();
-            LFO.type = waveform;
-            LFO.connect(masterVcaRef.current);
-            lfoRef.current = LFO;
-            lfoRef.current.start();
-        }
-        setPlaying((play) => !play);
-    };
 
     const handleFrequencyChange = (value: number) => {
         console.log('update freq', value);
@@ -145,15 +132,9 @@ function App() {
     return (
         <div className="App">
             <br />
+            <KeysComponent onHandleKey={handleKey} />
+
             <div>
-                <br />
-                <button onClick={toggleOscillator}>
-                    <span>{playing ? 'Pause' : 'Play'}</span>
-                </button>
-                <button id="play-note" onMouseDown={handleNote} onMouseUp={handleNote}>
-                    Play note
-                </button>
-                <br />
                 <br />
                 <input
                     type="range"
