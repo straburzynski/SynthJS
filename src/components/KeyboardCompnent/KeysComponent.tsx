@@ -1,5 +1,5 @@
 import React from 'react';
-import './notes.css';
+import './keyComponent.css';
 
 const KeysComponent = ({ onHandleKey }: any) => {
     const handleKey = (e: any, note: any) => {

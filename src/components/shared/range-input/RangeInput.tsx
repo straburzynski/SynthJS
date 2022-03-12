@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { FC } from 'react';
 import { RangeInputModel } from './RangeInputModel';
 
-const RangeInput = (rangeInputModel: RangeInputModel) => {
+const RangeInput: FC<RangeInputModel> = (rangeInputModel: RangeInputModel) => {
     return (
         <>
             <input
