@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import RangeInput from '../shared/range-input/RangeInput';
+import RangeInput from '../shared/RangeInput/RangeInput';
 
 const VolumeComponent = ({ name, volumeNode }: any) => {
     const [masterVolume, setMasterVolume] = useState<number>(0.5);

@@ -1,21 +1,28 @@
 import React, { useEffect, useRef, useState } from 'react';
-import VolumeComponent from './components/volume-component/VolumeComponent';
+import VolumeComponent from './components/VolumeComponent/VolumeComponent';
 import { WaveformEnum } from './models/WaveformEnum';
 import KeysComponent from './components/KeyboardCompnent/KeysComponent';
-import { NOTES } from './models/Notes';
+import { NOTES } from './consts/Notes';
 import AdsrComponent from './components/AdsrComponent/AdsrComponent';
-import { DefaultParams } from './models/DefaultParams';
+import FrequencyComponent from './components/FrequencyComponent/FrequencyComponent';
+import { DefaultParams } from './consts/DefaultParams';
 import './App.css';
+import RangeInput from './components/shared/RangeInput/RangeInput';
+import { KEY_MAPPING } from './consts/KeyMapping';
+import { AVAILABLE_FILTERS } from './consts/AvailableFilters';
 
 const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
 
 function App() {
     const audioContextRef = useRef<AudioContext | any>();
     const vcoRefArray = useRef<OscillatorNode[] | any>();
-    const vcaRef = useRef<any>();
-    const masterVcaRef = useRef<GainNode>();
+    const vcaRef = useRef<GainNode | any>();
+    const filterRef = useRef<BiquadFilterNode | any>();
+    const masterVcaRef = useRef<GainNode | any>();
 
-    const [waveform, setWaveform] = useState<OscillatorType>(WaveformEnum.SAWTOOTH);
+    const [filterType, setFilterType] = useState<BiquadFilterType>(DefaultParams.filterType);
+    const [filterQualityFactor, setFilterQualityFactor] = useState<number>(DefaultParams.qualityFactor);
+    const [waveform, setWaveform] = useState<OscillatorType>(DefaultParams.waveform);
     const [unisonWidth, setUnisonWidth] = useState<number>(DefaultParams.unisonWidth);
 
     const [attack, setAttack] = useState<number>(DefaultParams.attack);
@@ -37,11 +44,18 @@ function App() {
 
         // create gain
         let VCA = audioContext.createGain();
+        let filter = audioContext.createBiquadFilter();
         let masterVCA = audioContext.createGain();
+
+        // configure filter
+        filter.type = filterType;
+        filter.frequency.setTargetAtTime(2000, audioContext.currentTime, 0);
+        filter.Q.value = filterQualityFactor;
 
         // connect modules
         VCOs.forEach((vco) => vco.connect(VCA));
-        VCA.connect(masterVCA);
+        VCA.connect(filter);
+        filter.connect(masterVCA);
         masterVCA.connect(audioContext.destination);
 
         // set volume
@@ -53,12 +67,30 @@ function App() {
         masterVcaRef.current = masterVCA;
         vcoRefArray.current = VCOs;
         vcaRef.current = VCA;
+        filterRef.current = filter;
     }, []);
+
+    // keyboard event listener
+    useEffect(() => {
+        window.addEventListener('keyup', handleKeyEvent);
+        window.addEventListener('keydown', handleKeyEvent);
+        return () => {
+            window.removeEventListener('keyup', handleKeyEvent);
+            window.removeEventListener('keydown', handleKeyEvent);
+        };
+    });
+
+    const handleKeyEvent = (e: any) => {
+        if (KEY_MAPPING.hasOwnProperty(e.key) && !e.repeat) {
+            handleKey(e, KEY_MAPPING[e.key]);
+        }
+    };
 
     const handleKey = (e: any, note: string) => {
         audioContextRef.current?.resume();
         switch (e.type) {
             case 'mousedown':
+            case 'keydown':
                 vcoRefArray.current?.forEach((vco: OscillatorNode) => {
                     vco.type = waveform;
                     vco.frequency.setValueAtTime(NOTES[note], 0);
@@ -67,6 +99,7 @@ function App() {
                 envelopeOn(vcaRef.current.gain, attack, decay, sustain);
                 break;
             case 'mouseup':
+            case 'keyup':
                 vcoRefArray.current?.forEach((vco: OscillatorNode) => (vco.type = waveform));
                 envelopeOff(vcaRef.current.gain, release);
                 break;
@@ -115,6 +148,7 @@ function App() {
     const handleWaveformChange = (event: any) => {
         const selectedWaveform: OscillatorType = event.target.value;
         console.log('waveform: ', selectedWaveform);
+        vcoRefArray.current?.forEach((vco: OscillatorNode) => (vco.type = waveform));
         setWaveform(selectedWaveform);
     };
 
@@ -126,12 +160,24 @@ function App() {
         setUnisonWidth(width);
     };
 
+    const handleFilterTypeChange = (event: any) => {
+        const selectedFilterType: BiquadFilterType = event.target.value;
+        console.log('filter type: ', selectedFilterType);
+        filterRef.current.type = selectedFilterType;
+        setFilterType(selectedFilterType);
+    };
+
+    const handleFilterQualityFactorChange = (event: any) => {
+        const selectedQualityFactor: number = event.target.valueAsNumber;
+        console.log('filter type: ', selectedQualityFactor);
+        filterRef.current.Q.value = selectedQualityFactor;
+        setFilterQualityFactor(selectedQualityFactor);
+    };
+
     return (
         <div className="App">
             <br />
-
             <KeysComponent onHandleKey={handleKey} />
-
             <br />
             <hr />
             <p>Waveform select</p>
@@ -175,6 +221,36 @@ function App() {
                 release={release}
                 onHandleReleaseChange={handleReleaseChange}
             />
+            <br />
+            <hr />
+            <p>Filter type select</p>
+            {Object.values(AVAILABLE_FILTERS).map((f, i) => {
+                return (
+                    <div key={i}>
+                        <input
+                            type="radio"
+                            id={f + '-filter'}
+                            name="filter"
+                            value={f}
+                            onChange={handleFilterTypeChange}
+                            checked={f === filterType}
+                        />
+                        <label htmlFor={f + '-filter'}>{f + ' filter'}</label>
+                        <br />
+                    </div>
+                );
+            })}
+            <br />
+            <FrequencyComponent name="Filter frequency" nodeRef={filterRef} />
+            <br />
+            <RangeInput
+                min={DefaultParams.qualityFactorMin}
+                max={DefaultParams.qualityFactorMax}
+                step={0.1}
+                value={filterQualityFactor}
+                onChange={handleFilterQualityFactorChange}
+            />
+            Filter quality factor: {filterQualityFactor}
             <br />
             <hr />
             <VolumeComponent name={'Master value'} volumeNode={masterVcaRef} />

@@ -89,6 +89,6 @@ export const NOTES: StringIndex = {
     'C-8': 4186.01,
 };
 
-type StringIndex = {
+export type StringIndex = {
     [key: string]: any;
 };

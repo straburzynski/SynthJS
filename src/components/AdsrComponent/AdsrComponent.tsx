@@ -1,5 +1,5 @@
 import React from 'react';
-import { DefaultParams } from '../../models/DefaultParams';
+import { DefaultParams } from '../../consts/DefaultParams';
 
 const AdsrComponent = ({
     attack,
