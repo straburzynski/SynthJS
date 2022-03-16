@@ -4,67 +4,76 @@ import { WaveformEnum } from './models/WaveformEnum';
 import KeysComponent from './components/KeyboardCompnent/KeysComponent';
 import { NOTES } from './models/Notes';
 import AdsrComponent from './components/AdsrComponent/AdsrComponent';
+import { DefaultParams } from './models/DefaultParams';
 import './App.css';
 
 const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
 
 function App() {
-    const audioContextRef = useRef<any>();
-    const vcoRef = useRef<any>();
+    const audioContextRef = useRef<AudioContext | any>();
+    const vcoRefArray = useRef<OscillatorNode[] | any>();
     const vcaRef = useRef<any>();
-    const lfoRef = useRef<any>();
-    const masterVcaRef = useRef<any>();
+    const masterVcaRef = useRef<GainNode>();
 
-    const [waveform, setWaveform] = useState<OscillatorType>(WaveformEnum.SINE);
+    const [waveform, setWaveform] = useState<OscillatorType>(WaveformEnum.SAWTOOTH);
+    const [unisonWidth, setUnisonWidth] = useState<number>(DefaultParams.unisonWidth);
 
-    const [attack, setAttack] = useState<number>(0.1);
-    const [decay, setDecay] = useState<number>(0.1);
-    const [release, setRelease] = useState<number>(0.1);
-    const [sustain, setSustain] = useState<number>(1);
+    const [attack, setAttack] = useState<number>(DefaultParams.attack);
+    const [decay, setDecay] = useState<number>(DefaultParams.decay);
+    const [release, setRelease] = useState<number>(DefaultParams.release);
+    const [sustain, setSustain] = useState<number>(DefaultParams.sustain);
 
     useEffect(() => {
         // new context
         const audioContext = new AudioContext();
         audioContext.suspend();
 
-        // create osc and gain
-        let VCO = audioContext.createOscillator();
+        // create oscillators
+        const oscWidthA = audioContext.createOscillator();
+        oscWidthA.detune.value = DefaultParams.unisonWidth;
+        const oscWidthB = audioContext.createOscillator();
+        oscWidthB.detune.value = -DefaultParams.unisonWidth;
+        let VCOs: OscillatorNode[] = [audioContext.createOscillator(), oscWidthA, oscWidthB];
+
+        // create gain
         let VCA = audioContext.createGain();
         let masterVCA = audioContext.createGain();
 
         // connect modules
-        VCO.connect(VCA);
+        VCOs.forEach((vco) => vco.connect(VCA));
         VCA.connect(masterVCA);
         masterVCA.connect(audioContext.destination);
 
         // set volume
-        masterVCA.gain.value = 0.5;
-        VCA.gain.value = 0;
-        VCO.start(0);
+        masterVCA.gain.value = DefaultParams.gain;
+        VCA.gain.value = DefaultParams.gainMin;
+        VCOs.forEach((vco) => vco.start());
 
         audioContextRef.current = audioContext;
         masterVcaRef.current = masterVCA;
-        vcoRef.current = VCO;
+        vcoRefArray.current = VCOs;
         vcaRef.current = VCA;
     }, []);
 
     const handleKey = (e: any, note: string) => {
-        audioContextRef.current.resume();
+        audioContextRef.current?.resume();
         switch (e.type) {
             case 'mousedown':
-                vcoRef.current.type = waveform;
-                vcoRef.current.frequency.setValueAtTime(NOTES[note], 0);
+                vcoRefArray.current?.forEach((vco: OscillatorNode) => {
+                    vco.type = waveform;
+                    vco.frequency.setValueAtTime(NOTES[note], 0);
+                });
                 vcaRef.current.gain.value = 1;
                 envelopeOn(vcaRef.current.gain, attack, decay, sustain);
                 break;
             case 'mouseup':
-                vcoRef.current.type = waveform;
+                vcoRefArray.current?.forEach((vco: OscillatorNode) => (vco.type = waveform));
                 envelopeOff(vcaRef.current.gain, release);
                 break;
         }
     };
 
-    function envelopeOn(vcaGain: any, a: number, d: number, s: number) {
+    function envelopeOn(vcaGain: AudioParam, a: number, d: number, s: number) {
         const now = audioContextRef.current.currentTime;
         vcaGain.cancelScheduledValues(0);
         vcaGain.setValueAtTime(0, now);
@@ -72,7 +81,7 @@ function App() {
         vcaGain.linearRampToValueAtTime(s, now + a + d);
     }
 
-    function envelopeOff(vcaGain: any, r: number) {
+    function envelopeOff(vcaGain: AudioParam, r: number) {
         const now = audioContextRef.current.currentTime;
         vcaGain.cancelScheduledValues(0);
         vcaGain.setValueAtTime(vcaGain.value, now);
@@ -106,10 +115,15 @@ function App() {
     const handleWaveformChange = (event: any) => {
         const selectedWaveform: OscillatorType = event.target.value;
         console.log('waveform: ', selectedWaveform);
-        if (lfoRef.current) {
-            lfoRef.current.type = selectedWaveform;
-        }
         setWaveform(selectedWaveform);
+    };
+
+    const handleUnisonWidthChange = (event: any) => {
+        const width: number = event.target.valueAsNumber;
+        console.log('width: ', width);
+        vcoRefArray.current[1].detune.value = unisonWidth;
+        vcoRefArray.current[2].detune.value = -unisonWidth;
+        setUnisonWidth(width);
     };
 
     return (
@@ -137,6 +151,18 @@ function App() {
                     </div>
                 );
             })}
+            <br />
+            <hr />
+            <input
+                type="range"
+                id="unison-width-control"
+                name="unison-width-control"
+                min={DefaultParams.unisonWidthMin}
+                max={DefaultParams.unisonWidthMax}
+                value={unisonWidth}
+                onChange={handleUnisonWidthChange}
+            />
+            <label htmlFor="unison-width-control">Unison width: {unisonWidth}</label>
             <br />
             <hr />
             <AdsrComponent

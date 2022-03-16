@@ -1,4 +1,5 @@
-import React, { FC, useState } from 'react';
+import React from 'react';
+import { DefaultParams } from '../../models/DefaultParams';
 
 const AdsrComponent = ({
     attack,
@@ -17,8 +18,8 @@ const AdsrComponent = ({
                 type="range"
                 id="attack-control"
                 name="attack-control"
-                min={0}
-                max={1}
+                min={DefaultParams.adsrMin}
+                max={DefaultParams.adsrMax}
                 step={0.05}
                 value={attack}
                 onChange={onHandleAttackChange}
@@ -29,8 +30,8 @@ const AdsrComponent = ({
                 type="range"
                 id="decay-control"
                 name="decay-control"
-                min={0}
-                max={1}
+                min={DefaultParams.adsrMin}
+                max={DefaultParams.adsrMax}
                 step={0.05}
                 value={decay}
                 onChange={onHandleDecayChange}
@@ -41,8 +42,8 @@ const AdsrComponent = ({
                 type="range"
                 id="sustain-control"
                 name="sustain-control"
-                min={0}
-                max={1}
+                min={DefaultParams.adsrMin}
+                max={DefaultParams.adsrMax}
                 step={0.05}
                 value={sustain}
                 onChange={onHandleSustainChange}
@@ -53,8 +54,8 @@ const AdsrComponent = ({
                 type="range"
                 id="release-control"
                 name="release-control"
-                min={0}
-                max={1}
+                min={DefaultParams.adsrMin}
+                max={DefaultParams.adsrMax}
                 step={0.05}
                 value={release}
                 onChange={onHandleReleaseChange}
