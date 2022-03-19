@@ -24,6 +24,13 @@ export const DefaultParams = {
     filterMin: 50,
     filterMax: 10000,
 
+    delayTime: 0.4,
+    delayFeedback: 0.2,
+    delayTimeMin: 0,
+    delayTimeMax: 1,
+    delayFeedbackMin: 0,
+    delayFeedbackMax: 1,
+
     qualityFactor: 0,
     qualityFactorMin: 0,
     qualityFactorMax: 10,

@@ -18,6 +18,8 @@ function App() {
     const vcoRefArray = useRef<OscillatorNode[] | any>();
     const vcaRef = useRef<GainNode | any>();
     const filterRef = useRef<BiquadFilterNode | any>();
+    const delayNodeRef = useRef<DelayNode | any>();
+    const delayGainRef = useRef<GainNode | any>();
     const masterVcaRef = useRef<GainNode | any>();
 
     const [filterType, setFilterType] = useState<BiquadFilterType>(DefaultParams.filterType);
@@ -29,6 +31,11 @@ function App() {
     const [decay, setDecay] = useState<number>(DefaultParams.decay);
     const [release, setRelease] = useState<number>(DefaultParams.release);
     const [sustain, setSustain] = useState<number>(DefaultParams.sustain);
+
+    const [delayTime, setDelayTime] = useState<number>(DefaultParams.delayTime);
+    const [delayFeedback, setDelayFeedback] = useState<number>(DefaultParams.delayFeedback);
+
+    const [currentNote, setCurrentNote] = useState<string>();
 
     useEffect(() => {
         // new context
@@ -48,14 +55,27 @@ function App() {
         let masterVCA = audioContext.createGain();
 
         // configure filter
-        filter.type = filterType;
+        filter.type = DefaultParams.filterType;
         filter.frequency.setTargetAtTime(2000, audioContext.currentTime, 0);
-        filter.Q.value = filterQualityFactor;
+        filter.Q.value = DefaultParams.qualityFactor;
 
-        // connect modules
+        //configure delay
+        const delayNode = audioContext.createDelay(5);
+        delayNode.delayTime.value = DefaultParams.delayTime;
+        const delayFeedback = audioContext.createGain();
+        delayFeedback.gain.value = DefaultParams.delayFeedback;
+
+        // connect vco and filter
         VCOs.forEach((vco) => vco.connect(VCA));
         VCA.connect(filter);
         filter.connect(masterVCA);
+
+        // connect delay
+        filter.connect(delayNode);
+        delayNode.connect(delayFeedback);
+        delayFeedback.connect(filter);
+
+        // connect master volume
         masterVCA.connect(audioContext.destination);
 
         // set volume
@@ -67,6 +87,8 @@ function App() {
         masterVcaRef.current = masterVCA;
         vcoRefArray.current = VCOs;
         vcaRef.current = VCA;
+        delayNodeRef.current = delayNode;
+        delayGainRef.current = delayFeedback;
         filterRef.current = filter;
     }, []);
 
@@ -91,6 +113,7 @@ function App() {
         switch (e.type) {
             case 'mousedown':
             case 'keydown':
+                setCurrentNote(note);
                 vcoRefArray.current?.forEach((vco: OscillatorNode) => {
                     vco.type = waveform;
                     vco.frequency.setValueAtTime(NOTES[note], 0);
@@ -100,9 +123,11 @@ function App() {
                 break;
             case 'mouseup':
             case 'keyup':
-                vcoRefArray.current?.forEach((vco: OscillatorNode) => (vco.type = waveform));
-                envelopeOff(vcaRef.current.gain, release);
-                break;
+                if (currentNote === note) {
+                    vcoRefArray.current?.forEach((vco: OscillatorNode) => (vco.type = waveform));
+                    envelopeOff(vcaRef.current.gain, release);
+                    break;
+                }
         }
     };
 
@@ -158,6 +183,20 @@ function App() {
         vcoRefArray.current[1].detune.value = unisonWidth;
         vcoRefArray.current[2].detune.value = -unisonWidth;
         setUnisonWidth(width);
+    };
+
+    const handleDelayTimeChange = (event: any) => {
+        const changedDelayTime: number = event.target.valueAsNumber;
+        console.log('delay time: ', changedDelayTime);
+        delayNodeRef.current.delayTime.value = changedDelayTime;
+        setDelayTime(changedDelayTime);
+    };
+
+    const handleDelayFeedbackChange = (event: any) => {
+        const changedDelayFeedback: number = event.target.valueAsNumber;
+        console.log('delay feedback: ', changedDelayFeedback);
+        delayGainRef.current.gain.value = changedDelayFeedback;
+        setDelayFeedback(changedDelayFeedback);
     };
 
     const handleFilterTypeChange = (event: any) => {
@@ -251,6 +290,33 @@ function App() {
                 onChange={handleFilterQualityFactorChange}
             />
             Filter quality factor: {filterQualityFactor}
+            <br />
+            <hr />
+            <br />
+            <p>Delay</p>
+            <input
+                type="range"
+                id="delay-time-control"
+                name="delay-time-control"
+                min={DefaultParams.delayTimeMin}
+                max={DefaultParams.delayTimeMax}
+                step={0.1}
+                value={delayTime}
+                onChange={handleDelayTimeChange}
+            />
+            <label htmlFor="delay-time-control">Delay time in: {delayTime}s</label>
+            <br />
+            <input
+                type="range"
+                id="delay-feedback-control"
+                name="delay-feedback-control"
+                min={DefaultParams.delayFeedbackMin}
+                max={DefaultParams.delayFeedbackMax}
+                step={0.1}
+                value={delayFeedback}
+                onChange={handleDelayFeedbackChange}
+            />
+            <label htmlFor="delay-feedback-control">Delay feedback: {delayFeedback * 100}%</label>
             <br />
             <hr />
             <VolumeComponent name={'Master value'} volumeNode={masterVcaRef} />
