@@ -21,6 +21,8 @@ function App() {
     const delayNodeRef = useRef<DelayNode | any>();
     const delayGainRef = useRef<GainNode | any>();
     const masterVcaRef = useRef<GainNode | any>();
+    const analyserNodeRef = useRef<AnalyserNode | any>();
+    const analyserDataRef = useRef<any>();
 
     const [filterType, setFilterType] = useState<BiquadFilterType>(DefaultParams.filterType);
     const [filterQualityFactor, setFilterQualityFactor] = useState<number>(DefaultParams.qualityFactor);
@@ -36,6 +38,8 @@ function App() {
     const [delayFeedback, setDelayFeedback] = useState<number>(DefaultParams.delayFeedback);
 
     const [currentNote, setCurrentNote] = useState<string>();
+
+    const canvasRef = useRef<any>(null);
 
     useEffect(() => {
         // new context
@@ -75,13 +79,23 @@ function App() {
         delayNode.connect(delayFeedback);
         delayFeedback.connect(filter);
 
-        // connect master volume
-        masterVCA.connect(audioContext.destination);
-
         // set volume
         masterVCA.gain.value = DefaultParams.gain;
         VCA.gain.value = DefaultParams.gainMin;
         VCOs.forEach((vco) => vco.start());
+
+        // analyser
+        const analyser = audioContext.createAnalyser();
+        analyser.smoothingTimeConstant = 0.5;
+        analyser.fftSize = 1024;
+        const analyserBufferLength = analyser.fftSize;
+        analyserDataRef.current = new Uint8Array(analyserBufferLength);
+        analyserNodeRef.current = analyser;
+        draw();
+
+        // connect master volume
+        masterVCA.connect(analyser);
+        analyser.connect(audioContext.destination);
 
         audioContextRef.current = audioContext;
         masterVcaRef.current = masterVCA;
@@ -91,6 +105,30 @@ function App() {
         delayGainRef.current = delayFeedback;
         filterRef.current = filter;
     }, []);
+
+    const getAnalyserData = () => {
+        analyserNodeRef.current.getByteTimeDomainData(analyserDataRef.current);
+        return analyserDataRef.current;
+    };
+
+    const draw = () => {
+        const canvas = canvasRef.current.getContext('2d');
+        const width = canvasRef.current.width;
+        const height = canvasRef.current.height;
+        const chh = Math.round(height * 0.5);
+        canvas.fillStyle = 'red';
+        canvas.lineWidth = 2;
+        canvas.strokeStyle = 'red';
+        requestAnimationFrame(draw);
+        canvas.clearRect(0, 0, width, height);
+        const data = getAnalyserData();
+        canvas.beginPath();
+        canvas.moveTo(0, chh);
+        for (let i = 0, ln = data.length; i < ln; i++) {
+            canvas.lineTo(i, height * (data[i] / 255));
+        }
+        canvas.stroke();
+    };
 
     // keyboard event listener
     useEffect(() => {
@@ -188,14 +226,20 @@ function App() {
     const handleDelayTimeChange = (event: any) => {
         const changedDelayTime: number = event.target.valueAsNumber;
         console.log('delay time: ', changedDelayTime);
-        delayNodeRef.current.delayTime.value = changedDelayTime;
+        delayNodeRef.current.delayTime.linearRampToValueAtTime(
+            changedDelayTime,
+            audioContextRef.current.currentTime + 0.01
+        );
         setDelayTime(changedDelayTime);
     };
 
     const handleDelayFeedbackChange = (event: any) => {
         const changedDelayFeedback: number = event.target.valueAsNumber;
         console.log('delay feedback: ', changedDelayFeedback);
-        delayGainRef.current.gain.value = changedDelayFeedback;
+        delayGainRef.current.gain.linearRampToValueAtTime(
+            changedDelayFeedback,
+            audioContextRef.current.currentTime + 0.01
+        );
         setDelayFeedback(changedDelayFeedback);
     };
 
@@ -218,6 +262,8 @@ function App() {
             <br />
             <KeysComponent onHandleKey={handleKey} />
             <br />
+            <canvas className="visualizer" width="500" height="100" ref={canvasRef} />
+            <hr />
             <hr />
             <p>Waveform select</p>
             {Object.values(WaveformEnum).map((w, i) => {
