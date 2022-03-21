@@ -7,7 +7,7 @@ const VolumeComponent = ({ name, volumeNode }: any) => {
     const handleVolumeChange = (event: any) => {
         const volumeLevel: number = event.target.valueAsNumber;
         console.log('volume change: ', name, volumeLevel);
-        volumeNode.current.gain.value = volumeLevel;
+        volumeNode.gain.value = volumeLevel;
         setMasterVolume(volumeLevel);
     };
 

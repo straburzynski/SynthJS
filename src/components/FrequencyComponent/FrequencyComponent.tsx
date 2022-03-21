@@ -2,14 +2,14 @@ import React, { useState } from 'react';
 import RangeInput from '../shared/RangeInput/RangeInput';
 import { DefaultParams } from '../../consts/DefaultParams';
 
-const FrequencyComponent = ({ name, nodeRef }: any) => {
+const FrequencyComponent = ({ name, node }: any) => {
     const [frequency, setFrequency] = useState<number>(100);
 
     const handleFrequencyChange = (event: any) => {
         const changedFrequency: number = event.target.value;
         console.log('frequency change: ', name, changedFrequency);
         setFrequency(changedFrequency);
-        nodeRef.current.frequency.value = changedFrequency;
+        node.frequency.value = changedFrequency;
     };
 
     return (
