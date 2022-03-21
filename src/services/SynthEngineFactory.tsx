@@ -9,20 +9,21 @@ export const createSynthEngine = (): SynthEngineModel => {
     audioContext.suspend();
 
     // create oscillators
-    const oscWidthA = audioContext.createOscillator();
-    oscWidthA.detune.value = DefaultParams.unisonWidth;
-    const oscWidthB = audioContext.createOscillator();
-    oscWidthB.detune.value = -DefaultParams.unisonWidth;
-    let VCOs: OscillatorNode[] = [audioContext.createOscillator(), oscWidthA, oscWidthB];
+    const primaryVco = audioContext.createOscillator();
+    const secondaryVco = audioContext.createOscillator();
+    // todo: create primary and secondary detune
 
-    // create gain
-    let VCA = audioContext.createGain();
+    // todo: create vca after adsr
+    // create adsr
+    let primaryVca = audioContext.createGain();
+    let secondaryVca = audioContext.createGain();
+
     let filter = audioContext.createBiquadFilter();
-    let masterVCA = audioContext.createGain();
+    let masterVca = audioContext.createGain();
 
     // configure filter
     filter.type = DefaultParams.filterType;
-    filter.frequency.setTargetAtTime(2000, audioContext.currentTime, 0);
+    filter.frequency.setTargetAtTime(DefaultParams.filter, audioContext.currentTime, 0);
     filter.Q.value = DefaultParams.qualityFactor;
 
     //configure delay
@@ -31,10 +32,10 @@ export const createSynthEngine = (): SynthEngineModel => {
     const delayFeedback = audioContext.createGain();
     delayFeedback.gain.value = DefaultParams.delayFeedback;
 
-    // connect vco and filter
-    VCOs.forEach((vco) => vco.connect(VCA));
-    VCA.connect(filter);
-    filter.connect(masterVCA);
+    // connect vco, vca and filter
+    primaryVco.connect(primaryVca).connect(filter);
+    secondaryVco.connect(secondaryVca).connect(filter);
+    filter.connect(masterVca);
 
     // connect delay
     filter.connect(delayNode);
@@ -42,9 +43,11 @@ export const createSynthEngine = (): SynthEngineModel => {
     delayFeedback.connect(filter);
 
     // set volume
-    masterVCA.gain.value = DefaultParams.gain;
-    VCA.gain.value = DefaultParams.gainMin;
-    VCOs.forEach((vco) => vco.start());
+    masterVca.gain.value = DefaultParams.gain;
+    primaryVca.gain.value = DefaultParams.gainMin;
+    secondaryVca.gain.value = DefaultParams.gainMin;
+    primaryVco.start();
+    secondaryVco.start();
 
     // analyser
     const analyser = audioContext.createAnalyser();
@@ -53,17 +56,19 @@ export const createSynthEngine = (): SynthEngineModel => {
     const analyserBufferLength = analyser.fftSize;
 
     // connect master volume
-    masterVCA.connect(analyser);
+    masterVca.connect(analyser);
     analyser.connect(audioContext.destination);
 
     return {
         audioContext: audioContext,
-        vcoArray: VCOs,
-        vca: VCA,
+        primaryVco: primaryVco,
+        secondaryVco: secondaryVco,
+        primaryVca: primaryVca,
+        secondaryVca: secondaryVca,
         filter: filter,
         delayNode: delayNode,
         delayFeedback: delayFeedback,
-        masterVca: masterVCA,
+        masterVca: masterVca,
         analyserNode: analyser,
         analyserData: new Uint8Array(analyserBufferLength),
     };

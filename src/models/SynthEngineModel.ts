@@ -1,7 +1,9 @@
 export interface SynthEngineModel {
     audioContext: AudioContext;
-    vcoArray: OscillatorNode[];
-    vca: GainNode;
+    primaryVco: OscillatorNode;
+    secondaryVco: OscillatorNode;
+    primaryVca: GainNode;
+    secondaryVca: GainNode;
     filter: BiquadFilterNode;
     delayNode: DelayNode;
     delayFeedback: GainNode;

@@ -18,8 +18,8 @@ function App() {
 
     const [filterType, setFilterType] = useState<BiquadFilterType>(DefaultParams.filterType);
     const [filterQualityFactor, setFilterQualityFactor] = useState<number>(DefaultParams.qualityFactor);
-    const [waveform, setWaveform] = useState<OscillatorType>(DefaultParams.waveform);
-    const [unisonWidth, setUnisonWidth] = useState<number>(DefaultParams.unisonWidth);
+    const [primaryWaveform, setPrimaryWaveform] = useState<OscillatorType>(DefaultParams.waveform);
+    const [secondaryWaveform, setSecondaryWaveform] = useState<OscillatorType>(DefaultParams.waveform);
 
     const [attack, setAttack] = useState<number>(DefaultParams.attack);
     const [decay, setDecay] = useState<number>(DefaultParams.decay);
@@ -76,23 +76,26 @@ function App() {
     };
 
     const handleKey = (e: any, note: string) => {
-        synthEngine.current.audioContext.resume();
+        const s = synthEngine.current;
+        s.audioContext.resume();
         switch (e.type) {
             case 'mousedown':
             case 'keydown':
                 setCurrentNote(note);
-                synthEngine.current.vcoArray.forEach((vco: OscillatorNode) => {
-                    vco.type = waveform;
-                    vco.frequency.setValueAtTime(NOTES[note], 0);
-                });
-                synthEngine.current.vca.gain.value = 1;
-                envelopeOn(synthEngine.current.vca.gain, attack, decay, sustain);
+                s.primaryVco.type = primaryWaveform;
+                s.secondaryVco.type = secondaryWaveform;
+                s.primaryVco.frequency.setValueAtTime(NOTES[note], 0);
+                s.secondaryVco.frequency.setValueAtTime(NOTES[note], 0);
+                envelopeOn(s.primaryVca.gain, attack, decay, sustain);
+                envelopeOn(s.secondaryVca.gain, attack, decay, sustain);
                 break;
             case 'mouseup':
             case 'keyup':
                 if (currentNote === note) {
-                    synthEngine.current.vcoArray.forEach((vco: OscillatorNode) => (vco.type = waveform));
-                    envelopeOff(synthEngine.current.vca.gain, release);
+                    synthEngine.current.primaryVco.type = primaryWaveform;
+                    synthEngine.current.secondaryVco.type = secondaryWaveform;
+                    envelopeOff(s.primaryVca.gain, release);
+                    envelopeOff(s.secondaryVca.gain, release);
                     break;
                 }
         }
@@ -137,19 +140,11 @@ function App() {
         setRelease(changedRelease);
     };
 
-    const handleWaveformChange = (event: any) => {
+    const handleWaveformChange = (setWaveform: any, oscillatorNode: OscillatorNode, event: any) => {
         const selectedWaveform: OscillatorType = event.target.value;
         console.log('waveform: ', selectedWaveform);
-        synthEngine.current.vcoArray.forEach((vco: OscillatorNode) => (vco.type = waveform));
+        oscillatorNode.type = selectedWaveform;
         setWaveform(selectedWaveform);
-    };
-
-    const handleUnisonWidthChange = (event: any) => {
-        const width: number = event.target.valueAsNumber;
-        console.log('width: ', width);
-        synthEngine.current.vcoArray[1].detune.value = unisonWidth;
-        synthEngine.current.vcoArray[2].detune.value = -unisonWidth;
-        setUnisonWidth(width);
     };
 
     const handleDelayTimeChange = (event: any) => {
@@ -194,36 +189,54 @@ function App() {
             <canvas className="visualizer" width="500" height="100" ref={canvasRef} />
             <hr />
             <hr />
-            <p>Waveform select</p>
-            {Object.values(WaveformEnum).map((w, i) => {
-                return (
-                    <div key={i}>
-                        <input
-                            type="radio"
-                            id={w + '-wave'}
-                            name="waveform"
-                            value={w}
-                            onChange={handleWaveformChange}
-                            checked={w === waveform}
-                        />
-                        <label htmlFor={w + '-wave'}>{w + ' wave'}</label>
-                        <br />
-                    </div>
-                );
-            })}
-            <br />
-            <hr />
-            <input
-                type="range"
-                id="unison-width-control"
-                name="unison-width-control"
-                min={DefaultParams.unisonWidthMin}
-                max={DefaultParams.unisonWidthMax}
-                value={unisonWidth}
-                onChange={handleUnisonWidthChange}
-            />
-            <label htmlFor="unison-width-control">Unison width: {unisonWidth}</label>
-            <br />
+            <div style={{ height: '100%', width: '50%', display: 'inline-block' }}>
+                <p>Primary OSC</p>
+                <p>Waveform select</p>
+                {Object.values(WaveformEnum).map((w, i) => {
+                    return (
+                        <div key={i}>
+                            <input
+                                type="radio"
+                                id={w + '-wave-primary'}
+                                name="primary-waveform"
+                                value={w}
+                                onChange={(e) =>
+                                    handleWaveformChange(setPrimaryWaveform, synthEngine.current.primaryVco, e)
+                                }
+                                checked={w === primaryWaveform}
+                            />
+                            <label htmlFor={w + '-wave-primary'}>{w + ' wave'}</label>
+                            <br />
+                        </div>
+                    );
+                })}
+                <br />
+                <VolumeComponent name={'Primary VCA'} volumeNode={synthEngine.current.primaryVca} />
+            </div>
+            <div style={{ height: '100%', width: '50%', display: 'inline-block' }}>
+                <p>Secondary OSC</p>
+                <p>Waveform select</p>
+                {Object.values(WaveformEnum).map((w, i) => {
+                    return (
+                        <div key={i}>
+                            <input
+                                type="radio"
+                                id={w + '-wave-secondary'}
+                                name="secondary-waveform"
+                                value={w}
+                                onChange={(e) =>
+                                    handleWaveformChange(setSecondaryWaveform, synthEngine.current.secondaryVco, e)
+                                }
+                                checked={w === secondaryWaveform}
+                            />
+                            <label htmlFor={w + '-wave-secondary'}>{w + ' wave'}</label>
+                            <br />
+                        </div>
+                    );
+                })}
+                <br />
+                <VolumeComponent name={'Secondary VCA'} volumeNode={synthEngine.current.secondaryVca} />
+            </div>
             <hr />
             <AdsrComponent
                 attack={attack}

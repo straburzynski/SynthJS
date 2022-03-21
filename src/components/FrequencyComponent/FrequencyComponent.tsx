@@ -3,7 +3,7 @@ import RangeInput from '../shared/RangeInput/RangeInput';
 import { DefaultParams } from '../../consts/DefaultParams';
 
 const FrequencyComponent = ({ name, node }: any) => {
-    const [frequency, setFrequency] = useState<number>(100);
+    const [frequency, setFrequency] = useState<number>(DefaultParams.filter);
 
     const handleFrequencyChange = (event: any) => {
         const changedFrequency: number = event.target.value;
