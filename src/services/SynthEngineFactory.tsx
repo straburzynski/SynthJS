@@ -13,8 +13,9 @@ export const createSynthEngine = (): SynthEngineModel => {
     const secondaryVco = audioContext.createOscillator();
     // todo: create primary and secondary detune
 
-    // todo: create vca after adsr
-    // create adsr
+    // create adsr and vca
+    let primaryAdsr = audioContext.createGain();
+    let secondaryAdsr = audioContext.createGain();
     let primaryVca = audioContext.createGain();
     let secondaryVca = audioContext.createGain();
 
@@ -33,8 +34,8 @@ export const createSynthEngine = (): SynthEngineModel => {
     delayFeedback.gain.value = DefaultParams.delayFeedback;
 
     // connect vco, vca and filter
-    primaryVco.connect(primaryVca).connect(filter);
-    secondaryVco.connect(secondaryVca).connect(filter);
+    primaryVco.connect(primaryAdsr).connect(primaryVca).connect(filter);
+    secondaryVco.connect(secondaryAdsr).connect(secondaryVca).connect(filter);
     filter.connect(masterVca);
 
     // connect delay
@@ -44,8 +45,10 @@ export const createSynthEngine = (): SynthEngineModel => {
 
     // set volume
     masterVca.gain.value = DefaultParams.gain;
-    primaryVca.gain.value = DefaultParams.gainMin;
-    secondaryVca.gain.value = DefaultParams.gainMin;
+    primaryAdsr.gain.value = DefaultParams.gainMin;
+    secondaryAdsr.gain.value = DefaultParams.gainMin;
+    primaryVca.gain.value = DefaultParams.gainMax;
+    secondaryVca.gain.value = DefaultParams.gainMax;
     primaryVco.start();
     secondaryVco.start();
 
@@ -63,6 +66,8 @@ export const createSynthEngine = (): SynthEngineModel => {
         audioContext: audioContext,
         primaryVco: primaryVco,
         secondaryVco: secondaryVco,
+        primaryAdsr: primaryAdsr,
+        secondaryAdsr: secondaryAdsr,
         primaryVca: primaryVca,
         secondaryVca: secondaryVca,
         filter: filter,

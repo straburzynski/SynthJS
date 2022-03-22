@@ -1,5 +1,5 @@
 import React from 'react';
-import './keyComponent.css';
+import './keyComponent.scss';
 
 const KeysComponent = ({ onHandleKey }: any) => {
     const handleKey = (e: any, note: any) => {
@@ -12,6 +12,7 @@ const KeysComponent = ({ onHandleKey }: any) => {
             {selectedNotes.map((note: any, i: number) => {
                 return (
                     <button
+                        id={note}
                         key={i}
                         className={note.includes('#') ? 'black' : 'white'}
                         onMouseDown={(e) => handleKey(e, note)}

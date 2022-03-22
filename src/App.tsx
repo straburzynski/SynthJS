@@ -82,20 +82,22 @@ function App() {
             case 'mousedown':
             case 'keydown':
                 setCurrentNote(note);
+                document.getElementById(note)?.classList.add('active');
                 s.primaryVco.type = primaryWaveform;
                 s.secondaryVco.type = secondaryWaveform;
                 s.primaryVco.frequency.setValueAtTime(NOTES[note], 0);
                 s.secondaryVco.frequency.setValueAtTime(NOTES[note], 0);
-                envelopeOn(s.primaryVca.gain, attack, decay, sustain);
-                envelopeOn(s.secondaryVca.gain, attack, decay, sustain);
+                envelopeOn(s.primaryAdsr.gain, attack, decay, sustain);
+                envelopeOn(s.secondaryAdsr.gain, attack, decay, sustain);
                 break;
             case 'mouseup':
             case 'keyup':
                 if (currentNote === note) {
+                    document.getElementById(note)?.classList.remove('active');
                     synthEngine.current.primaryVco.type = primaryWaveform;
                     synthEngine.current.secondaryVco.type = secondaryWaveform;
-                    envelopeOff(s.primaryVca.gain, release);
-                    envelopeOff(s.secondaryVca.gain, release);
+                    envelopeOff(s.primaryAdsr.gain, release);
+                    envelopeOff(s.secondaryAdsr.gain, release);
                     break;
                 }
         }
