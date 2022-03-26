@@ -12,6 +12,7 @@ const RangeInput: FC<RangeInputModel> = (rangeInputModel: RangeInputModel) => {
                 value={rangeInputModel.value}
                 onChange={rangeInputModel.onChange}
             />
+            <label>{rangeInputModel.label}</label>
         </>
     );
 };

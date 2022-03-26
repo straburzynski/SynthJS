@@ -1,5 +1,6 @@
 import { SynthEngineModel } from '../models/SynthEngineModel';
 import { DefaultParams } from '../consts/DefaultParams';
+import { WaveformEnum } from '../models/WaveformEnum';
 
 const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
 
@@ -29,9 +30,19 @@ export const createSynthEngine = (): SynthEngineModel => {
     // create master volume
     let masterVca = audioContext.createGain();
 
+    // create filter lfo
+    const lfo = audioContext.createOscillator();
+    const lfoGain = audioContext.createGain();
+
+    // configure filter lfo
+    lfo.type = WaveformEnum.SINE;
+    lfo.frequency.value = DefaultParams.lfoFrequency;
+    lfo.start()
+    lfoGain.gain.value = DefaultParams.lfoGain;
+
     // configure filter
     filter.type = DefaultParams.filterType;
-    filter.frequency.setTargetAtTime(DefaultParams.filter, audioContext.currentTime, 0);
+    filter.frequency.value = DefaultParams.filter;
     filter.Q.value = DefaultParams.qualityFactor;
 
     // configure delay
@@ -56,6 +67,9 @@ export const createSynthEngine = (): SynthEngineModel => {
     delayNode.connect(delayFeedback);
     delayFeedback.connect(filter);
 
+    lfo.connect(lfoGain);
+    lfoGain.connect(filter.detune)
+
     filter.connect(masterVca).connect(analyser).connect(audioContext.destination);
 
     // start oscillators
@@ -71,6 +85,8 @@ export const createSynthEngine = (): SynthEngineModel => {
         primaryVca: primaryVca,
         secondaryVca: secondaryVca,
         filter: filter,
+        lfo: lfo,
+        lfoGain: lfoGain,
         delayNode: delayNode,
         delayFeedback: delayFeedback,
         masterVca: masterVca,

@@ -6,4 +6,5 @@ export type RangeInputModel = {
     step: number;
     value: number;
     onChange: ChangeEventHandler<HTMLInputElement>;
+    label?: string;
 };

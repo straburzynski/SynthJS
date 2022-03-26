@@ -9,13 +9,16 @@ import AdsrComponent from '../AdsrComponent/AdsrComponent';
 import { AVAILABLE_FILTERS } from '../../consts/AvailableFilters';
 import FrequencyComponent from '../FrequencyComponent/FrequencyComponent';
 import RangeInput from '../shared/RangeInput/RangeInput';
+import './synthComponent.scss';
 
 const SynthComponent = ({ synthEngine }: any) => {
-
     const [filterType, setFilterType] = useState<BiquadFilterType>(DefaultParams.filterType);
     const [filterQualityFactor, setFilterQualityFactor] = useState<number>(DefaultParams.qualityFactor);
-    const [primaryWaveform, setPrimaryWaveform] = useState<OscillatorType>(DefaultParams.waveform);
-    const [secondaryWaveform, setSecondaryWaveform] = useState<OscillatorType>(DefaultParams.waveform);
+    const [primaryWaveform, setPrimaryWaveform] = useState<OscillatorType>(DefaultParams.primaryWaveform);
+    const [secondaryWaveform, setSecondaryWaveform] = useState<OscillatorType>(DefaultParams.secondaryWaveform);
+    const [lfoGain, setLfoGain] = useState<number>(DefaultParams.lfoGain);
+    const [lfoFrequency, setLfoFrequency] = useState<number>(DefaultParams.lfoFrequency);
+    const [lfoWaveform, setLfoWaveform] = useState<OscillatorType>(DefaultParams.lfoWaveform);
 
     const [attack, setAttack] = useState<number>(DefaultParams.attack);
     const [decay, setDecay] = useState<number>(DefaultParams.decay);
@@ -80,12 +83,17 @@ const SynthComponent = ({ synthEngine }: any) => {
         return osc;
     };
 
-    const killOscillators = (t = 0) => {
+    const killOscillators = (t = 0, note?: string) => {
         synthEngine.current.primaryAdsr.gain.cancelAndHoldAtTime(t);
         synthEngine.current.secondaryAdsr.gain.cancelAndHoldAtTime(t);
         synthEngine.current.filter.frequency.cancelAndHoldAtTime(t);
         if (synthEngine.current.primaryVco) {
-            synthEngine.current.primaryVco.stop(t);
+            synthEngine.current.primaryVco.stop(t)
+            synthEngine.current.primaryVco.onended = () => {
+                if (note) {
+                    console.log(note + ' ended');
+                }
+            };
         }
         if (synthEngine.current.secondaryVco) {
             synthEngine.current.secondaryVco.stop(t);
@@ -160,7 +168,7 @@ const SynthComponent = ({ synthEngine }: any) => {
 
     const handleWaveformChange = (setWaveform: any, oscillatorNode: OscillatorNode, event: any) => {
         const selectedWaveform: OscillatorType = event.target.value;
-        console.log('waveform: ', selectedWaveform);
+        console.log(event.target.name, selectedWaveform);
         oscillatorNode.type = selectedWaveform;
         setWaveform(selectedWaveform);
     };
@@ -192,6 +200,20 @@ const SynthComponent = ({ synthEngine }: any) => {
         setFilterType(selectedFilterType);
     };
 
+    const handleLfoGainChange = (event: any) => {
+        const selectedLfoGain: number = event.target.valueAsNumber;
+        console.log('lfo gain', selectedLfoGain);
+        synthEngine.current.lfoGain.gain.value = selectedLfoGain;
+        setLfoGain(selectedLfoGain);
+    };
+
+    const handleLfoFrequencyChange = (event: any) => {
+        const selectedLfoFrequency: number = event.target.valueAsNumber;
+        console.log('lfo frequency', selectedLfoFrequency);
+        synthEngine.current.lfo.frequency.value = selectedLfoFrequency;
+        setLfoFrequency(selectedLfoFrequency);
+    };
+
     const handleFilterQualityFactorChange = (event: any) => {
         const selectedQualityFactor: number = event.target.valueAsNumber;
         console.log('filter type: ', selectedQualityFactor);
@@ -205,105 +227,149 @@ const SynthComponent = ({ synthEngine }: any) => {
             <KeysComponent onHandleKey={handleKey} />
             <br />
             <canvas className="visualizer" width="500" height="100" ref={canvasRef} />
-            {currentNote && (
-                <>
-                    <hr />
-                    <p>
-                        <strong>{currentNote}</strong> [<i> {NOTES[currentNote]} Hz</i> ]
-                    </p>
-                </>
+            <hr />
+            {currentNote ? (
+                <p>
+                    <strong>{currentNote}</strong> [<i> {NOTES[currentNote]} Hz</i> ]
+                </p>
+            ) : (
+                <p>---</p>
             )}
             <hr />
-            <div style={{ height: '100%', width: '50%', display: 'inline-block' }}>
-                <p>Primary OSC</p>
-                {Object.values(WaveformEnum).map((w, i) => {
-                    return (
-                        <div key={i}>
-                            <input
-                                type="radio"
-                                id={w + '-wave-primary'}
-                                name="primary-waveform"
-                                value={w}
-                                onChange={(e) =>
-                                    handleWaveformChange(setPrimaryWaveform, synthEngine.current.primaryVco, e)
-                                }
-                                checked={w === primaryWaveform}
-                            />
-                            <label htmlFor={w + '-wave-primary'}>{w + ' wave'}</label>
-                            <br />
-                        </div>
-                    );
-                })}
-                <br />
-                <VolumeComponent name={'Primary VCA'} volumeNode={synthEngine.current.primaryVca} />
+            <p>Oscillators</p>
+            <div className="columns">
+                <div className="column-33">
+                    <p>Primary OSC</p>
+                    {Object.values(WaveformEnum).map((w, i) => {
+                        return (
+                            <div key={i}>
+                                <input
+                                    type="radio"
+                                    id={w + '-wave-primary'}
+                                    name="primary-waveform"
+                                    value={w}
+                                    onChange={(e) =>
+                                        handleWaveformChange(setPrimaryWaveform, synthEngine.current.primaryVco, e)
+                                    }
+                                    checked={w === primaryWaveform}
+                                />
+                                <label htmlFor={w + '-wave-primary'}>{w}</label>
+                                <br />
+                            </div>
+                        );
+                    })}
+                    <br />
+                    <VolumeComponent name={'Primary VCA'} volumeNode={synthEngine.current.primaryVca} />
+                </div>
+                <div className="column-33">
+                    <p>Secondary OSC</p>
+                    {Object.values(WaveformEnum).map((w, i) => {
+                        return (
+                            <div key={i}>
+                                <input
+                                    type="radio"
+                                    id={w + '-wave-secondary'}
+                                    name="secondary-waveform"
+                                    value={w}
+                                    onChange={(e) =>
+                                        handleWaveformChange(setSecondaryWaveform, synthEngine.current.secondaryVco, e)
+                                    }
+                                    checked={w === secondaryWaveform}
+                                />
+                                <label htmlFor={w + '-wave-secondary'}>{w}</label>
+                                <br />
+                            </div>
+                        );
+                    })}
+                    <br />
+                    <VolumeComponent name={'Secondary VCA'} volumeNode={synthEngine.current.secondaryVca} />
+                </div>
+                <div className="column-33">
+                    <AdsrComponent
+                        attack={attack}
+                        onHandleAttackChange={handleAttackChange}
+                        decay={decay}
+                        onHandleDecayChange={handleDecayChange}
+                        sustain={sustain}
+                        onHandleSustainChange={handleSustainChange}
+                        release={release}
+                        onHandleReleaseChange={handleReleaseChange}
+                    />
+                </div>
             </div>
-            <div style={{ height: '100%', width: '50%', display: 'inline-block' }}>
-                <p>Secondary OSC</p>
-                {Object.values(WaveformEnum).map((w, i) => {
-                    return (
-                        <div key={i}>
-                            <input
-                                type="radio"
-                                id={w + '-wave-secondary'}
-                                name="secondary-waveform"
-                                value={w}
-                                onChange={(e) =>
-                                    handleWaveformChange(setSecondaryWaveform, synthEngine.current.secondaryVco, e)
-                                }
-                                checked={w === secondaryWaveform}
-                            />
-                            <label htmlFor={w + '-wave-secondary'}>{w + ' wave'}</label>
-                            <br />
-                        </div>
-                    );
-                })}
-                <br />
-                <VolumeComponent name={'Secondary VCA'} volumeNode={synthEngine.current.secondaryVca} />
+            <br />
+            <hr />
+            <p>LFO</p>
+            <div className="columns">
+                <div className="column-50">
+                    <p>LFO waveform</p>
+                    {Object.values(WaveformEnum).map((w, i) => {
+                        return (
+                            <div key={i}>
+                                <input
+                                    type="radio"
+                                    id={w + '-lfo-waveform'}
+                                    name="lfo-waveform"
+                                    value={w}
+                                    onChange={(e) => handleWaveformChange(setLfoWaveform, synthEngine.current.lfo, e)}
+                                    checked={w === lfoWaveform}
+                                />
+                                <label htmlFor={w + '-lfo-waveform'}>{w}</label>
+                                <br />
+                            </div>
+                        );
+                    })}
+                    <br />
+                    <RangeInput
+                        min={DefaultParams.lfoFrequencyMin}
+                        max={DefaultParams.lfoFrequencyMax}
+                        step={0.1}
+                        value={lfoFrequency}
+                        onChange={handleLfoFrequencyChange}
+                        label={'Frequency ' + lfoFrequency + ' Hz'}
+                    />
+                    <br />
+                    <RangeInput
+                        min={DefaultParams.lfoGainMin}
+                        max={DefaultParams.lfoGainMax}
+                        step={0.1}
+                        value={lfoGain}
+                        onChange={handleLfoGainChange}
+                        label={'Gain ' + lfoGain}
+                    />
+                </div>
+                <div className="column-50">
+                    <p>Filter type</p>
+                    {Object.values(AVAILABLE_FILTERS).map((f, i) => {
+                        return (
+                            <div key={i}>
+                                <input
+                                    type="radio"
+                                    id={f + '-filter'}
+                                    name="filter"
+                                    value={f}
+                                    onChange={handleFilterTypeChange}
+                                    checked={f === filterType}
+                                />
+                                <label htmlFor={f + '-filter'}>{f}</label>
+                                <br />
+                            </div>
+                        );
+                    })}
+                    <br />
+                    <FrequencyComponent name="Filter frequency" node={synthEngine.current.filter} />
+                    <RangeInput
+                        min={DefaultParams.qualityFactorMin}
+                        max={DefaultParams.qualityFactorMax}
+                        step={0.1}
+                        value={filterQualityFactor}
+                        onChange={handleFilterQualityFactorChange}
+                        label={'Filter quality factor: ' + filterQualityFactor}
+                    />
+                </div>
             </div>
-            <hr />
-            <AdsrComponent
-                attack={attack}
-                onHandleAttackChange={handleAttackChange}
-                decay={decay}
-                onHandleDecayChange={handleDecayChange}
-                sustain={sustain}
-                onHandleSustainChange={handleSustainChange}
-                release={release}
-                onHandleReleaseChange={handleReleaseChange}
-            />
             <br />
             <hr />
-            <p>Filter type select</p>
-            {Object.values(AVAILABLE_FILTERS).map((f, i) => {
-                return (
-                    <div key={i}>
-                        <input
-                            type="radio"
-                            id={f + '-filter'}
-                            name="filter"
-                            value={f}
-                            onChange={handleFilterTypeChange}
-                            checked={f === filterType}
-                        />
-                        <label htmlFor={f + '-filter'}>{f + ' filter'}</label>
-                        <br />
-                    </div>
-                );
-            })}
-            <br />
-            <FrequencyComponent name="Filter frequency" node={synthEngine.current.filter} />
-            <br />
-            <RangeInput
-                min={DefaultParams.qualityFactorMin}
-                max={DefaultParams.qualityFactorMax}
-                step={0.1}
-                value={filterQualityFactor}
-                onChange={handleFilterQualityFactorChange}
-            />
-            Filter quality factor: {filterQualityFactor}
-            <br />
-            <hr />
-            <br />
             <p>Delay</p>
             <input
                 type="range"
@@ -329,8 +395,9 @@ const SynthComponent = ({ synthEngine }: any) => {
             />
             <label htmlFor="delay-feedback-control">Delay feedback: {delayFeedback * 100}%</label>
             <br />
+            <br />
             <hr />
-            <VolumeComponent name={'Master value'} volumeNode={synthEngine.current.masterVca} />
+            <VolumeComponent name={'Master value'} volumeNode={synthEngine.current.masterVca} max={1} />
             <hr />
         </div>
     );
