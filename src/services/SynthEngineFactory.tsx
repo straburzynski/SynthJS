@@ -44,6 +44,7 @@ export const createSynthEngine = (): SynthEngineModel => {
     filter.type = DefaultParams.filterType;
     filter.frequency.value = DefaultParams.filter;
     filter.Q.value = DefaultParams.qualityFactor;
+    filter.gain.value = 0;
 
     // configure delay
     const delayNode = audioContext.createDelay(5);
@@ -53,8 +54,15 @@ export const createSynthEngine = (): SynthEngineModel => {
 
     // configure analyser
     analyser.smoothingTimeConstant = 0.5;
-    analyser.fftSize = 1024;
+    analyser.fftSize = 512;
     const analyserBufferLength = analyser.fftSize;
+
+    const limiter = audioContext.createDynamicsCompressor();
+    limiter.threshold.setValueAtTime(-2, audioContext.currentTime);
+    limiter.knee.setValueAtTime(0, audioContext.currentTime);
+    limiter.ratio.setValueAtTime(20, audioContext.currentTime);
+    limiter.attack.setValueAtTime(0.005, audioContext.currentTime);
+    limiter.release.setValueAtTime(0.25, audioContext.currentTime);
 
     // set master volume
     masterVca.gain.value = DefaultParams.gain;
@@ -62,15 +70,9 @@ export const createSynthEngine = (): SynthEngineModel => {
     // connect nodes
     primaryAdsr.connect(primaryVca).connect(filter);
     secondaryAdsr.connect(secondaryVca).connect(filter);
-
-    filter.connect(delayNode);
-    delayNode.connect(delayFeedback);
-    delayFeedback.connect(filter);
-
-    lfo.connect(lfoGain);
-    lfoGain.connect(filter.detune)
-
-    filter.connect(masterVca).connect(analyser).connect(audioContext.destination);
+    filter.connect(delayNode).connect(delayFeedback).connect(filter)
+    lfo.connect(lfoGain).connect(filter.detune);
+    filter.connect(masterVca).connect(limiter).connect(analyser).connect(audioContext.destination);
 
     // start oscillators
     primaryVco.start();

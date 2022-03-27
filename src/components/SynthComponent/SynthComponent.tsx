@@ -88,10 +88,10 @@ const SynthComponent = ({ synthEngine }: any) => {
         synthEngine.current.secondaryAdsr.gain.cancelAndHoldAtTime(t);
         synthEngine.current.filter.frequency.cancelAndHoldAtTime(t);
         if (synthEngine.current.primaryVco) {
-            synthEngine.current.primaryVco.stop(t)
+            synthEngine.current.primaryVco.stop(t);
             synthEngine.current.primaryVco.onended = () => {
                 if (note) {
-                    console.log(note + ' ended');
+                    setCurrentNote(undefined);
                 }
             };
         }
@@ -105,6 +105,7 @@ const SynthComponent = ({ synthEngine }: any) => {
         switch (e.type) {
             case 'mousedown':
             case 'keydown':
+                console.log('note on: ', note);
                 killOscillators();
                 setCurrentNote(note);
                 document.getElementById(note)?.classList.add('active');
@@ -117,10 +118,11 @@ const SynthComponent = ({ synthEngine }: any) => {
                 break;
             case 'mouseup':
             case 'keyup':
+                console.log('note off: ', note);
                 document.getElementById(note)?.classList.remove('active');
                 if (currentNote === note) {
-                    envelopeOff(s.primaryAdsr.gain, release);
-                    envelopeOff(s.secondaryAdsr.gain, release);
+                    envelopeOff(s.primaryAdsr.gain, release, note);
+                    envelopeOff(s.secondaryAdsr.gain, release, note);
                     break;
                 }
         }
@@ -134,12 +136,12 @@ const SynthComponent = ({ synthEngine }: any) => {
         vcaGain.linearRampToValueAtTime(s, now + a + d);
     }
 
-    function envelopeOff(vcaGain: AudioParam, r: number) {
+    function envelopeOff(vcaGain: AudioParam, r: number, note?: string) {
         const now = synthEngine.current.audioContext.currentTime;
         vcaGain.cancelScheduledValues(0);
         vcaGain.setValueAtTime(vcaGain.value, now);
         vcaGain.linearRampToValueAtTime(0, now + r);
-        killOscillators(now + r);
+        killOscillators(now + r, note);
     }
 
     const handleAttackChange = (event: any) => {
@@ -299,7 +301,6 @@ const SynthComponent = ({ synthEngine }: any) => {
             </div>
             <br />
             <hr />
-            <p>LFO</p>
             <div className="columns">
                 <div className="column-50">
                     <p>LFO waveform</p>

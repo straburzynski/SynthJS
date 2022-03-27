@@ -1,15 +1,21 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './keyComponent.scss';
+import { NOTES } from '../../consts/Notes';
 
 const KeysComponent = ({ onHandleKey }: any) => {
     const handleKey = (e: any, note: any) => {
         onHandleKey(e, note);
     };
-    const selectedNotes = ['C-3', 'C#3', 'D-3', 'D#3', 'E-3', 'F-3', 'F#3', 'G-3', 'G#3', 'A-3', 'A#3', 'B-3', 'C-4'];
+    const [octave, setOctave] = useState(3);
+
+    const getKeyNotes = () => {
+        const startIndex = Object.keys(NOTES).indexOf(`C-${octave}`);
+        return Object.keys(NOTES).slice(startIndex, startIndex + 13);
+    };
 
     return (
         <div className="keys-container">
-            {selectedNotes.map((note: any, i: number) => {
+            {getKeyNotes().map((note: any, i: number) => {
                 return (
                     <button
                         id={note}

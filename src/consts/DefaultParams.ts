@@ -25,10 +25,10 @@ export const DefaultParams = {
     lfoWaveform: WaveformEnum.SINE,
     lfoGain: 0,
     lfoGainMin: 0,
-    lfoGainMax: 10000,
+    lfoGainMax: 5000,
     lfoFrequency: 1,
     lfoFrequencyMin: 0.1,
-    lfoFrequencyMax: 10,
+    lfoFrequencyMax: 20,
 
     filter: 2000,
     filterMin: 50,

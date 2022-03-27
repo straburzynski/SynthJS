@@ -48,7 +48,7 @@ const AdsrComponent = ({
                 value={sustain}
                 onChange={onHandleSustainChange}
             />
-            <label htmlFor="sustain-control">Sustain Time: {sustain}</label>
+            <label htmlFor="sustain-control">Sustain Level: {sustain}</label>
             <br />
             <input
                 type="range"
