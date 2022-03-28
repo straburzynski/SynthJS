@@ -1,8 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { DefaultParams } from '../../consts/DefaultParams';
-import { KEY_MAPPING } from '../../consts/KeyMapping';
 import { NOTES } from '../../consts/Notes';
-import KeysComponent from '../KeyboardCompnent/KeysComponent';
+import KeyboardComponent from '../KeyboardComponent/KeyboardComponent';
 import { WaveformEnum } from '../../models/WaveformEnum';
 import VolumeComponent from '../VolumeComponent/VolumeComponent';
 import AdsrComponent from '../AdsrComponent/AdsrComponent';
@@ -57,22 +56,6 @@ const SynthComponent = ({ synthEngine }: any) => {
         };
         draw();
     }, [synthEngine]);
-
-    // keyboard event listener
-    useEffect(() => {
-        window.addEventListener('keyup', handleKeyEvent);
-        window.addEventListener('keydown', handleKeyEvent);
-        return () => {
-            window.removeEventListener('keyup', handleKeyEvent);
-            window.removeEventListener('keydown', handleKeyEvent);
-        };
-    });
-
-    const handleKeyEvent = (e: any) => {
-        if (KEY_MAPPING.hasOwnProperty(e.key) && !e.repeat) {
-            handleKey(e, KEY_MAPPING[e.key]);
-        }
-    };
 
     const createOscillator = (freq: number, isPrimary: boolean, detune = 0) => {
         const osc = synthEngine.current.audioContext.createOscillator();
@@ -226,7 +209,7 @@ const SynthComponent = ({ synthEngine }: any) => {
     return (
         <div className="App">
             <br />
-            <KeysComponent onHandleKey={handleKey} />
+            <KeyboardComponent onHandleKey={handleKey} />
             <br />
             <canvas className="visualizer" width="500" height="100" ref={canvasRef} />
             <hr />
