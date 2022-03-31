@@ -1,12 +1,17 @@
-import React, { useState } from 'react';
+import React, { FC, useState } from 'react';
 import RangeInput from '../shared/RangeInput/RangeInput';
 import { DefaultParams } from '../../consts/DefaultParams';
 
-const FrequencyComponent = ({ name, node }: any) => {
+type FrequencyComponentProps = {
+    name: string;
+    node: BiquadFilterNode;
+};
+
+const FrequencyComponent: FC<FrequencyComponentProps> = ({ name, node }) => {
     const [frequency, setFrequency] = useState<number>(DefaultParams.filter);
 
-    const handleFrequencyChange = (event: any) => {
-        const changedFrequency: number = event.target.value;
+    const handleFrequencyChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const changedFrequency: number = event.target.valueAsNumber;
         console.log('frequency change: ', name, changedFrequency);
         setFrequency(changedFrequency);
         node.frequency.value = changedFrequency;

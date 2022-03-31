@@ -1,7 +1,18 @@
-import React from 'react';
+import React, { FC } from 'react';
 import { DefaultParams } from '../../consts/DefaultParams';
 
-const AdsrComponent = ({
+type AdsrComponentProps = {
+    attack: number;
+    onHandleAttackChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    decay: number;
+    onHandleDecayChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    sustain: number;
+    onHandleSustainChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    release: number;
+    onHandleReleaseChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+};
+
+const AdsrComponent: FC<AdsrComponentProps> = ({
     attack,
     onHandleAttackChange,
     decay,
@@ -10,7 +21,7 @@ const AdsrComponent = ({
     onHandleSustainChange,
     release,
     onHandleReleaseChange,
-}: any) => {
+}) => {
     return (
         <>
             <p>ADSR Control</p>

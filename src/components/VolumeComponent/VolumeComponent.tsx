@@ -1,17 +1,24 @@
-import React, { useState } from 'react';
+import React, { FC, useState } from 'react';
 import RangeInput from '../shared/RangeInput/RangeInput';
 import { DefaultParams } from '../../consts/DefaultParams';
 
-const VolumeComponent = ({
+type VolumeComponentProps = {
+    name: string;
+    volumeNode: GainNode;
+    min?: number;
+    max?: number;
+    step?: number;
+};
+const VolumeComponent: FC<VolumeComponentProps> = ({
     name,
     volumeNode,
     min = DefaultParams.gainMin,
     max = DefaultParams.gainMax,
-    step = 0.05
-}: any) => {
+    step = 0.05,
+}) => {
     const [volume, setVolume] = useState<number>(DefaultParams.gain);
 
-    const handleVolumeChange = (event: any) => {
+    const handleVolumeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const volumeLevel: number = event.target.valueAsNumber;
         console.log('volume change: ', name, volumeLevel);
         volumeNode.gain.value = volumeLevel;

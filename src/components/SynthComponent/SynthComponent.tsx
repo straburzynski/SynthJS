@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { FC, MutableRefObject, useEffect, useRef, useState } from 'react';
 import { DefaultParams } from '../../consts/DefaultParams';
 import { NOTES } from '../../consts/Notes';
 import KeyboardComponent from '../KeyboardComponent/KeyboardComponent';
@@ -8,9 +8,10 @@ import AdsrComponent from '../AdsrComponent/AdsrComponent';
 import { AVAILABLE_FILTERS } from '../../consts/AvailableFilters';
 import FrequencyComponent from '../FrequencyComponent/FrequencyComponent';
 import RangeInput from '../shared/RangeInput/RangeInput';
+import { SynthEngineModel } from '../../models/SynthEngineModel';
 import './synthComponent.scss';
 
-const SynthComponent = ({ synthEngine }: any) => {
+const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: MutableRefObject<SynthEngineModel>) => {
     const [filterType, setFilterType] = useState<BiquadFilterType>(DefaultParams.filterType);
     const [filterQualityFactor, setFilterQualityFactor] = useState<number>(DefaultParams.qualityFactor);
     const [primaryWaveform, setPrimaryWaveform] = useState<OscillatorType>(DefaultParams.primaryWaveform);
@@ -29,7 +30,7 @@ const SynthComponent = ({ synthEngine }: any) => {
 
     const [currentNote, setCurrentNote] = useState<string>();
 
-    const canvasRef = useRef<any>(null);
+    const canvasRef = useRef<any>();
 
     useEffect(() => {
         const getAnalyserData = () => {
@@ -37,22 +38,25 @@ const SynthComponent = ({ synthEngine }: any) => {
             return synthEngine.current.analyserData;
         };
         const draw = () => {
-            const canvas = canvasRef.current.getContext('2d');
-            const width = canvasRef.current.width;
-            const height = canvasRef.current.height;
-            const chh = Math.round(height * 0.5);
-            canvas.fillStyle = 'red';
-            canvas.lineWidth = 2;
-            canvas.strokeStyle = 'red';
-            requestAnimationFrame(draw);
-            canvas.clearRect(0, 0, width, height);
-            const data = getAnalyserData();
-            canvas.beginPath();
-            canvas.moveTo(0, chh);
-            for (let i = 0, ln = data.length; i < ln; i++) {
-                canvas.lineTo(i, height * (data[i] / 255));
+            if (canvasRef.current) {
+                const canvas: CanvasRenderingContext2D | null = canvasRef.current.getContext('2d');
+                if (canvas == null) return;
+                const width = canvasRef.current.width;
+                const height = canvasRef.current.height;
+                const chh = Math.round(height * 0.5);
+                canvas.fillStyle = 'red';
+                canvas.lineWidth = 2;
+                canvas.strokeStyle = 'red';
+                requestAnimationFrame(draw);
+                canvas.clearRect(0, 0, width, height);
+                const data = getAnalyserData();
+                canvas.beginPath();
+                canvas.moveTo(0, chh);
+                for (let i = 0, ln = data.length; i < ln; i++) {
+                    canvas.lineTo(i, height * (data[i] / 255));
+                }
+                canvas.stroke();
             }
-            canvas.stroke();
         };
         draw();
     }, [synthEngine]);
@@ -83,7 +87,7 @@ const SynthComponent = ({ synthEngine }: any) => {
         }
     };
 
-    const handleKey = (e: any, note: string) => {
+    const handleKey = (e: React.MouseEvent<HTMLButtonElement> | KeyboardEvent, note: string) => {
         const s = synthEngine.current;
         switch (e.type) {
             case 'mousedown':
@@ -127,38 +131,42 @@ const SynthComponent = ({ synthEngine }: any) => {
         killOscillators(now + r, note);
     }
 
-    const handleAttackChange = (event: any) => {
+    const handleAttackChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const changedAttack: number = event.target.valueAsNumber;
         console.log('attack: ', changedAttack);
         setAttack(changedAttack);
     };
 
-    const handleDecayChange = (event: any) => {
+    const handleDecayChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const changedDecay: number = event.target.valueAsNumber;
         console.log('decay: ', changedDecay);
         setDecay(changedDecay);
     };
 
-    const handleSustainChange = (event: any) => {
+    const handleSustainChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const changedSustain: number = event.target.valueAsNumber;
         console.log('sustain: ', changedSustain);
         setSustain(changedSustain);
     };
 
-    const handleReleaseChange = (event: any) => {
+    const handleReleaseChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const changedRelease: number = event.target.valueAsNumber;
         console.log('release: ', changedRelease);
         setRelease(changedRelease);
     };
 
-    const handleWaveformChange = (setWaveform: any, oscillatorNode: OscillatorNode, event: any) => {
-        const selectedWaveform: OscillatorType = event.target.value;
+    const handleWaveformChange = (
+        setWaveform: Function,
+        oscillatorNode: OscillatorNode,
+        event: React.ChangeEvent<HTMLInputElement>
+    ) => {
+        const selectedWaveform = event.target.value as OscillatorType;
         console.log(event.target.name, selectedWaveform);
         oscillatorNode.type = selectedWaveform;
         setWaveform(selectedWaveform);
     };
 
-    const handleDelayTimeChange = (event: any) => {
+    const handleDelayTimeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const changedDelayTime: number = event.target.valueAsNumber;
         console.log('delay time: ', changedDelayTime);
         synthEngine.current.delayNode.delayTime.linearRampToValueAtTime(
@@ -168,7 +176,7 @@ const SynthComponent = ({ synthEngine }: any) => {
         setDelayTime(changedDelayTime);
     };
 
-    const handleDelayFeedbackChange = (event: any) => {
+    const handleDelayFeedbackChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const changedDelayFeedback: number = event.target.valueAsNumber;
         console.log('delay feedback: ', changedDelayFeedback);
         synthEngine.current.delayFeedback.gain.linearRampToValueAtTime(
@@ -178,28 +186,28 @@ const SynthComponent = ({ synthEngine }: any) => {
         setDelayFeedback(changedDelayFeedback);
     };
 
-    const handleFilterTypeChange = (event: any) => {
-        const selectedFilterType: BiquadFilterType = event.target.value;
+    const handleFilterTypeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const selectedFilterType = event.target.value as BiquadFilterType;
         console.log('filter type: ', selectedFilterType);
         synthEngine.current.filter.type = selectedFilterType;
         setFilterType(selectedFilterType);
     };
 
-    const handleLfoGainChange = (event: any) => {
+    const handleLfoGainChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const selectedLfoGain: number = event.target.valueAsNumber;
         console.log('lfo gain', selectedLfoGain);
         synthEngine.current.lfoGain.gain.value = selectedLfoGain;
         setLfoGain(selectedLfoGain);
     };
 
-    const handleLfoFrequencyChange = (event: any) => {
+    const handleLfoFrequencyChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const selectedLfoFrequency: number = event.target.valueAsNumber;
         console.log('lfo frequency', selectedLfoFrequency);
         synthEngine.current.lfo.frequency.value = selectedLfoFrequency;
         setLfoFrequency(selectedLfoFrequency);
     };
 
-    const handleFilterQualityFactorChange = (event: any) => {
+    const handleFilterQualityFactorChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const selectedQualityFactor: number = event.target.valueAsNumber;
         console.log('filter type: ', selectedQualityFactor);
         synthEngine.current.filter.Q.value = selectedQualityFactor;

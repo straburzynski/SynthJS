@@ -1,8 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { FC, useEffect, useState } from 'react';
 import './keyboardComponent.scss';
 import { NOTES, StringIndex } from '../../consts/Notes';
 
-const KeyboardComponent = ({ onHandleKey }: any) => {
+type KeyboardComponentProps = {
+    onHandleKey: (event: React.MouseEvent<HTMLButtonElement> | KeyboardEvent, note: string) => void;
+};
+
+const KeyboardComponent: FC<KeyboardComponentProps> = ({ onHandleKey }) => {
     const [octave, setOctave] = useState(3);
 
     const KEY_MAPPING: StringIndex = {
@@ -21,7 +25,7 @@ const KeyboardComponent = ({ onHandleKey }: any) => {
         u: `A#${octave}`,
     };
 
-    const handleKeyEvent = (e: any) => {
+    const handleKeyEvent = (e: KeyboardEvent) => {
         if (KEY_MAPPING.hasOwnProperty(e.key) && !e.repeat) {
             onHandleKey(e, KEY_MAPPING[e.key]);
         }
@@ -55,7 +59,7 @@ const KeyboardComponent = ({ onHandleKey }: any) => {
             <button className="octave-switch" onClick={() => handleOctaveChange(-1)}>
                 -
             </button>
-            {getKeyNotes().map((note: any, i: number) => {
+            {getKeyNotes().map((note: string, i: number) => {
                 return (
                     <button
                         id={note}

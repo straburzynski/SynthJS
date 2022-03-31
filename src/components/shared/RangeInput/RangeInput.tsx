@@ -1,7 +1,15 @@
 import React, { FC } from 'react';
-import { RangeInputModel } from './RangeInputModel';
 
-const RangeInput: FC<RangeInputModel> = (rangeInputModel: RangeInputModel) => {
+type RangeInputProps = {
+    min: number;
+    max: number;
+    step: number;
+    value: number;
+    onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    label?: string;
+};
+
+const RangeInput: FC<RangeInputProps> = (rangeInputModel: RangeInputProps) => {
     return (
         <>
             <input

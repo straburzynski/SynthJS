@@ -7,7 +7,7 @@ import './App.css';
 function App() {
     const synthEngine = useRef<SynthEngineModel>(createSynthEngine());
 
-    return <SynthComponent synthEngine={synthEngine} />;
+    return <SynthComponent {...synthEngine} />;
 }
 
 export default App;
