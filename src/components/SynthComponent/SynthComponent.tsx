@@ -16,9 +16,14 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
     const [filterQualityFactor, setFilterQualityFactor] = useState<number>(DefaultParams.qualityFactor);
     const [primaryWaveform, setPrimaryWaveform] = useState<OscillatorType>(DefaultParams.primaryWaveform);
     const [secondaryWaveform, setSecondaryWaveform] = useState<OscillatorType>(DefaultParams.secondaryWaveform);
-    const [lfoGain, setLfoGain] = useState<number>(DefaultParams.lfoGain);
-    const [lfoFrequency, setLfoFrequency] = useState<number>(DefaultParams.lfoFrequency);
-    const [lfoWaveform, setLfoWaveform] = useState<OscillatorType>(DefaultParams.lfoWaveform);
+
+    const [lfo1Gain, setLfo1Gain] = useState<number>(DefaultParams.lfoGain);
+    const [lfo1Frequency, setLfo1Frequency] = useState<number>(DefaultParams.lfoFrequency);
+    const [lfo1Waveform, setLfo1Waveform] = useState<OscillatorType>(DefaultParams.lfoWaveform);
+
+    const [lfo2Gain, setLfo2Gain] = useState<number>(DefaultParams.lfoGain);
+    const [lfo2Frequency, setLfo2Frequency] = useState<number>(DefaultParams.lfoFrequency);
+    const [lfo2Waveform, setLfo2Waveform] = useState<OscillatorType>(DefaultParams.lfoWaveform);
 
     const [attack, setAttack] = useState<number>(DefaultParams.attack);
     const [decay, setDecay] = useState<number>(DefaultParams.decay);
@@ -193,18 +198,32 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
         setFilterType(selectedFilterType);
     };
 
-    const handleLfoGainChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleLfo1GainChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const selectedLfoGain: number = event.target.valueAsNumber;
-        console.log('lfo gain', selectedLfoGain);
-        synthEngine.current.lfoGain.gain.value = selectedLfoGain;
-        setLfoGain(selectedLfoGain);
+        console.log('lfo 1 gain', selectedLfoGain);
+        synthEngine.current.lfo1Gain.gain.value = selectedLfoGain;
+        setLfo1Gain(selectedLfoGain);
     };
 
-    const handleLfoFrequencyChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleLfo1FrequencyChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const selectedLfoFrequency: number = event.target.valueAsNumber;
-        console.log('lfo frequency', selectedLfoFrequency);
-        synthEngine.current.lfo.frequency.value = selectedLfoFrequency;
-        setLfoFrequency(selectedLfoFrequency);
+        console.log('lfo 1 frequency', selectedLfoFrequency);
+        synthEngine.current.lfo1.frequency.value = selectedLfoFrequency;
+        setLfo1Frequency(selectedLfoFrequency);
+    };
+
+    const handleLfo2GainChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const selectedLfoGain: number = event.target.valueAsNumber;
+        console.log('lfo 2 gain', selectedLfoGain);
+        synthEngine.current.lfo2Gain.gain.value = selectedLfoGain;
+        setLfo2Gain(selectedLfoGain);
+    };
+
+    const handleLfo2FrequencyChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const selectedLfoFrequency: number = event.target.valueAsNumber;
+        console.log('lfo 2 frequency', selectedLfoFrequency);
+        synthEngine.current.lfo2.frequency.value = selectedLfoFrequency;
+        setLfo2Frequency(selectedLfoFrequency);
     };
 
     const handleFilterQualityFactorChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -293,20 +312,20 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
             <br />
             <hr />
             <div className="columns">
-                <div className="column-50">
-                    <p>LFO waveform</p>
+                <div className="column-33">
+                    <p>LFO waveform -{'>'} filter</p>
                     {Object.values(WaveformEnum).map((w, i) => {
                         return (
                             <div key={i}>
                                 <input
                                     type="radio"
-                                    id={w + '-lfo-waveform'}
-                                    name="lfo-waveform"
+                                    id={w + '-lfo-1-waveform'}
+                                    name="lfo-1-waveform"
                                     value={w}
-                                    onChange={(e) => handleWaveformChange(setLfoWaveform, synthEngine.current.lfo, e)}
-                                    checked={w === lfoWaveform}
+                                    onChange={(e) => handleWaveformChange(setLfo1Waveform, synthEngine.current.lfo1, e)}
+                                    checked={w === lfo1Waveform}
                                 />
-                                <label htmlFor={w + '-lfo-waveform'}>{w}</label>
+                                <label htmlFor={w + '-lfo-1-waveform'}>{w}</label>
                                 <br />
                             </div>
                         );
@@ -316,21 +335,58 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
                         min={DefaultParams.lfoFrequencyMin}
                         max={DefaultParams.lfoFrequencyMax}
                         step={0.1}
-                        value={lfoFrequency}
-                        onChange={handleLfoFrequencyChange}
-                        label={'Frequency ' + lfoFrequency + ' Hz'}
+                        value={lfo1Frequency}
+                        onChange={handleLfo1FrequencyChange}
+                        label={'Frequency ' + lfo1Frequency + ' Hz'}
                     />
                     <br />
                     <RangeInput
                         min={DefaultParams.lfoGainMin}
                         max={DefaultParams.lfoGainMax}
                         step={0.1}
-                        value={lfoGain}
-                        onChange={handleLfoGainChange}
-                        label={'Gain ' + lfoGain}
+                        value={lfo1Gain}
+                        onChange={handleLfo1GainChange}
+                        label={'Gain ' + lfo1Gain}
                     />
                 </div>
-                <div className="column-50">
+                <div className="column-33">
+                    <p>LFO waveform -{'>'} master vca</p>
+                    {Object.values(WaveformEnum).map((w, i) => {
+                        return (
+                            <div key={i}>
+                                <input
+                                    type="radio"
+                                    id={w + '-lfo-2-waveform'}
+                                    name="lfo-2-waveform"
+                                    value={w}
+                                    onChange={(e) => handleWaveformChange(setLfo2Waveform, synthEngine.current.lfo2, e)}
+                                    checked={w === lfo2Waveform}
+                                />
+                                <label htmlFor={w + '-lfo-2-waveform'}>{w}</label>
+                                <br />
+                            </div>
+                        );
+                    })}
+                    <br />
+                    <RangeInput
+                        min={DefaultParams.lfoFrequencyMin}
+                        max={DefaultParams.lfoFrequencyMax}
+                        step={0.1}
+                        value={lfo2Frequency}
+                        onChange={handleLfo2FrequencyChange}
+                        label={'Frequency ' + lfo2Frequency + ' Hz'}
+                    />
+                    <br />
+                    <RangeInput
+                        min={DefaultParams.lfoGainMin}
+                        max={0.5}
+                        step={0.1}
+                        value={lfo2Gain}
+                        onChange={handleLfo2GainChange}
+                        label={'Gain ' + lfo2Gain}
+                    />
+                </div>
+                <div className="column-33">
                     <p>Filter type</p>
                     {Object.values(AVAILABLE_FILTERS).map((f, i) => {
                         return (

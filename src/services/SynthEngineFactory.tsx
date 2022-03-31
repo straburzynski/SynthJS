@@ -31,14 +31,21 @@ export const createSynthEngine = (): SynthEngineModel => {
     let masterVca = audioContext.createGain();
 
     // create filter lfo
-    const lfo = audioContext.createOscillator();
-    const lfoGain = audioContext.createGain();
+    const lfo1 = audioContext.createOscillator();
+    const lfo1Gain = audioContext.createGain();
+    const lfo2 = audioContext.createOscillator();
+    const lfo2Gain = audioContext.createGain();
 
     // configure filter lfo
-    lfo.type = WaveformEnum.SINE;
-    lfo.frequency.value = DefaultParams.lfoFrequency;
-    lfo.start()
-    lfoGain.gain.value = DefaultParams.lfoGain;
+    lfo1.type = WaveformEnum.SINE;
+    lfo1.frequency.value = DefaultParams.lfoFrequency;
+    lfo1.start()
+    lfo1Gain.gain.value = DefaultParams.lfoGain;
+
+    lfo2.type = WaveformEnum.SQUARE;
+    lfo2.frequency.value = DefaultParams.lfoFrequency;
+    lfo2.start()
+    lfo2Gain.gain.value = DefaultParams.lfoGain;
 
     // configure filter
     filter.type = DefaultParams.filterType;
@@ -71,7 +78,8 @@ export const createSynthEngine = (): SynthEngineModel => {
     primaryAdsr.connect(primaryVca).connect(filter);
     secondaryAdsr.connect(secondaryVca).connect(filter);
     filter.connect(delayNode).connect(delayFeedback).connect(filter)
-    lfo.connect(lfoGain).connect(filter.detune);
+    lfo1.connect(lfo1Gain).connect(filter.detune);
+    lfo2.connect(lfo2Gain).connect(masterVca.gain);
     filter.connect(masterVca).connect(limiter).connect(analyser).connect(audioContext.destination);
 
     // start oscillators
@@ -87,8 +95,10 @@ export const createSynthEngine = (): SynthEngineModel => {
         primaryVca: primaryVca,
         secondaryVca: secondaryVca,
         filter: filter,
-        lfo: lfo,
-        lfoGain: lfoGain,
+        lfo1: lfo1,
+        lfo1Gain: lfo1Gain,
+        lfo2: lfo2,
+        lfo2Gain: lfo2Gain,
         delayNode: delayNode,
         delayFeedback: delayFeedback,
         masterVca: masterVca,

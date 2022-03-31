@@ -7,8 +7,10 @@ export interface SynthEngineModel {
     primaryVca: GainNode;
     secondaryVca: GainNode;
     filter: BiquadFilterNode;
-    lfo: OscillatorNode,
-    lfoGain: GainNode,
+    lfo1: OscillatorNode,
+    lfo1Gain: GainNode,
+    lfo2: OscillatorNode,
+    lfo2Gain: GainNode,
     delayNode: DelayNode;
     delayFeedback: GainNode;
     masterVca: GainNode;
