@@ -39,12 +39,12 @@ export const createSynthEngine = (): SynthEngineModel => {
     // configure filter lfo
     lfo1.type = WaveformEnum.SINE;
     lfo1.frequency.value = DefaultParams.lfoFrequency;
-    lfo1.start()
+    lfo1.start();
     lfo1Gain.gain.value = DefaultParams.lfoGain;
 
     lfo2.type = WaveformEnum.SQUARE;
     lfo2.frequency.value = DefaultParams.lfoFrequency;
-    lfo2.start()
+    lfo2.start();
     lfo2Gain.gain.value = DefaultParams.lfoGain;
 
     // configure filter
@@ -77,7 +77,7 @@ export const createSynthEngine = (): SynthEngineModel => {
     // connect nodes
     primaryAdsr.connect(primaryVca).connect(filter);
     secondaryAdsr.connect(secondaryVca).connect(filter);
-    filter.connect(delayNode).connect(delayFeedback).connect(filter)
+    filter.connect(delayNode).connect(delayFeedback).connect(filter);
     lfo1.connect(lfo1Gain).connect(filter.detune);
     lfo2.connect(lfo2Gain).connect(masterVca.gain);
     filter.connect(masterVca).connect(limiter).connect(analyser).connect(audioContext.destination);

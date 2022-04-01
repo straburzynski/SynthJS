@@ -1,6 +1,6 @@
 import React, { FC, useEffect, useState } from 'react';
 import './keyboardComponent.scss';
-import { NOTES, StringIndex } from '../../consts/Notes';
+import { StringIndex } from '../../types';
 
 type KeyboardComponentProps = {
     onHandleKey: (event: React.MouseEvent<HTMLButtonElement> | KeyboardEvent, note: string) => void;
@@ -10,32 +10,25 @@ const KeyboardComponent: FC<KeyboardComponentProps> = ({ onHandleKey }) => {
     const [octave, setOctave] = useState(3);
 
     const KEY_MAPPING: StringIndex = {
-        a: `C-${octave}`,
-        s: `D-${octave}`,
-        d: `E-${octave}`,
-        f: `F-${octave}`,
-        g: `G-${octave}`,
-        h: `A-${octave}`,
-        j: `B-${octave}`,
-        k: `C-${octave + 1}`,
+        a: `C${octave}`,
         w: `C#${octave}`,
+        s: `D${octave}`,
         e: `D#${octave}`,
+        d: `E${octave}`,
+        f: `F${octave}`,
         t: `F#${octave}`,
+        g: `G${octave}`,
         y: `G#${octave}`,
+        h: `A${octave}`,
         u: `A#${octave}`,
+        j: `B${octave}`,
+        k: `C${octave + 1}`,
     };
 
     const handleKeyEvent = (e: KeyboardEvent) => {
         if (KEY_MAPPING.hasOwnProperty(e.key) && !e.repeat) {
             onHandleKey(e, KEY_MAPPING[e.key]);
         }
-    };
-
-    const getStartIndex = () => Object.keys(NOTES).indexOf(`C-${octave}`);
-
-    const getKeyNotes = () => {
-        const startIndex = getStartIndex();
-        return Object.keys(NOTES).slice(startIndex, startIndex + 13);
     };
 
     const handleOctaveChange = (value: number) => {
@@ -59,11 +52,11 @@ const KeyboardComponent: FC<KeyboardComponentProps> = ({ onHandleKey }) => {
             <button className="octave-switch" onClick={() => handleOctaveChange(-1)}>
                 -
             </button>
-            {getKeyNotes().map((note: string, i: number) => {
+            {Object.values(KEY_MAPPING).map((note: string) => {
                 return (
                     <button
                         id={note}
-                        key={i}
+                        key={note}
                         className={note.includes('#') ? 'black' : 'white'}
                         onMouseDown={(e) => onHandleKey(e, note)}
                         onMouseUp={(e) => onHandleKey(e, note)}

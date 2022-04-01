@@ -1,37 +1,37 @@
 .keys-container {
-    display: block;
-    margin: 60px auto 0 auto;
-    min-width: 500px;
+  display: block;
+  margin: 60px auto 0 auto;
+  min-width: 500px;
 }
 
 .black {
-    color: white;
-    background-color: black;
-    width: 48px;
-    height: 48px;
-    position: absolute;
-    border: 1px solid gray;
-    transform: translate(-24px, -48px);
+  color: white;
+  background-color: black;
+  width: 48px;
+  height: 48px;
+  position: absolute;
+  border: 1px solid gray;
+  transform: translate(-24px, -48px);
 }
 
 .white {
-    color: black;
-    background-color: white;
-    width: 48px;
-    height: 48px;
-    border: 1px solid gray;
-    margin-top: 0;
+  color: black;
+  background-color: white;
+  width: 48px;
+  height: 48px;
+  border: 1px solid gray;
+  margin-top: 0;
 }
 
 .active {
-    color: red;
+  color: red;
 }
 
 .octave-switch {
-    border: 1px solid gray;
-    width: 25px;
-    height: 25px;
-    color: black;
-    background: #eee;
-    margin: 0 10px;
+  border: 1px solid gray;
+  width: 25px;
+  height: 25px;
+  color: black;
+  background: #eee;
+  margin: 0 10px;
 }

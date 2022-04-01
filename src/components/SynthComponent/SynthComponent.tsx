@@ -1,6 +1,5 @@
 import React, { FC, MutableRefObject, useEffect, useRef, useState } from 'react';
 import { DefaultParams } from '../../consts/DefaultParams';
-import { NOTES } from '../../consts/Notes';
 import KeyboardComponent from '../KeyboardComponent/KeyboardComponent';
 import { WaveformEnum } from '../../models/WaveformEnum';
 import VolumeComponent from '../VolumeComponent/VolumeComponent';
@@ -9,6 +8,7 @@ import { AVAILABLE_FILTERS } from '../../consts/AvailableFilters';
 import FrequencyComponent from '../FrequencyComponent/FrequencyComponent';
 import RangeInput from '../shared/RangeInput/RangeInput';
 import { SynthEngineModel } from '../../models/SynthEngineModel';
+import { Note } from '@tonaljs/tonal';
 import './synthComponent.scss';
 
 const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: MutableRefObject<SynthEngineModel>) => {
@@ -66,13 +66,17 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
         draw();
     }, [synthEngine]);
 
-    const createOscillator = (freq: number, isPrimary: boolean, detune = 0) => {
-        const osc = synthEngine.current.audioContext.createOscillator();
-        osc.type = isPrimary ? primaryWaveform : secondaryWaveform;
-        osc.frequency.value = freq;
-        osc.detune.value = detune;
-        osc.connect(isPrimary ? synthEngine.current.primaryAdsr : synthEngine.current.secondaryAdsr);
-        return osc;
+    const createOscillator = (freq: number | null | undefined, isPrimary: boolean, detune = 0) => {
+        if (freq == null) {
+            throw new Error('unrecognized note');
+        } else {
+            const osc = synthEngine.current.audioContext.createOscillator();
+            osc.type = isPrimary ? primaryWaveform : secondaryWaveform;
+            osc.frequency.value = freq;
+            osc.detune.value = detune;
+            osc.connect(isPrimary ? synthEngine.current.primaryAdsr : synthEngine.current.secondaryAdsr);
+            return osc;
+        }
     };
 
     const killOscillators = (t = 0, note?: string) => {
@@ -100,9 +104,10 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
                 console.log('note on: ', note);
                 killOscillators();
                 setCurrentNote(note);
+                const freq = Note.get(note).freq;
                 document.getElementById(note)?.classList.add('active');
-                s.primaryVco = createOscillator(NOTES[note], true);
-                s.secondaryVco = createOscillator(NOTES[note], false);
+                s.primaryVco = createOscillator(freq, true);
+                s.secondaryVco = createOscillator(freq, false);
                 envelopeOn(s.primaryAdsr.gain, attack, decay, sustain);
                 envelopeOn(s.secondaryAdsr.gain, attack, decay, sustain);
                 s.primaryVco.start();
@@ -242,7 +247,7 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
             <hr />
             {currentNote ? (
                 <p>
-                    <strong>{currentNote}</strong> [<i> {NOTES[currentNote]} Hz</i> ]
+                    <strong>{currentNote}</strong> [<i> {Note.get(currentNote).freq} Hz</i> ]
                 </p>
             ) : (
                 <p>---</p>
