@@ -17,6 +17,9 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
     const [primaryWaveform, setPrimaryWaveform] = useState<OscillatorType>(DefaultParams.primaryWaveform);
     const [secondaryWaveform, setSecondaryWaveform] = useState<OscillatorType>(DefaultParams.secondaryWaveform);
 
+    const [primaryVcoDetune, setPrimaryVcoDetune] = useState<number>(DefaultParams.detune);
+    const [secondaryVcoDetune, setSecondaryVcoDetune] = useState<number>(DefaultParams.detune);
+
     const [lfo1Gain, setLfo1Gain] = useState<number>(DefaultParams.lfoGain);
     const [lfo1Frequency, setLfo1Frequency] = useState<number>(DefaultParams.lfoFrequency);
     const [lfo1Waveform, setLfo1Waveform] = useState<OscillatorType>(DefaultParams.lfoWaveform);
@@ -66,7 +69,7 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
         draw();
     }, [synthEngine]);
 
-    const createOscillator = (freq: number | null | undefined, isPrimary: boolean, detune = 0) => {
+    const createOscillator = (freq: number | null | undefined, isPrimary: boolean, detune: number) => {
         if (freq == null) {
             throw new Error('unrecognized note');
         } else {
@@ -106,8 +109,8 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
                 setCurrentNote(note);
                 const freq = Note.get(note).freq;
                 document.getElementById(note)?.classList.add('active');
-                s.primaryVco = createOscillator(freq, true);
-                s.secondaryVco = createOscillator(freq, false);
+                s.primaryVco = createOscillator(freq, true, primaryVcoDetune);
+                s.secondaryVco = createOscillator(freq, false, secondaryVcoDetune);
                 envelopeOn(s.primaryAdsr.gain, attack, decay, sustain);
                 envelopeOn(s.secondaryAdsr.gain, attack, decay, sustain);
                 s.primaryVco.start();
@@ -238,6 +241,18 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
         setFilterQualityFactor(selectedQualityFactor);
     };
 
+    const handleDetuneChange = (
+        event: React.ChangeEvent<HTMLInputElement>,
+        setDetune: Function,
+        oscNode: OscillatorNode
+    ) => {
+        const changedDetune: number = event.target.valueAsNumber;
+        console.log('detune change: ', changedDetune);
+        setDetune(changedDetune);
+        oscNode.detune.setValueAtTime(changedDetune, synthEngine.current.audioContext.currentTime); // value in cents
+        // node.detune.value = changedDetune;
+    };
+
     return (
         <div className="App">
             <br />
@@ -277,6 +292,17 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
                     })}
                     <br />
                     <VolumeComponent name={'Primary VCA'} volumeNode={synthEngine.current.primaryVca} />
+                    <div>
+                        <RangeInput
+                            min={DefaultParams.detuneMin}
+                            max={DefaultParams.detuneMax}
+                            step={0.5}
+                            value={primaryVcoDetune}
+                            onChange={(e) => handleDetuneChange(e, setPrimaryVcoDetune, synthEngine.current.primaryVco)}
+                        />
+                        {'detune'}: {primaryVcoDetune}
+                        <br />
+                    </div>
                 </div>
                 <div className="column-33">
                     <p>Secondary OSC</p>
@@ -300,6 +326,19 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
                     })}
                     <br />
                     <VolumeComponent name={'Secondary VCA'} volumeNode={synthEngine.current.secondaryVca} />
+                    <div>
+                        <RangeInput
+                            min={DefaultParams.detuneMin}
+                            max={DefaultParams.detuneMax}
+                            step={0.5}
+                            value={secondaryVcoDetune}
+                            onChange={(e) =>
+                                handleDetuneChange(e, setSecondaryVcoDetune, synthEngine.current.secondaryVco)
+                            }
+                        />
+                        {'detune'}: {secondaryVcoDetune}
+                        <br />
+                    </div>
                 </div>
                 <div className="column-33">
                     <AdsrComponent
