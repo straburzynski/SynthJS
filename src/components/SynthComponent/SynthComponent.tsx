@@ -37,7 +37,6 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
     const [delayFeedback, setDelayFeedback] = useState<number>(DefaultParams.delayFeedback);
 
     const [currentNote, setCurrentNote] = useState<string>();
-
     const canvasRef = useRef<any>();
 
     useEffect(() => {
@@ -487,9 +486,20 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
             />
             <label htmlFor="delay-feedback-control">Delay feedback: {delayFeedback * 100}%</label>
             <br />
+            <VolumeComponent
+                name={'Reverb'}
+                volumeNode={synthEngine.current.reverbGain}
+                min={DefaultParams.reverbGainMin}
+                max={DefaultParams.reverbGainMax}
+                step={0.1}
+            />
             <br />
             <hr />
-            <VolumeComponent name={'Master value'} volumeNode={synthEngine.current.masterVca} max={1} />
+            <VolumeComponent
+                name={'Master value'}
+                volumeNode={synthEngine.current.masterVca}
+                max={DefaultParams.masterVcaGainMax}
+            />
             <hr />
         </div>
     );

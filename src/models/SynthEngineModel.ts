@@ -13,6 +13,8 @@ export interface SynthEngineModel {
     lfo2Gain: GainNode;
     delayNode: DelayNode;
     delayFeedback: GainNode;
+    reverbNode: ConvolverNode;
+    reverbGain: GainNode;
     masterVca: GainNode;
     analyserNode: AnalyserNode;
     analyserData: Uint8Array;

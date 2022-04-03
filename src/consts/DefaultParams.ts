@@ -21,6 +21,7 @@ export const DefaultParams = {
     gainMin: 0,
     gainMax: 0.5,
     masterVcaGain: 0.7,
+    masterVcaGainMax: 1,
 
     lfoWaveform: WaveformEnum.SINE,
     lfoGain: 0,
@@ -40,6 +41,10 @@ export const DefaultParams = {
     delayTimeMax: 1,
     delayFeedbackMin: 0,
     delayFeedbackMax: 1,
+
+    reverbGain: 0,
+    reverbGainMin: 0,
+    reverbGainMax: 1,
 
     qualityFactor: 0,
     qualityFactorMin: 0,

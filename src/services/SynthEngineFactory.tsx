@@ -1,6 +1,8 @@
 import { SynthEngineModel } from '../models/SynthEngineModel';
 import { DefaultParams } from '../consts/DefaultParams';
 import { WaveformEnum } from '../models/WaveformEnum';
+import { base64ToArrayBuffer } from './Converter';
+import { impulseResponse } from '../consts/ImpulseResponse';
 
 const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
 
@@ -35,6 +37,24 @@ export const createSynthEngine = (): SynthEngineModel => {
     const lfo1Gain = audioContext.createGain();
     const lfo2 = audioContext.createOscillator();
     const lfo2Gain = audioContext.createGain();
+
+    // create reverb
+    const reverbNode = audioContext.createConvolver();
+    const reverbGain = audioContext.createGain();
+    reverbGain.gain.value = 0;
+
+    const byteStream = base64ToArrayBuffer(impulseResponse);
+    audioContext.decodeAudioData(
+        byteStream,
+        (audioBuffer) => {
+            reverbNode.buffer = audioBuffer;
+            reverbNode.normalize = true;
+
+        },
+        (e) => {
+            console.log('error decoding audio data: ' + e);
+        }
+    );
 
     // configure filter lfo
     lfo1.type = WaveformEnum.SINE;
@@ -77,10 +97,12 @@ export const createSynthEngine = (): SynthEngineModel => {
     // connect nodes
     primaryAdsr.connect(primaryVca).connect(filter);
     secondaryAdsr.connect(secondaryVca).connect(filter);
-    filter.connect(delayNode).connect(delayFeedback).connect(filter);
+    filter.connect(delayNode).connect(delayFeedback).connect(filter); // delay
     lfo1.connect(lfo1Gain).connect(filter.detune);
     lfo2.connect(lfo2Gain).connect(masterVca.gain);
     filter.connect(masterVca).connect(limiter).connect(analyser).connect(audioContext.destination);
+
+    masterVca.connect(reverbGain).connect(reverbNode).connect(limiter); // reverb
 
     // start oscillators
     primaryVco.start();
@@ -95,6 +117,8 @@ export const createSynthEngine = (): SynthEngineModel => {
         primaryVca: primaryVca,
         secondaryVca: secondaryVca,
         filter: filter,
+        reverbNode: reverbNode,
+        reverbGain: reverbGain,
         lfo1: lfo1,
         lfo1Gain: lfo1Gain,
         lfo2: lfo2,
