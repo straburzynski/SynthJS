@@ -8,6 +8,7 @@ type VolumeComponentProps = {
     min?: number;
     max?: number;
     step?: number;
+    initialState?: number;
 };
 const VolumeComponent: FC<VolumeComponentProps> = ({
     name,
@@ -15,8 +16,9 @@ const VolumeComponent: FC<VolumeComponentProps> = ({
     min = DefaultParams.gainMin,
     max = DefaultParams.gainMax,
     step = 0.05,
+    initialState = DefaultParams.gain
 }) => {
-    const [volume, setVolume] = useState<number>(DefaultParams.gain);
+    const [volume, setVolume] = useState<number>(initialState);
 
     const handleVolumeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const volumeLevel: number = event.target.valueAsNumber;

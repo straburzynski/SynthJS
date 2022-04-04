@@ -1,8 +1,7 @@
 import { SynthEngineModel } from '../models/SynthEngineModel';
 import { DefaultParams } from '../consts/DefaultParams';
 import { WaveformEnum } from '../models/WaveformEnum';
-import { base64ToArrayBuffer } from './Converter';
-import { impulseResponse } from '../consts/ImpulseResponse';
+import { createImpulseResponse } from '../consts/ImpulseResponse';
 
 const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
 
@@ -41,20 +40,9 @@ export const createSynthEngine = (): SynthEngineModel => {
     // create reverb
     const reverbNode = audioContext.createConvolver();
     const reverbGain = audioContext.createGain();
-    reverbGain.gain.value = 0;
-
-    const byteStream = base64ToArrayBuffer(impulseResponse);
-    audioContext.decodeAudioData(
-        byteStream,
-        (audioBuffer) => {
-            reverbNode.buffer = audioBuffer;
-            reverbNode.normalize = true;
-
-        },
-        (e) => {
-            console.log('error decoding audio data: ' + e);
-        }
-    );
+    reverbGain.gain.value = DefaultParams.reverbGain;
+    reverbNode.buffer = createImpulseResponse(audioContext, 2, 2, false);
+    reverbNode.normalize = true;
 
     // configure filter lfo
     lfo1.type = WaveformEnum.SINE;

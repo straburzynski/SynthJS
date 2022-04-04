@@ -8,6 +8,7 @@ import { AVAILABLE_FILTERS } from '../../consts/AvailableFilters';
 import FrequencyComponent from '../FrequencyComponent/FrequencyComponent';
 import RangeInput from '../shared/RangeInput/RangeInput';
 import { SynthEngineModel } from '../../models/SynthEngineModel';
+import { createImpulseResponse } from '../../consts/ImpulseResponse';
 import { Note } from '@tonaljs/tonal';
 import './synthComponent.scss';
 
@@ -35,6 +36,8 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
 
     const [delayTime, setDelayTime] = useState<number>(DefaultParams.delayTime);
     const [delayFeedback, setDelayFeedback] = useState<number>(DefaultParams.delayFeedback);
+
+    const [reverbLength, setReverbLength] = useState<number>(2);
 
     const [currentNote, setCurrentNote] = useState<string>();
     const canvasRef = useRef<any>();
@@ -196,6 +199,13 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
             synthEngine.current.audioContext.currentTime + 0.01
         );
         setDelayFeedback(changedDelayFeedback);
+    };
+
+    const handleReverbLengthChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const changedReverbLength: number = event.target.valueAsNumber;
+        console.log('reverb length: ', changedReverbLength);
+        synthEngine.current.reverbNode.buffer = createImpulseResponse(synthEngine.current.audioContext, reverbLength, 2, false);
+        setReverbLength(changedReverbLength);
     };
 
     const handleFilterTypeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -491,8 +501,20 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
                 volumeNode={synthEngine.current.reverbGain}
                 min={DefaultParams.reverbGainMin}
                 max={DefaultParams.reverbGainMax}
+                initialState={DefaultParams.reverbGain}
                 step={0.1}
             />
+            <input
+                type="range"
+                id="reverb-length-control"
+                name="reverb-length-control"
+                min={0.1}
+                max={5}
+                step={0.1}
+                value={reverbLength}
+                onChange={handleReverbLengthChange}
+            />
+            <label htmlFor="reverb-length-control">Reverb length: {reverbLength}s</label>
             <br />
             <hr />
             <VolumeComponent
