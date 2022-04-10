@@ -29,10 +29,7 @@ const VolumeComponent: FC<VolumeComponentProps> = ({
 
     return (
         <div>
-            <p>
-                {name}: {volume}
-            </p>
-            <RangeInput min={min} max={max} step={step} value={volume} onChange={handleVolumeChange} />
+            <RangeInput min={min} max={max} step={step} value={volume} onChange={handleVolumeChange} />  {name}: {volume}
             <br />
         </div>
     );

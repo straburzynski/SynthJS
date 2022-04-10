@@ -502,67 +502,75 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
             </div>
             <br />
             <hr />
-            <p>Delay</p>
-            <input
-                type="range"
-                id="delay-time-control"
-                name="delay-time-control"
-                min={DefaultParams.delayTimeMin}
-                max={DefaultParams.delayTimeMax}
-                step={0.1}
-                value={delayTime}
-                onChange={handleDelayTimeChange}
-            />
-            <label htmlFor="delay-time-control">Delay time in: {delayTime}s</label>
+            <div className="columns">
+                <div className="column-33">
+                    <p>Delay</p>
+                    <input
+                        type="range"
+                        id="delay-time-control"
+                        name="delay-time-control"
+                        min={DefaultParams.delayTimeMin}
+                        max={DefaultParams.delayTimeMax}
+                        step={0.1}
+                        value={delayTime}
+                        onChange={handleDelayTimeChange}
+                    />
+                    <label htmlFor="delay-time-control">Delay time in: {delayTime}s</label>
+                    <br />
+                    <input
+                        type="range"
+                        id="delay-feedback-control"
+                        name="delay-feedback-control"
+                        min={DefaultParams.delayFeedbackMin}
+                        max={DefaultParams.delayFeedbackMax}
+                        step={0.1}
+                        value={delayFeedback}
+                        onChange={handleDelayFeedbackChange}
+                    />
+                    <label htmlFor="delay-feedback-control">Delay feedback: {delayFeedback * 100}%</label>
+                </div>
+                <div className="column-33">
+                    <p>Reverb</p>
+                    <VolumeComponent
+                        name={'Reverb'}
+                        volumeNode={synthEngine.current.reverbGain}
+                        min={DefaultParams.reverbGainMin}
+                        max={DefaultParams.reverbGainMax}
+                        initialState={DefaultParams.reverbGain}
+                        step={0.1}
+                    />
+                    <input
+                        type="range"
+                        id="reverb-length-control"
+                        name="reverb-length-control"
+                        min={0.1}
+                        max={5}
+                        step={0.1}
+                        value={reverbLength}
+                        onChange={handleReverbLengthChange}
+                    />
+                    <label htmlFor="reverb-length-control">Reverb length: {reverbLength}s</label>
+                </div>
+                <div className="column-33">
+                    <p>Distortion</p>
+                    <label className="distortion-switch">
+                        <input type="checkbox" checked={distortionActive} onChange={handleDistortionActiveChange} />
+                    </label>
+                    <br />
+                    <input
+                        type="range"
+                        id="distortion-control"
+                        name="distortion-control"
+                        min={0}
+                        max={40}
+                        step={1}
+                        value={distortionGain}
+                        onChange={handleDistortionGainChange}
+                    />
+                    <label htmlFor="distortion-control">Distortion gain: {distortionGain}</label>
+                </div>
+            </div>
             <br />
-            <input
-                type="range"
-                id="delay-feedback-control"
-                name="delay-feedback-control"
-                min={DefaultParams.delayFeedbackMin}
-                max={DefaultParams.delayFeedbackMax}
-                step={0.1}
-                value={delayFeedback}
-                onChange={handleDelayFeedbackChange}
-            />
-            <label htmlFor="delay-feedback-control">Delay feedback: {delayFeedback * 100}%</label>
-            <br />
-            <VolumeComponent
-                name={'Reverb'}
-                volumeNode={synthEngine.current.reverbGain}
-                min={DefaultParams.reverbGainMin}
-                max={DefaultParams.reverbGainMax}
-                initialState={DefaultParams.reverbGain}
-                step={0.1}
-            />
-            <input
-                type="range"
-                id="reverb-length-control"
-                name="reverb-length-control"
-                min={0.1}
-                max={5}
-                step={0.1}
-                value={reverbLength}
-                onChange={handleReverbLengthChange}
-            />
-            <label htmlFor="reverb-length-control">Reverb length: {reverbLength}s</label>
-            <br />
-            <p>Distortion</p>
-            <label className="distortion-switch">
-                <input type="checkbox" checked={distortionActive} onChange={handleDistortionActiveChange} />
-            </label>
-            <br />
-            <input
-                type="range"
-                id="distortion-control"
-                name="distortion-control"
-                min={0}
-                max={40}
-                step={1}
-                value={distortionGain}
-                onChange={handleDistortionGainChange}
-            />
-            <label htmlFor="distortion-control">Distortion gain: {distortionGain}</label>
             <hr />
             <VolumeComponent
                 name={'Master value'}
