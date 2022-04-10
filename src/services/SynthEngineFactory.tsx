@@ -1,7 +1,7 @@
 import { SynthEngineModel } from '../models/SynthEngineModel';
 import { DefaultParams } from '../consts/DefaultParams';
 import { WaveformEnum } from '../models/WaveformEnum';
-import { createImpulseResponse } from '../consts/ImpulseResponse';
+import { createImpulseResponse } from './ImpulseResponseGenerator';
 
 const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
 
@@ -14,7 +14,6 @@ export const createSynthEngine = (): SynthEngineModel => {
     // create oscillators
     const primaryVco = audioContext.createOscillator();
     const secondaryVco = audioContext.createOscillator();
-    // todo: create primary and secondary detune
 
     // create adsr's and vca's
     let primaryAdsr = audioContext.createGain();
@@ -24,6 +23,9 @@ export const createSynthEngine = (): SynthEngineModel => {
 
     // create filter
     let filter = audioContext.createBiquadFilter();
+
+    // create distortion
+    const distortion = audioContext.createWaveShaper()
 
     // create analyser
     const analyser = audioContext.createAnalyser();
@@ -88,7 +90,7 @@ export const createSynthEngine = (): SynthEngineModel => {
     filter.connect(delayNode).connect(delayFeedback).connect(filter); // delay
     lfo1.connect(lfo1Gain).connect(filter.detune);
     lfo2.connect(lfo2Gain).connect(masterVca.gain);
-    filter.connect(masterVca).connect(limiter).connect(analyser).connect(audioContext.destination);
+    filter.connect(distortion).connect(masterVca).connect(limiter).connect(analyser).connect(audioContext.destination);
 
     masterVca.connect(reverbGain).connect(reverbNode).connect(limiter); // reverb
 
@@ -105,6 +107,7 @@ export const createSynthEngine = (): SynthEngineModel => {
         primaryVca: primaryVca,
         secondaryVca: secondaryVca,
         filter: filter,
+        distortion: distortion,
         reverbNode: reverbNode,
         reverbGain: reverbGain,
         lfo1: lfo1,

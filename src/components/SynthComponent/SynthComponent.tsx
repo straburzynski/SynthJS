@@ -8,7 +8,8 @@ import { AVAILABLE_FILTERS } from '../../consts/AvailableFilters';
 import FrequencyComponent from '../FrequencyComponent/FrequencyComponent';
 import RangeInput from '../shared/RangeInput/RangeInput';
 import { SynthEngineModel } from '../../models/SynthEngineModel';
-import { createImpulseResponse } from '../../consts/ImpulseResponse';
+import { createImpulseResponse } from '../../services/ImpulseResponseGenerator';
+import { createDistortionCurve } from '../../services/DistortionCurveGenerator';
 import { Note } from '@tonaljs/tonal';
 import './synthComponent.scss';
 
@@ -33,6 +34,9 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
     const [decay, setDecay] = useState<number>(DefaultParams.decay);
     const [release, setRelease] = useState<number>(DefaultParams.release);
     const [sustain, setSustain] = useState<number>(DefaultParams.sustain);
+
+    const [distortionActive, setDistortionActive] = useState<boolean>(false);
+    const [distortionGain, setDistortionGain] = useState<number>(0);
 
     const [delayTime, setDelayTime] = useState<number>(DefaultParams.delayTime);
     const [delayFeedback, setDelayFeedback] = useState<number>(DefaultParams.delayFeedback);
@@ -204,8 +208,35 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
     const handleReverbLengthChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const changedReverbLength: number = event.target.valueAsNumber;
         console.log('reverb length: ', changedReverbLength);
-        synthEngine.current.reverbNode.buffer = createImpulseResponse(synthEngine.current.audioContext, reverbLength, 2, false);
+        synthEngine.current.reverbNode.buffer = createImpulseResponse(
+            synthEngine.current.audioContext,
+            reverbLength,
+            2,
+            false
+        );
         setReverbLength(changedReverbLength);
+    };
+
+    const handleDistortionGainChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const changedDistortionGain: number = event.target.valueAsNumber;
+        console.log('distortion gain: ', changedDistortionGain);
+        if (distortionActive) {
+            synthEngine.current.distortion.curve = createDistortionCurve(changedDistortionGain);
+        }
+        setDistortionGain(changedDistortionGain);
+    };
+
+    const handleDistortionActiveChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const changedDistortionActive: boolean = event.target.checked;
+        console.log('distortion active: ', changedDistortionActive);
+        if (changedDistortionActive) {
+            console.log('distortion on');
+            synthEngine.current.distortion.curve = createDistortionCurve(distortionGain);
+        } else {
+            console.log('distortion off');
+            synthEngine.current.distortion.curve = null;
+        }
+        setDistortionActive(changedDistortionActive);
     };
 
     const handleFilterTypeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -516,6 +547,22 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
             />
             <label htmlFor="reverb-length-control">Reverb length: {reverbLength}s</label>
             <br />
+            <p>Distortion</p>
+            <label className="distortion-switch">
+                <input type="checkbox" checked={distortionActive} onChange={handleDistortionActiveChange} />
+            </label>
+            <br />
+            <input
+                type="range"
+                id="distortion-control"
+                name="distortion-control"
+                min={0}
+                max={40}
+                step={1}
+                value={distortionGain}
+                onChange={handleDistortionGainChange}
+            />
+            <label htmlFor="distortion-control">Distortion gain: {distortionGain}</label>
             <hr />
             <VolumeComponent
                 name={'Master value'}

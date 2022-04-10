@@ -1,6 +1,8 @@
 import { WaveformEnum } from '../models/WaveformEnum';
 import { FilterTypeEnum } from '../models/FilterTypeEnum';
 
+const oscillators = 2;
+
 export const DefaultParams = {
     primaryWaveform: WaveformEnum.SAWTOOTH,
     secondaryWaveform: WaveformEnum.SQUARE,
@@ -19,7 +21,7 @@ export const DefaultParams = {
 
     gain: 0.5,
     gainMin: 0,
-    gainMax: 0.5,
+    gainMax: 1 / oscillators,
     masterVcaGain: 0.7,
     masterVcaGainMax: 1,
 
@@ -48,5 +50,5 @@ export const DefaultParams = {
 
     qualityFactor: 0,
     qualityFactorMin: 0,
-    qualityFactorMax: 10,
+    qualityFactorMax: 20,
 };
