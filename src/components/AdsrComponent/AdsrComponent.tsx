@@ -1,5 +1,6 @@
 import React, { FC } from 'react';
 import { DefaultParams } from '../../consts/DefaultParams';
+import './adsrComponent.scss';
 
 type AdsrComponentProps = {
     attack: number;
@@ -12,68 +13,82 @@ type AdsrComponentProps = {
     onHandleReleaseChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 };
 
-const AdsrComponent: FC<AdsrComponentProps> = ({
-    attack,
-    onHandleAttackChange,
-    decay,
-    onHandleDecayChange,
-    sustain,
-    onHandleSustainChange,
-    release,
-    onHandleReleaseChange,
-}) => {
+const AdsrComponent: FC<AdsrComponentProps> = (
+    {
+        attack,
+        onHandleAttackChange,
+        decay,
+        onHandleDecayChange,
+        sustain,
+        onHandleSustainChange,
+        release,
+        onHandleReleaseChange,
+    },
+) => {
     return (
-        <>
+
+        <div className='component-wrapper'>
             <p>ADSR Control</p>
-            <input
-                type="range"
-                id="attack-control"
-                name="attack-control"
-                min={DefaultParams.adsrMin}
-                max={DefaultParams.adsrMax}
-                step={0.05}
-                value={attack}
-                onChange={onHandleAttackChange}
-            />
-            <label htmlFor="attack-control">Attack Time: {attack}</label>
-            <br />
-            <input
-                type="range"
-                id="decay-control"
-                name="decay-control"
-                min={DefaultParams.adsrMin}
-                max={DefaultParams.adsrMax}
-                step={0.05}
-                value={decay}
-                onChange={onHandleDecayChange}
-            />
-            <label htmlFor="decay-control">Decay Time: {decay}</label>
-            <br />
-            <input
-                type="range"
-                id="sustain-control"
-                name="sustain-control"
-                min={DefaultParams.adsrMin}
-                max={DefaultParams.adsrMax}
-                step={0.05}
-                value={sustain}
-                onChange={onHandleSustainChange}
-            />
-            <label htmlFor="sustain-control">Sustain Level: {sustain}</label>
-            <br />
-            <input
-                type="range"
-                id="release-control"
-                name="release-control"
-                min={DefaultParams.adsrMin}
-                max={DefaultParams.adsrMax}
-                step={0.05}
-                value={release}
-                onChange={onHandleReleaseChange}
-            />
-            <label htmlFor="release-control">Release Time: {release}</label>
-            <br />
-        </>
+            <div className='sliders'>
+                <div className='slider'>
+                    <input
+                        type='range'
+                        id='attack-control'
+                        name='attack-control'
+                        className='vertical-slider'
+                        min={DefaultParams.adsrMin}
+                        max={DefaultParams.adsrMax}
+                        step={0.05}
+                        value={attack}
+                        onChange={onHandleAttackChange}
+                    />
+                    <label htmlFor='attack-control'>Attack Time: {attack}</label>
+
+                </div>
+                <div className='slider'>
+                    <input
+                        type='range'
+                        id='decay-control'
+                        name='decay-control'
+                        className='vertical-slider'
+                        min={DefaultParams.adsrMin}
+                        max={DefaultParams.adsrMax}
+                        step={0.05}
+                        value={decay}
+                        onChange={onHandleDecayChange}
+                    />
+                    <label htmlFor='decay-control'>Decay Time: {decay}</label>
+                </div>
+                <div className='slider'>
+                    <input
+                        type='range'
+                        id='sustain-control'
+                        name='sustain-control'
+                        className='vertical-slider'
+                        min={DefaultParams.adsrMin}
+                        max={DefaultParams.adsrMax}
+                        step={0.05}
+                        value={sustain}
+                        onChange={onHandleSustainChange}
+                    />
+                    <label htmlFor='sustain-control'>Sustain Level: {sustain}</label>
+                </div>
+                <div className='slider'>
+                    <input
+                        type='range'
+                        id='release-control'
+                        name='release-control'
+                        className='vertical-slider'
+                        min={DefaultParams.adsrMin}
+                        max={DefaultParams.adsrMax}
+                        step={0.05}
+                        value={release}
+                        onChange={onHandleReleaseChange}
+                    />
+                    <label htmlFor='release-control'>Release Time: {release}</label>
+                </div>
+            </div>
+        </div>
     );
 };
 

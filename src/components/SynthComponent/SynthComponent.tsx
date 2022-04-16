@@ -294,7 +294,7 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
     };
 
     return (
-        <div className="App">
+        <div className="synth-wrapper">
             <br />
             <KeyboardComponent onHandleKey={handleKey} />
             <br />
