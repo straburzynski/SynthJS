@@ -1,6 +1,6 @@
 import React, { FC } from 'react';
 import { DefaultParams } from '../../consts/DefaultParams';
-import './adsrComponent.scss';
+import styles from './AdsrComponent.module.scss';
 
 type AdsrComponentProps = {
     attack: number;
@@ -28,8 +28,8 @@ const AdsrComponent: FC<AdsrComponentProps> = (
     return (
         <div className='component-wrapper'>
             <p>ADSR Control</p>
-            <div className='columns fader-scale'>
-                <div className='column faders'>
+            <div className='columns vertical-fader-scale'>
+                <div className={'column-4 ' + styles.faders}>
                     <input
                         type='range'
                         id='attack-control'
@@ -42,7 +42,7 @@ const AdsrComponent: FC<AdsrComponentProps> = (
                         onChange={onHandleAttackChange}
                     />
                 </div>
-                <div className='column'>
+                <div className='column-4'>
                     <input
                         type='range'
                         id='decay-control'
@@ -55,7 +55,7 @@ const AdsrComponent: FC<AdsrComponentProps> = (
                         onChange={onHandleDecayChange}
                     />
                 </div>
-                <div className='column'>
+                <div className='column-4'>
                     <input
                         type='range'
                         id='sustain-control'
@@ -68,7 +68,7 @@ const AdsrComponent: FC<AdsrComponentProps> = (
                         onChange={onHandleSustainChange}
                     />
                 </div>
-                <div className='column'>
+                <div className='column-4'>
                     <input
                         type='range'
                         id='release-control'
@@ -83,16 +83,16 @@ const AdsrComponent: FC<AdsrComponentProps> = (
                 </div>
             </div>
             <div className='columns'>
-                <div className='column'>
+                <div className='column-4'>
                     <label htmlFor='attack-control'>Attack Time: {attack}</label>
                 </div>
-                <div className='column'>
+                <div className='column-4'>
                     <label htmlFor='decay-control'>Decay Time: {decay}</label>
                 </div>
-                <div className='column'>
+                <div className='column-4'>
                     <label htmlFor='sustain-control'>Sustain Level: {sustain}</label>
                 </div>
-                <div className='column'>
+                <div className='column-4'>
                     <label htmlFor='release-control'>Release Time: {release}</label>
                 </div>
             </div>

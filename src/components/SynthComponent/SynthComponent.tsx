@@ -11,14 +11,15 @@ import { SynthEngineModel } from '../../models/SynthEngineModel';
 import { createImpulseResponse } from '../../services/ImpulseResponseGenerator';
 import { createDistortionCurve } from '../../services/DistortionCurveGenerator';
 import { Note } from '@tonaljs/tonal';
+import { OscillatorComponent } from '../OscillatorComponent/OscillatorComponent';
 import './synthComponent.scss';
 
 const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: MutableRefObject<SynthEngineModel>) => {
     const [filterType, setFilterType] = useState<BiquadFilterType>(DefaultParams.filterType);
     const [filterQualityFactor, setFilterQualityFactor] = useState<number>(DefaultParams.qualityFactor);
+
     const [primaryWaveform, setPrimaryWaveform] = useState<OscillatorType>(DefaultParams.primaryWaveform);
     const [secondaryWaveform, setSecondaryWaveform] = useState<OscillatorType>(DefaultParams.secondaryWaveform);
-
     const [primaryVcoDetune, setPrimaryVcoDetune] = useState<number>(DefaultParams.detune);
     const [secondaryVcoDetune, setSecondaryVcoDetune] = useState<number>(DefaultParams.detune);
 
@@ -58,7 +59,6 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
                 const width = canvasRef.current.width;
                 const height = canvasRef.current.height;
                 const chh = Math.round(height * 0.5);
-                canvas.fillStyle = 'red';
                 canvas.lineWidth = 2;
                 canvas.strokeStyle = 'red';
                 requestAnimationFrame(draw);
@@ -177,7 +177,7 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
     const handleWaveformChange = (
         setWaveform: Function,
         oscillatorNode: OscillatorNode,
-        event: React.ChangeEvent<HTMLInputElement>
+        event: React.ChangeEvent<HTMLInputElement>,
     ) => {
         const selectedWaveform = event.target.value as OscillatorType;
         console.log(event.target.name, selectedWaveform);
@@ -190,7 +190,7 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
         console.log('delay time: ', changedDelayTime);
         synthEngine.current.delayNode.delayTime.linearRampToValueAtTime(
             changedDelayTime,
-            synthEngine.current.audioContext.currentTime + 0.01
+            synthEngine.current.audioContext.currentTime + 0.01,
         );
         setDelayTime(changedDelayTime);
     };
@@ -200,7 +200,7 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
         console.log('delay feedback: ', changedDelayFeedback);
         synthEngine.current.delayFeedback.gain.linearRampToValueAtTime(
             changedDelayFeedback,
-            synthEngine.current.audioContext.currentTime + 0.01
+            synthEngine.current.audioContext.currentTime + 0.01,
         );
         setDelayFeedback(changedDelayFeedback);
     };
@@ -212,7 +212,7 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
             synthEngine.current.audioContext,
             reverbLength,
             2,
-            false
+            false,
         );
         setReverbLength(changedReverbLength);
     };
@@ -281,18 +281,6 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
         setFilterQualityFactor(selectedQualityFactor);
     };
 
-    const handleDetuneChange = (
-        event: React.ChangeEvent<HTMLInputElement>,
-        setDetune: Function,
-        oscNode: OscillatorNode
-    ) => {
-        const changedDetune: number = event.target.valueAsNumber;
-        console.log('detune change: ', changedDetune);
-        setDetune(changedDetune);
-        oscNode.detune.setValueAtTime(changedDetune, synthEngine.current.audioContext.currentTime); // value in cents
-        // node.detune.value = changedDetune;
-    };
-
     return (
         <div className="synth-wrapper">
             <br />
@@ -311,74 +299,24 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
             <p>Oscillators</p>
             <div className="columns">
                 <div className="column-33">
-                    <p>Primary OSC</p>
-                    {Object.values(WaveformEnum).map((w, i) => {
-                        return (
-                            <div key={i}>
-                                <input
-                                    type="radio"
-                                    id={w + '-wave-primary'}
-                                    name="primary-waveform"
-                                    value={w}
-                                    onChange={(e) =>
-                                        handleWaveformChange(setPrimaryWaveform, synthEngine.current.primaryVco, e)
-                                    }
-                                    checked={w === primaryWaveform}
-                                />
-                                <label htmlFor={w + '-wave-primary'}>{w}</label>
-                                <br />
-                            </div>
-                        );
-                    })}
-                    <br />
-                    <VolumeComponent name={'Primary VCA'} volumeNode={synthEngine.current.primaryVca} />
-                    <div>
-                        <RangeInput
-                            min={DefaultParams.detuneMin}
-                            max={DefaultParams.detuneMax}
-                            step={0.5}
-                            value={primaryVcoDetune}
-                            onChange={(e) => handleDetuneChange(e, setPrimaryVcoDetune, synthEngine.current.primaryVco)}
-                        />
-                        {'detune'}: {primaryVcoDetune}
-                        <br />
-                    </div>
+                    <OscillatorComponent
+                        synthEngine={synthEngine}
+                        primary={true}
+                        detune={primaryVcoDetune}
+                        setDetune={setPrimaryVcoDetune}
+                        waveform={primaryWaveform}
+                        setWaveform={setPrimaryWaveform}
+                    />
                 </div>
                 <div className="column-33">
-                    <p>Secondary OSC</p>
-                    {Object.values(WaveformEnum).map((w, i) => {
-                        return (
-                            <div key={i}>
-                                <input
-                                    type="radio"
-                                    id={w + '-wave-secondary'}
-                                    name="secondary-waveform"
-                                    value={w}
-                                    onChange={(e) =>
-                                        handleWaveformChange(setSecondaryWaveform, synthEngine.current.secondaryVco, e)
-                                    }
-                                    checked={w === secondaryWaveform}
-                                />
-                                <label htmlFor={w + '-wave-secondary'}>{w}</label>
-                                <br />
-                            </div>
-                        );
-                    })}
-                    <br />
-                    <VolumeComponent name={'Secondary VCA'} volumeNode={synthEngine.current.secondaryVca} />
-                    <div>
-                        <RangeInput
-                            min={DefaultParams.detuneMin}
-                            max={DefaultParams.detuneMax}
-                            step={0.5}
-                            value={secondaryVcoDetune}
-                            onChange={(e) =>
-                                handleDetuneChange(e, setSecondaryVcoDetune, synthEngine.current.secondaryVco)
-                            }
-                        />
-                        {'detune'}: {secondaryVcoDetune}
-                        <br />
-                    </div>
+                    <OscillatorComponent
+                        synthEngine={synthEngine}
+                        primary={false}
+                        detune={secondaryVcoDetune}
+                        setDetune={setSecondaryVcoDetune}
+                        waveform={secondaryWaveform}
+                        setWaveform={setSecondaryWaveform}
+                    />
                 </div>
                 <div className="column-33">
                     <AdsrComponent
