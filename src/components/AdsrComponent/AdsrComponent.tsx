@@ -26,11 +26,10 @@ const AdsrComponent: FC<AdsrComponentProps> = (
     },
 ) => {
     return (
-
         <div className='component-wrapper'>
             <p>ADSR Control</p>
-            <div className='sliders'>
-                <div className='slider'>
+            <div className='columns fader-scale'>
+                <div className='column faders'>
                     <input
                         type='range'
                         id='attack-control'
@@ -42,10 +41,8 @@ const AdsrComponent: FC<AdsrComponentProps> = (
                         value={attack}
                         onChange={onHandleAttackChange}
                     />
-                    <label htmlFor='attack-control'>Attack Time: {attack}</label>
-
                 </div>
-                <div className='slider'>
+                <div className='column'>
                     <input
                         type='range'
                         id='decay-control'
@@ -57,9 +54,8 @@ const AdsrComponent: FC<AdsrComponentProps> = (
                         value={decay}
                         onChange={onHandleDecayChange}
                     />
-                    <label htmlFor='decay-control'>Decay Time: {decay}</label>
                 </div>
-                <div className='slider'>
+                <div className='column'>
                     <input
                         type='range'
                         id='sustain-control'
@@ -71,9 +67,8 @@ const AdsrComponent: FC<AdsrComponentProps> = (
                         value={sustain}
                         onChange={onHandleSustainChange}
                     />
-                    <label htmlFor='sustain-control'>Sustain Level: {sustain}</label>
                 </div>
-                <div className='slider'>
+                <div className='column'>
                     <input
                         type='range'
                         id='release-control'
@@ -85,6 +80,19 @@ const AdsrComponent: FC<AdsrComponentProps> = (
                         value={release}
                         onChange={onHandleReleaseChange}
                     />
+                </div>
+            </div>
+            <div className='columns'>
+                <div className='column'>
+                    <label htmlFor='attack-control'>Attack Time: {attack}</label>
+                </div>
+                <div className='column'>
+                    <label htmlFor='decay-control'>Decay Time: {decay}</label>
+                </div>
+                <div className='column'>
+                    <label htmlFor='sustain-control'>Sustain Level: {sustain}</label>
+                </div>
+                <div className='column'>
                     <label htmlFor='release-control'>Release Time: {release}</label>
                 </div>
             </div>
