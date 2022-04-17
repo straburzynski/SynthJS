@@ -13,6 +13,7 @@ import { createDistortionCurve } from '../../services/DistortionCurveGenerator';
 import { Note } from '@tonaljs/tonal';
 import { OscillatorComponent } from '../OscillatorComponent/OscillatorComponent';
 import './synthComponent.scss';
+import CurrentNoteComponent from '../CurrentNoteComponent/CurrentNoteComponent';
 
 const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: MutableRefObject<SynthEngineModel>) => {
     const [filterType, setFilterType] = useState<BiquadFilterType>(DefaultParams.filterType);
@@ -150,30 +151,6 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
         killOscillators(now + r, note);
     }
 
-    const handleAttackChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const changedAttack: number = event.target.valueAsNumber;
-        console.log('attack: ', changedAttack);
-        setAttack(changedAttack);
-    };
-
-    const handleDecayChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const changedDecay: number = event.target.valueAsNumber;
-        console.log('decay: ', changedDecay);
-        setDecay(changedDecay);
-    };
-
-    const handleSustainChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const changedSustain: number = event.target.valueAsNumber;
-        console.log('sustain: ', changedSustain);
-        setSustain(changedSustain);
-    };
-
-    const handleReleaseChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const changedRelease: number = event.target.valueAsNumber;
-        console.log('release: ', changedRelease);
-        setRelease(changedRelease);
-    };
-
     const handleWaveformChange = (
         setWaveform: Function,
         oscillatorNode: OscillatorNode,
@@ -288,13 +265,7 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
             <br />
             <canvas className="visualizer" width="500" height="100" ref={canvasRef} />
             <hr />
-            {currentNote ? (
-                <p>
-                    <strong>{currentNote}</strong> [<i> {Note.get(currentNote).freq} Hz</i> ]
-                </p>
-            ) : (
-                <p>---</p>
-            )}
+            <CurrentNoteComponent currentNote={currentNote} />
             <hr />
             <p>Oscillators</p>
             <div className="columns">
@@ -321,13 +292,13 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
                 <div className="column-33">
                     <AdsrComponent
                         attack={attack}
-                        onHandleAttackChange={handleAttackChange}
+                        setAttack={setAttack}
                         decay={decay}
-                        onHandleDecayChange={handleDecayChange}
+                        setDecay={setDecay}
                         sustain={sustain}
-                        onHandleSustainChange={handleSustainChange}
+                        setSustain={setSustain}
                         release={release}
-                        onHandleReleaseChange={handleReleaseChange}
+                        setRelease={setRelease}
                     />
                 </div>
             </div>

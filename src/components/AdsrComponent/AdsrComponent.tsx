@@ -4,27 +4,58 @@ import styles from './AdsrComponent.module.scss';
 
 type AdsrComponentProps = {
     attack: number;
-    onHandleAttackChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    setAttack: Function;
     decay: number;
-    onHandleDecayChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    setDecay: Function;
     sustain: number;
-    onHandleSustainChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    setSustain: Function;
     release: number;
-    onHandleReleaseChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    setRelease: Function;
 };
 
 const AdsrComponent: FC<AdsrComponentProps> = (
     {
         attack,
-        onHandleAttackChange,
+        setAttack,
         decay,
-        onHandleDecayChange,
+        setDecay,
         sustain,
-        onHandleSustainChange,
+        setSustain,
         release,
-        onHandleReleaseChange,
+        setRelease,
     },
 ) => {
+    const handleAttackChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const changedAttack: number = event.target.valueAsNumber;
+        console.log('attack: ', changedAttack);
+        setAttack(changedAttack);
+    };
+
+    const handleDecayChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const changedDecay: number = event.target.valueAsNumber;
+        console.log('decay: ', changedDecay);
+        setDecay(changedDecay);
+    };
+
+    const handleSustainChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const changedSustain: number = event.target.valueAsNumber;
+        console.log('sustain: ', changedSustain);
+        setSustain(changedSustain);
+    };
+
+    const handleReleaseChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const changedRelease: number = event.target.valueAsNumber;
+        console.log('release: ', changedRelease);
+        setRelease(changedRelease);
+    };
+
+    const handleDoubleClick = (event: React.MouseEvent<HTMLInputElement>, setterFunction: Function, value: number) => {
+        console.log('double click -> reset to default value: ', event.currentTarget.id);
+        if (event.detail === 2) {
+            setterFunction(value)
+        }
+    };
+
     return (
         <div className='component-wrapper'>
             <p>ADSR Control</p>
@@ -39,7 +70,8 @@ const AdsrComponent: FC<AdsrComponentProps> = (
                         max={DefaultParams.adsrMax}
                         step={0.05}
                         value={attack}
-                        onChange={onHandleAttackChange}
+                        onChange={handleAttackChange}
+                        onClick={(e) => handleDoubleClick(e, setAttack, DefaultParams.attack)}
                     />
                 </div>
                 <div className='column-4'>
@@ -52,7 +84,8 @@ const AdsrComponent: FC<AdsrComponentProps> = (
                         max={DefaultParams.adsrMax}
                         step={0.05}
                         value={decay}
-                        onChange={onHandleDecayChange}
+                        onChange={handleDecayChange}
+                        onClick={(e) => handleDoubleClick(e, setDecay, DefaultParams.decay)}
                     />
                 </div>
                 <div className='column-4'>
@@ -65,7 +98,8 @@ const AdsrComponent: FC<AdsrComponentProps> = (
                         max={DefaultParams.adsrMax}
                         step={0.05}
                         value={sustain}
-                        onChange={onHandleSustainChange}
+                        onChange={handleSustainChange}
+                        onClick={(e) => handleDoubleClick(e, setSustain, DefaultParams.sustain)}
                     />
                 </div>
                 <div className='column-4'>
@@ -78,7 +112,8 @@ const AdsrComponent: FC<AdsrComponentProps> = (
                         max={DefaultParams.adsrMax}
                         step={0.05}
                         value={release}
-                        onChange={onHandleReleaseChange}
+                        onChange={handleReleaseChange}
+                        onClick={(e) => handleDoubleClick(e, setRelease, DefaultParams.release)}
                     />
                 </div>
             </div>
