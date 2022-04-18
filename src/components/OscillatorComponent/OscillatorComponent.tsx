@@ -2,8 +2,9 @@ import React, { FC, useState } from 'react';
 import { WaveformEnum } from '../../models/WaveformEnum';
 import { DefaultParams } from '../../consts/DefaultParams';
 import { SynthEngineModel } from '../../models/SynthEngineModel';
-import './OscillatorComponent.scss';
 import VerticalSliderComponent from '../shared/VerticalSliderComponent/VerticalSliderComponent';
+import styles from './OscillatorComponent.module.scss';
+import WaveformIconComponent from '../shared/WaveformIconComponent/WaveformIconComponent';
 
 type OscillatorComponentProps = {
     synthEngine: React.MutableRefObject<SynthEngineModel>;
@@ -25,11 +26,12 @@ export const OscillatorComponent: FC<OscillatorComponentProps> = ({
 
     const handleWaveformChange = (
         setWaveform: Function,
-        oscillatorNode: OscillatorNode,
+        primary: boolean,
         event: React.ChangeEvent<HTMLInputElement>
     ) => {
         const selectedWaveform = event.target.value as OscillatorType;
         console.log(event.target.name, selectedWaveform);
+        const oscillatorNode = primary ? synthEngine.current.primaryVco : synthEngine.current.secondaryVco;
         oscillatorNode.type = selectedWaveform;
         setWaveform(selectedWaveform);
     };
@@ -50,35 +52,35 @@ export const OscillatorComponent: FC<OscillatorComponentProps> = ({
     };
 
     return (
-        <div className="component-wrapper oscillator">
+        <div className="component-wrapper">
             <p>{primary ? 'Primary' : 'Secondary'} OSC</p>
             <div className="columns">
-                <div className={`columnDetune flex-75 vertical-container`}>
-                    <div className={'flex-100'}>
-                        {Object.values(WaveformEnum).map((w, i) => {
-                            return (
-                                <div key={i}>
-                                    <input
-                                        type="radio"
-                                        id={w + '-wave-' + (primary ? 'primary' : 'secondary')}
-                                        name={(primary ? 'primary' : 'secondary') + '-waveform'}
-                                        value={w}
-                                        onChange={(e) =>
-                                            handleWaveformChange(
-                                                setWaveform,
-                                                primary
-                                                    ? synthEngine.current.primaryVco
-                                                    : synthEngine.current.secondaryVco,
-                                                e
-                                            )
-                                        }
-                                        checked={w === waveform}
-                                    />
-                                    <label htmlFor={w + '-wave-' + (primary ? 'primary' : 'secondary')}>{w}</label>
-                                    <br />
-                                </div>
-                            );
-                        })}
+                <div className={`${styles.columnDetune} ${styles.verticalContainer} flex-75`}>
+                    <div className={styles.flexContainer}>
+                        <div className={styles.iconsContainer}>
+                            {Object.values(WaveformEnum).map((w, i) => {
+                                return (
+                                    <label
+                                        htmlFor={w + '-wave-' + (primary ? 'primary' : 'secondary')}
+                                        className={styles.iconLabel}
+                                        key={i}
+                                    >
+                                        <input
+                                            className={styles.iconInput}
+                                            type="radio"
+                                            id={w + '-wave-' + (primary ? 'primary' : 'secondary')}
+                                            name={(primary ? 'primary' : 'secondary') + '-waveform'}
+                                            value={w}
+                                            onChange={(e) => handleWaveformChange(setWaveform, primary, e)}
+                                            checked={w === waveform}
+                                        />
+                                        <span>
+                                            <WaveformIconComponent waveform={w} />
+                                        </span>
+                                    </label>
+                                );
+                            })}
+                        </div>
                     </div>
                     <div className={'flex-100'}>
                         <input
@@ -95,7 +97,7 @@ export const OscillatorComponent: FC<OscillatorComponentProps> = ({
                         />
                     </div>
                 </div>
-                <div className={`columnVolume flex-25 vertical-fader-scale`}>
+                <div className={`${styles.columnVolume} flex-25 vertical-fader-scale`}>
                     <VerticalSliderComponent
                         name={primary ? 'primary-vca' : 'secondary-vca'}
                         minValue={DefaultParams.gainMin}
