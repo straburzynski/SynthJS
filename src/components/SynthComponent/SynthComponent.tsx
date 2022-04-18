@@ -12,9 +12,9 @@ import { createImpulseResponse } from '../../services/ImpulseResponseGenerator';
 import { createDistortionCurve } from '../../services/DistortionCurveGenerator';
 import { Note } from '@tonaljs/tonal';
 import { OscillatorComponent } from '../OscillatorComponent/OscillatorComponent';
-import './synthComponent.scss';
 import CurrentNoteComponent from '../CurrentNoteComponent/CurrentNoteComponent';
 import MasterVolumeComponent from '../MasterVolumeComponent/MasterVolumeComponent';
+import './synthComponent.scss';
 
 const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: MutableRefObject<SynthEngineModel>) => {
     const [filterType, setFilterType] = useState<BiquadFilterType>(DefaultParams.filterType);
@@ -261,10 +261,17 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
 
     return (
         <div className="synth-wrapper">
+            <div className="container">
+                <div className="flex-100">
+                    <KeyboardComponent onHandleKey={handleKey} />
+                </div>
+                <div className="flex-100">
+                    <canvas className="visualizer" width="500" height="100" ref={canvasRef} />
+                </div>
+            </div>
+
             <br />
-            <KeyboardComponent onHandleKey={handleKey} />
             <br />
-            <canvas className="visualizer" width="500" height="100" ref={canvasRef} />
             <hr />
             <CurrentNoteComponent currentNote={currentNote} />
             <hr />
