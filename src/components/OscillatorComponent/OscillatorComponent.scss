@@ -1,0 +1,18 @@
+.flex-container {
+  display: flex;
+}
+
+.columnDetune {
+  position: relative;
+}
+
+.columnVolume {
+  position: relative;
+}
+
+.vertical-container {
+  background: orangered;
+  display: flex;
+  flex-direction: column;
+}
+

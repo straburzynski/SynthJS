@@ -1,6 +1,7 @@
 import React, { FC } from 'react';
 import { DefaultParams } from '../../consts/DefaultParams';
 import styles from './AdsrComponent.module.scss';
+import VerticalSliderComponent from '../shared/VerticalSliderComponent/VerticalSliderComponent';
 
 type AdsrComponentProps = {
     attack: number;
@@ -13,122 +14,94 @@ type AdsrComponentProps = {
     setRelease: Function;
 };
 
-const AdsrComponent: FC<AdsrComponentProps> = (
-    {
-        attack,
-        setAttack,
-        decay,
-        setDecay,
-        sustain,
-        setSustain,
-        release,
-        setRelease,
-    },
-) => {
-    const handleAttackChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const changedAttack: number = event.target.valueAsNumber;
-        console.log('attack: ', changedAttack);
-        setAttack(changedAttack);
-    };
-
-    const handleDecayChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const changedDecay: number = event.target.valueAsNumber;
-        console.log('decay: ', changedDecay);
-        setDecay(changedDecay);
-    };
-
-    const handleSustainChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const changedSustain: number = event.target.valueAsNumber;
-        console.log('sustain: ', changedSustain);
-        setSustain(changedSustain);
-    };
-
-    const handleReleaseChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const changedRelease: number = event.target.valueAsNumber;
-        console.log('release: ', changedRelease);
-        setRelease(changedRelease);
-    };
-
-    const handleDoubleClick = (event: React.MouseEvent<HTMLInputElement>, setterFunction: Function, value: number) => {
-        console.log('double click -> reset to default value: ', event.currentTarget.id);
-        if (event.detail === 2) {
-            setterFunction(value)
-        }
+const AdsrComponent: FC<AdsrComponentProps> = ({
+    attack,
+    setAttack,
+    decay,
+    setDecay,
+    sustain,
+    setSustain,
+    release,
+    setRelease,
+}) => {
+    const handleAdsrChange = (name: string, changedValue: number, setterFunction: Function) => {
+        console.log(name, changedValue);
+        setterFunction(changedValue);
     };
 
     return (
-        <div className='component-wrapper'>
+        <div className="component-wrapper">
             <p>ADSR Control</p>
-            <div className='columns vertical-fader-scale'>
-                <div className={'column-4 ' + styles.faders}>
-                    <input
-                        type='range'
-                        id='attack-control'
-                        name='attack-control'
-                        className='vertical-slider'
-                        min={DefaultParams.adsrMin}
-                        max={DefaultParams.adsrMax}
-                        step={0.05}
+            <div className="columns vertical-fader-scale">
+                <div className="column-4">
+                    <VerticalSliderComponent
+                        name={'attack'}
+                        minValue={DefaultParams.adsrMin}
+                        maxValue={DefaultParams.adsrMax}
                         value={attack}
-                        onChange={handleAttackChange}
-                        onClick={(e) => handleDoubleClick(e, setAttack, DefaultParams.attack)}
+                        onChange={(changedValue: number) => handleAdsrChange('attack', changedValue, setAttack)}
+                        defaultValue={DefaultParams.attack}
+                        step={0.05}
                     />
                 </div>
-                <div className='column-4'>
-                    <input
-                        type='range'
-                        id='decay-control'
-                        name='decay-control'
-                        className='vertical-slider'
-                        min={DefaultParams.adsrMin}
-                        max={DefaultParams.adsrMax}
-                        step={0.05}
+                <div className="column-4">
+                    <VerticalSliderComponent
+                        name={'decay'}
+                        minValue={DefaultParams.adsrMin}
+                        maxValue={DefaultParams.adsrMax}
                         value={decay}
-                        onChange={handleDecayChange}
-                        onClick={(e) => handleDoubleClick(e, setDecay, DefaultParams.decay)}
+                        onChange={(changedValue: number) => handleAdsrChange('decay', changedValue, setDecay)}
+                        defaultValue={DefaultParams.decay}
+                        step={0.05}
                     />
                 </div>
-                <div className='column-4'>
-                    <input
-                        type='range'
-                        id='sustain-control'
-                        name='sustain-control'
-                        className='vertical-slider'
-                        min={DefaultParams.adsrMin}
-                        max={DefaultParams.adsrMax}
-                        step={0.05}
+                <div className="column-4">
+                    <VerticalSliderComponent
+                        name={'sustain'}
+                        minValue={DefaultParams.adsrMin}
+                        maxValue={DefaultParams.adsrMax}
                         value={sustain}
-                        onChange={handleSustainChange}
-                        onClick={(e) => handleDoubleClick(e, setSustain, DefaultParams.sustain)}
+                        onChange={(changedValue: number) => handleAdsrChange('sustain', changedValue, setSustain)}
+                        defaultValue={DefaultParams.sustain}
+                        step={0.05}
                     />
                 </div>
-                <div className='column-4'>
-                    <input
-                        type='range'
-                        id='release-control'
-                        name='release-control'
-                        className='vertical-slider'
-                        min={DefaultParams.adsrMin}
-                        max={DefaultParams.adsrMax}
-                        step={0.05}
+                <div className="column-4">
+                    <VerticalSliderComponent
+                        name={'release'}
+                        minValue={DefaultParams.adsrMin}
+                        maxValue={DefaultParams.adsrMax}
                         value={release}
-                        onChange={handleReleaseChange}
-                        onClick={(e) => handleDoubleClick(e, setRelease, DefaultParams.release)}
+                        onChange={(changedValue: number) => handleAdsrChange('release', changedValue, setRelease)}
+                        defaultValue={DefaultParams.release}
+                        step={0.05}
                     />
                 </div>
             </div>
-            <div className='columns'>
-                <div className='column-4'>
-                    <label htmlFor='attack-control'>Attack Time: {attack}</label>
+            <div className={'columns ' + styles.textCenter}>
+                <div className="column-4">
+                    <label htmlFor="attack-control">
+                        Attack Time:
+                        <br /> {attack}
+                    </label>
                 </div>
-                <div className='column-4'>
-                    <label htmlFor='decay-control'>Decay Time: {decay}</label>
+                <div className="column-4">
+                    <label htmlFor="decay-control">
+                        Decay Time:
+                        <br /> {decay}
+                    </label>
                 </div>
-                <div className='column-4'>
-                    <label htmlFor='sustain-control'>Sustain Level: {sustain}</label>
+                <div className="column-4">
+                    <label htmlFor="sustain-control">
+                        Sustain Level:
+                        <br /> {sustain}
+                    </label>
                 </div>
-                <div className='column-4'>
-                    <label htmlFor='release-control'>Release Time: {release}</label>
+                <div className="column-4">
+                    <label htmlFor="release-control">
+                        Release Time:
+                        <br /> {release}
+                    </label>
                 </div>
             </div>
         </div>

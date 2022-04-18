@@ -23,6 +23,7 @@ export const DefaultParams = {
     gainMin: 0,
     gainMax: 1 / oscillators,
     masterVcaGain: 0.7,
+    masterVcaGainMin: 0,
     masterVcaGainMax: 1,
 
     lfoWaveform: WaveformEnum.SINE,

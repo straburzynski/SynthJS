@@ -1,0 +1,33 @@
+.verticalSliderWrapper {
+  position: relative;
+  width: 100%;
+  height: 150px;
+}
+
+input[type=range].verticalSlider {
+  -webkit-appearance: none;
+  transform: rotate(270deg) translateY(calc(-50% - 18px));
+  margin: 55px 0 0 0;
+  width: 150px;
+  height: 40px;
+  outline: none;
+  position: absolute;
+  background: none;
+}
+
+input[type=range].verticalSlider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  background: linear-gradient(to right, grey 0%, grey calc(50% - 0.81px), white calc(50% - 0.8px), white calc(50% + 0.8px), grey calc(50% + 0.81px), grey 100%);
+  opacity: 0.75;
+  width: 15px;
+  height: 40px;
+  transform: translateY(-10px);
+}
+
+input[type=range].verticalSlider::-webkit-slider-runnable-track {
+  -webkit-appearance: none;
+  background-color: #444;
+  color: #444;
+  height: 20px;
+  width: 200px;
+}

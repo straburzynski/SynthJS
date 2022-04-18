@@ -14,6 +14,7 @@ import { Note } from '@tonaljs/tonal';
 import { OscillatorComponent } from '../OscillatorComponent/OscillatorComponent';
 import './synthComponent.scss';
 import CurrentNoteComponent from '../CurrentNoteComponent/CurrentNoteComponent';
+import MasterVolumeComponent from '../MasterVolumeComponent/MasterVolumeComponent';
 
 const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: MutableRefObject<SynthEngineModel>) => {
     const [filterType, setFilterType] = useState<BiquadFilterType>(DefaultParams.filterType);
@@ -154,7 +155,7 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
     const handleWaveformChange = (
         setWaveform: Function,
         oscillatorNode: OscillatorNode,
-        event: React.ChangeEvent<HTMLInputElement>,
+        event: React.ChangeEvent<HTMLInputElement>
     ) => {
         const selectedWaveform = event.target.value as OscillatorType;
         console.log(event.target.name, selectedWaveform);
@@ -167,7 +168,7 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
         console.log('delay time: ', changedDelayTime);
         synthEngine.current.delayNode.delayTime.linearRampToValueAtTime(
             changedDelayTime,
-            synthEngine.current.audioContext.currentTime + 0.01,
+            synthEngine.current.audioContext.currentTime + 0.01
         );
         setDelayTime(changedDelayTime);
     };
@@ -177,7 +178,7 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
         console.log('delay feedback: ', changedDelayFeedback);
         synthEngine.current.delayFeedback.gain.linearRampToValueAtTime(
             changedDelayFeedback,
-            synthEngine.current.audioContext.currentTime + 0.01,
+            synthEngine.current.audioContext.currentTime + 0.01
         );
         setDelayFeedback(changedDelayFeedback);
     };
@@ -189,7 +190,7 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
             synthEngine.current.audioContext,
             reverbLength,
             2,
-            false,
+            false
         );
         setReverbLength(changedReverbLength);
     };
@@ -267,9 +268,10 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
             <hr />
             <CurrentNoteComponent currentNote={currentNote} />
             <hr />
-            <p>Oscillators</p>
-            <div className="columns">
-                <div className="column-33">
+            <br />
+
+            <div className="first container">
+                <div className="blue flex-30">
                     <OscillatorComponent
                         synthEngine={synthEngine}
                         primary={true}
@@ -279,7 +281,7 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
                         setWaveform={setPrimaryWaveform}
                     />
                 </div>
-                <div className="column-33">
+                <div className="green flex-30">
                     <OscillatorComponent
                         synthEngine={synthEngine}
                         primary={false}
@@ -289,7 +291,7 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
                         setWaveform={setSecondaryWaveform}
                     />
                 </div>
-                <div className="column-33">
+                <div className="blue flex-30">
                     <AdsrComponent
                         attack={attack}
                         setAttack={setAttack}
@@ -301,9 +303,14 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
                         setRelease={setRelease}
                     />
                 </div>
+                <div className="red flex-10">
+                    <MasterVolumeComponent masterVcaNode={synthEngine.current.masterVca} />
+                </div>
             </div>
+
             <br />
             <hr />
+
             <div className="columns">
                 <div className="column-33">
                     <p>LFO waveform -{'>'} filter</p>
@@ -480,12 +487,6 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
                 </div>
             </div>
             <br />
-            <hr />
-            <VolumeComponent
-                name={'Master value'}
-                volumeNode={synthEngine.current.masterVca}
-                max={DefaultParams.masterVcaGainMax}
-            />
             <hr />
         </div>
     );
