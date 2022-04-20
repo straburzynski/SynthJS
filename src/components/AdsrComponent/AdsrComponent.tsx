@@ -1,7 +1,7 @@
 import React, { FC } from 'react';
 import { DefaultParams } from '../../consts/DefaultParams';
 import styles from './AdsrComponent.module.scss';
-import VerticalSliderComponent from '../shared/VerticalSliderComponent/VerticalSliderComponent';
+import SliderComponent from '../shared/SliderComponent/SliderComponent';
 
 type AdsrComponentProps = {
     attack: number;
@@ -34,7 +34,8 @@ const AdsrComponent: FC<AdsrComponentProps> = ({
             <p>ADSR Control</p>
             <div className="columns vertical-fader-scale">
                 <div className="column-4">
-                    <VerticalSliderComponent
+                    <SliderComponent
+                        mode="vertical"
                         name={'attack'}
                         minValue={DefaultParams.adsrMin}
                         maxValue={DefaultParams.adsrMax}
@@ -45,7 +46,8 @@ const AdsrComponent: FC<AdsrComponentProps> = ({
                     />
                 </div>
                 <div className="column-4">
-                    <VerticalSliderComponent
+                    <SliderComponent
+                        mode="vertical"
                         name={'decay'}
                         minValue={DefaultParams.adsrMin}
                         maxValue={DefaultParams.adsrMax}
@@ -56,7 +58,8 @@ const AdsrComponent: FC<AdsrComponentProps> = ({
                     />
                 </div>
                 <div className="column-4">
-                    <VerticalSliderComponent
+                    <SliderComponent
+                        mode="vertical"
                         name={'sustain'}
                         minValue={DefaultParams.adsrMin}
                         maxValue={DefaultParams.adsrMax}
@@ -67,7 +70,8 @@ const AdsrComponent: FC<AdsrComponentProps> = ({
                     />
                 </div>
                 <div className="column-4">
-                    <VerticalSliderComponent
+                    <SliderComponent
+                        mode="vertical"
                         name={'release'}
                         minValue={DefaultParams.adsrMin}
                         maxValue={DefaultParams.adsrMax}

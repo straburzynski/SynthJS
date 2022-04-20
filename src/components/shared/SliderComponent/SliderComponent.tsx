@@ -1,7 +1,8 @@
 import React, { FC } from 'react';
-import styles from './VerticalSliderComponent.module.scss';
+import styles from './SliderComponent.module.scss';
 
 type VerticalSliderComponentProps = {
+    mode: 'horizontal' | 'vertical';
     name: string;
     minValue: number;
     maxValue: number;
@@ -10,7 +11,8 @@ type VerticalSliderComponentProps = {
     defaultValue: number;
     step: number;
 };
-const VerticalSliderComponent: FC<VerticalSliderComponentProps> = ({
+const SliderComponent: FC<VerticalSliderComponentProps> = ({
+    mode,
     name,
     minValue,
     maxValue,
@@ -33,12 +35,11 @@ const VerticalSliderComponent: FC<VerticalSliderComponentProps> = ({
     };
 
     return (
-        <div className={styles.verticalSliderWrapper}>
+        <div className={styles[mode]}>
             <input
                 type="range"
                 id={`${name}-control`}
                 name={`${name}-control`}
-                className={styles.verticalSlider + ' asd'}
                 min={minValue}
                 max={maxValue}
                 step={step}
@@ -50,4 +51,4 @@ const VerticalSliderComponent: FC<VerticalSliderComponentProps> = ({
     );
 };
 
-export default VerticalSliderComponent;
+export default SliderComponent;

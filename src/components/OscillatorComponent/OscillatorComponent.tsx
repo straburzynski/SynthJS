@@ -2,7 +2,7 @@ import React, { FC, useState } from 'react';
 import { WaveformEnum } from '../../models/WaveformEnum';
 import { DefaultParams } from '../../consts/DefaultParams';
 import { SynthEngineModel } from '../../models/SynthEngineModel';
-import VerticalSliderComponent from '../shared/VerticalSliderComponent/VerticalSliderComponent';
+import SliderComponent from '../shared/SliderComponent/SliderComponent';
 import styles from './OscillatorComponent.module.scss';
 import WaveformIconComponent from '../shared/WaveformIconComponent/WaveformIconComponent';
 
@@ -36,8 +36,7 @@ export const OscillatorComponent: FC<OscillatorComponentProps> = ({
         setWaveform(selectedWaveform);
     };
 
-    const handleDetuneChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const changedDetune: number = event.target.valueAsNumber;
+    const handleDetuneChange = (changedDetune: number) => {
         console.log((primary ? 'Primary' : 'Secondary') + ' detune change: ', changedDetune);
         const oscillatorNode = primary ? synthEngine.current.primaryVco : synthEngine.current.secondaryVco;
         oscillatorNode.detune.setValueAtTime(changedDetune, synthEngine.current.audioContext.currentTime); // value in cents
@@ -55,7 +54,8 @@ export const OscillatorComponent: FC<OscillatorComponentProps> = ({
         <div className="component-wrapper">
             <p>{primary ? 'Primary' : 'Secondary'} OSC</p>
             <div className="columns">
-                <div className={`${styles.columnDetune} ${styles.verticalContainer} flex-75`}>
+                <div className={`${styles.leftColumn} ${styles.verticalContainer} flex-75`}>
+                    <div className="flex-100">Waveform</div>
                     <div className={styles.flexContainer}>
                         <div className={styles.iconsContainer}>
                             {Object.values(WaveformEnum).map((w, i) => {
@@ -82,23 +82,23 @@ export const OscillatorComponent: FC<OscillatorComponentProps> = ({
                             })}
                         </div>
                     </div>
-                    <div className={'flex-100'}>
-                        <input
-                            type="range"
-                            id={(primary ? 'primary-detune' : 'secondary-detune') + '-control'}
-                            name={(primary ? 'primary-detune' : 'secondary-detune') + '-control'}
-                            className="horizontal-slider"
-                            min={DefaultParams.detuneMin}
-                            max={DefaultParams.detuneMax}
-                            step={0.05}
+                    <div className="flex-100">Detune</div>
+                    <div className={styles.detuneColumn}>
+                        <SliderComponent
+                            mode="horizontal"
+                            name={primary ? 'primary-detune' : 'secondary-detune'}
+                            minValue={DefaultParams.detuneMin}
+                            maxValue={DefaultParams.detuneMax}
                             value={detune}
                             onChange={handleDetuneChange}
-                            // onClick={(e) => handleDoubleClick(e, setDetune, DefaultParams.detune)}
+                            defaultValue={DefaultParams.detune}
+                            step={0.05}
                         />
                     </div>
                 </div>
                 <div className={`${styles.columnVolume} flex-25 vertical-fader-scale`}>
-                    <VerticalSliderComponent
+                    <SliderComponent
+                        mode="vertical"
                         name={primary ? 'primary-vca' : 'secondary-vca'}
                         minValue={DefaultParams.gainMin}
                         maxValue={DefaultParams.gainMax}

@@ -3,12 +3,18 @@
   flex: 1
 }
 
-.columnDetune {
+.leftColumn {
   position: relative;
 }
 
 .columnVolume {
   position: relative;
+  height: 150px;
+}
+
+.detuneColumn {
+  padding: 10px 20px 0 0;
+  flex: 1;
 }
 
 .verticalContainer {

@@ -1,6 +1,6 @@
 import React, { FC, useState } from 'react';
 import { DefaultParams } from '../../consts/DefaultParams';
-import VerticalSliderComponent from '../shared/VerticalSliderComponent/VerticalSliderComponent';
+import SliderComponent from '../shared/SliderComponent/SliderComponent';
 import styles from './MasterVolumeComponent.module.scss';
 
 type MasterVolumeComponentProps = {
@@ -21,7 +21,8 @@ const MasterVolumeComponent: FC<MasterVolumeComponentProps> = ({ masterVcaNode }
             <p>VCA</p>
             <div className="columns">
                 <div className={'column-1 vertical-fader-scale ' + styles.faders}>
-                    <VerticalSliderComponent
+                    <SliderComponent
+                        mode='vertical'
                         name={'master-vca'}
                         minValue={DefaultParams.masterVcaGainMin}
                         maxValue={DefaultParams.masterVcaGainMax}
