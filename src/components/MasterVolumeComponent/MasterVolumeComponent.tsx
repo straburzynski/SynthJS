@@ -18,7 +18,7 @@ const MasterVolumeComponent: FC<MasterVolumeComponentProps> = ({ masterVcaNode }
 
     return (
         <div className="component-wrapper">
-            <p>VCA</p>
+            <p className="title">VCA</p>
             <div className="columns">
                 <div className={'column-1 vertical-fader-scale ' + styles.faders}>
                     <SliderComponent

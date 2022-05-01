@@ -14,17 +14,6 @@
 .container {
   display: flex;
 }
-.red {
-  background: orangered;
-  display: flex;
-  flex-direction: column;
-}
-.green {
-  background: yellowgreen;
-}
-.blue {
-  background: steelblue;
-}
 .container div {
   color: white;
 }
@@ -33,5 +22,3 @@ canvas.visualizer {
   background-color: lightgrey;
   margin: 15px 15px 0 15px;
 }
-
-

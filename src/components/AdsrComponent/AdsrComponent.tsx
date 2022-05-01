@@ -31,12 +31,12 @@ const AdsrComponent: FC<AdsrComponentProps> = ({
 
     return (
         <div className="component-wrapper">
-            <p>ADSR Control</p>
+            <p className="title">Envelope</p>
             <div className="columns vertical-fader-scale">
                 <div className="column-4">
                     <SliderComponent
                         mode="vertical"
-                        name={'attack'}
+                        name="attack"
                         minValue={DefaultParams.adsrMin}
                         maxValue={DefaultParams.adsrMax}
                         value={attack}
@@ -48,7 +48,7 @@ const AdsrComponent: FC<AdsrComponentProps> = ({
                 <div className="column-4">
                     <SliderComponent
                         mode="vertical"
-                        name={'decay'}
+                        name="decay"
                         minValue={DefaultParams.adsrMin}
                         maxValue={DefaultParams.adsrMax}
                         value={decay}
@@ -60,7 +60,7 @@ const AdsrComponent: FC<AdsrComponentProps> = ({
                 <div className="column-4">
                     <SliderComponent
                         mode="vertical"
-                        name={'sustain'}
+                        name="sustain"
                         minValue={DefaultParams.adsrMin}
                         maxValue={DefaultParams.adsrMax}
                         value={sustain}
@@ -72,7 +72,7 @@ const AdsrComponent: FC<AdsrComponentProps> = ({
                 <div className="column-4">
                     <SliderComponent
                         mode="vertical"
-                        name={'release'}
+                        name="release"
                         minValue={DefaultParams.adsrMin}
                         maxValue={DefaultParams.adsrMax}
                         value={release}

@@ -3,9 +3,6 @@ import { DefaultParams } from '../../consts/DefaultParams';
 import KeyboardComponent from '../KeyboardComponent/KeyboardComponent';
 import VolumeComponent from '../VolumeComponent/VolumeComponent';
 import AdsrComponent from '../AdsrComponent/AdsrComponent';
-import { AVAILABLE_FILTERS } from '../../consts/AvailableFilters';
-import FrequencyComponent from '../FrequencyComponent/FrequencyComponent';
-import RangeInput from '../shared/RangeInput/RangeInput';
 import { SynthEngineModel } from '../../models/SynthEngineModel';
 import { createImpulseResponse } from '../../services/ImpulseResponseGenerator';
 import { createDistortionCurve } from '../../services/DistortionCurveGenerator';
@@ -14,12 +11,11 @@ import { OscillatorComponent } from '../OscillatorComponent/OscillatorComponent'
 import CurrentNoteComponent from '../CurrentNoteComponent/CurrentNoteComponent';
 import MasterVolumeComponent from '../MasterVolumeComponent/MasterVolumeComponent';
 import { LfoComponent } from '../LfoComponent/LfoComponent';
-import './synthComponent.scss';
 import { LfoTargetEnum } from '../../models/LfoTargetEnum';
+import FilterComponent from '../FilterComponent/FilterComponent';
+import './synthComponent.scss';
 
 const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: MutableRefObject<SynthEngineModel>) => {
-    const [filterType, setFilterType] = useState<BiquadFilterType>(DefaultParams.filterType);
-    const [filterQualityFactor, setFilterQualityFactor] = useState<number>(DefaultParams.qualityFactor);
 
     const [primaryWaveform, setPrimaryWaveform] = useState<OscillatorType>(DefaultParams.primaryWaveform);
     const [secondaryWaveform, setSecondaryWaveform] = useState<OscillatorType>(DefaultParams.secondaryWaveform);
@@ -199,19 +195,7 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
         setDistortionActive(changedDistortionActive);
     };
 
-    const handleFilterTypeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const selectedFilterType = event.target.value as BiquadFilterType;
-        console.log('filter type: ', selectedFilterType);
-        synthEngine.current.filter.type = selectedFilterType;
-        setFilterType(selectedFilterType);
-    };
 
-    const handleFilterQualityFactorChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const selectedQualityFactor: number = event.target.valueAsNumber;
-        console.log('filter type: ', selectedQualityFactor);
-        synthEngine.current.filter.Q.value = selectedQualityFactor;
-        setFilterQualityFactor(selectedQualityFactor);
-    };
 
     return (
         <div className="synth-wrapper">
@@ -232,7 +216,7 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
             <br />
 
             <div className="first container">
-                <div className="blue flex-30">
+                <div className="flex-30">
                     <OscillatorComponent
                         synthEngine={synthEngine}
                         primary={true}
@@ -242,7 +226,7 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
                         setWaveform={setPrimaryWaveform}
                     />
                 </div>
-                <div className="green flex-30">
+                <div className="flex-30">
                     <OscillatorComponent
                         synthEngine={synthEngine}
                         primary={false}
@@ -252,7 +236,7 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
                         setWaveform={setSecondaryWaveform}
                     />
                 </div>
-                <div className="blue flex-30">
+                <div className="flex-30">
                     <AdsrComponent
                         attack={attack}
                         setAttack={setAttack}
@@ -264,63 +248,23 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
                         setRelease={setRelease}
                     />
                 </div>
-                <div className="red flex-10">
+                <div className="flex-10">
                     <MasterVolumeComponent masterVcaNode={synthEngine.current.masterVca} />
                 </div>
             </div>
 
             <div className="second container">
-                <div className="red flex-100">
+                <div className="flex-100">
                     <LfoComponent synthEngine={synthEngine} lfoTarget={LfoTargetEnum.FREQUENCY} />
                 </div>
-                <div className="blue flex-100">
+                <div className="flex-100">
                     <LfoComponent synthEngine={synthEngine} lfoTarget={LfoTargetEnum.VCA} />
                 </div>
-                <div className="green flex-100">
-                {/* TODO -> change to compnent */}
-                    {Object.values(AVAILABLE_FILTERS).map((f, i) => {
-                        return (
-                            <div key={i}>
-                                <input
-                                    type="radio"
-                                    id={f + '-filter'}
-                                    name="filter"
-                                    value={f}
-                                    onChange={handleFilterTypeChange}
-                                    checked={f === filterType}
-                                />
-                                <label htmlFor={f + '-filter'}>{f}</label>
-                                <br />
-                            </div>
-                        );
-                    })}
-                    <br />
-                    <FrequencyComponent name="Filter frequency" node={synthEngine.current.filter} />
-                    <RangeInput
-                        min={DefaultParams.qualityFactorMin}
-                        max={DefaultParams.qualityFactorMax}
-                        step={0.1}
-                        value={filterQualityFactor}
-                        onChange={handleFilterQualityFactorChange}
-                        label={'Filter quality factor: ' + filterQualityFactor}
-                    />
+                <div className="flex-100">
+                    <FilterComponent synthEngine={synthEngine} />
                 </div>
             </div>
 
-            <br />
-            <hr />
-
-            <div className="columns">
-                <div className="column-33">
-                    <p>LFO waveform -{'>'} filter</p>
-                </div>
-                <div className="column-33">
-                    <p>LFO waveform -{'>'} master vca</p>
-                </div>
-                <div className="column-33">
-                    <p>Filter type</p>
-                </div>
-            </div>
             <br />
             <hr />
             <div className="columns">

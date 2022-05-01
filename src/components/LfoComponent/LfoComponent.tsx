@@ -66,7 +66,7 @@ export const LfoComponent: FC<LfoComponentProps> = ({ synthEngine, lfoTarget }) 
 
     return (
         <div className="component-wrapper">
-            <p>{lfoTarget} LFO</p>
+            <p className="title">{`LFO > ${lfoTarget}`} </p>
             <div className="columns">
                 <div className={`${styles.leftColumn} ${styles.verticalContainer} flex-50`}>
                     <div className="flex-100">Waveform</div>
@@ -98,7 +98,7 @@ export const LfoComponent: FC<LfoComponentProps> = ({ synthEngine, lfoTarget }) 
                         <div className="column-2">
                             <SliderComponent
                                 mode="vertical"
-                                name={'frequency'}
+                                name="frequency"
                                 minValue={DefaultParams.lfoFrequencyMin}
                                 maxValue={DefaultParams.lfoFrequencyMax}
                                 value={lfoFrequency}

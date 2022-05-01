@@ -4,5 +4,4 @@ export const AVAILABLE_FILTERS = [
     FilterTypeEnum.LOWPASS,
     FilterTypeEnum.HIGHPASS,
     FilterTypeEnum.BANDPASS,
-    FilterTypeEnum.ALLPASS,
 ];

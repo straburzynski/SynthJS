@@ -15,8 +15,10 @@ code {
 /* columns container */
 
 .component-wrapper {
-    margin: 0 10px;
-    height: 100%
+    padding: 0 10px;
+    height: 100%;
+    border: 1px solid #e0e0e0;
+    background-color: #585d65;
 }
 
 .columns {
@@ -109,7 +111,6 @@ input[type=range].horizontal-slider::-webkit-slider-runnable-track {
 
 /* flex */
 
-
 .flex-100 {
     flex: 1;
 }
@@ -140,4 +141,15 @@ input[type=range].horizontal-slider::-webkit-slider-runnable-track {
 
 .flex-10 {
     flex: 0.10
+}
+
+/* container styles */
+
+p.title {
+    background: darkorange;
+    margin: 0 -10px 10px -10px;
+    padding: 5px;
+    color: white;
+    text-align: center;
+    font-weight: bold;
 }

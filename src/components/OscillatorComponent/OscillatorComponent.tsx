@@ -52,7 +52,7 @@ export const OscillatorComponent: FC<OscillatorComponentProps> = ({
 
     return (
         <div className="component-wrapper">
-            <p>{primary ? 'Primary' : 'Secondary'} OSC</p>
+            <p className="title">{primary ? 'Primary' : 'Secondary'} OSC</p>
             <div className="columns">
                 <div className={`${styles.leftColumn} ${styles.verticalContainer} flex-75`}>
                     <div className="flex-100">Waveform</div>
