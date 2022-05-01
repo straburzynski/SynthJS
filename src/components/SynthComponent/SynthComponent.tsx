@@ -1,7 +1,6 @@
 import React, { FC, MutableRefObject, useEffect, useRef, useState } from 'react';
 import { DefaultParams } from '../../consts/DefaultParams';
 import KeyboardComponent from '../KeyboardComponent/KeyboardComponent';
-import { WaveformEnum } from '../../models/WaveformEnum';
 import VolumeComponent from '../VolumeComponent/VolumeComponent';
 import AdsrComponent from '../AdsrComponent/AdsrComponent';
 import { AVAILABLE_FILTERS } from '../../consts/AvailableFilters';
@@ -14,7 +13,9 @@ import { Note } from '@tonaljs/tonal';
 import { OscillatorComponent } from '../OscillatorComponent/OscillatorComponent';
 import CurrentNoteComponent from '../CurrentNoteComponent/CurrentNoteComponent';
 import MasterVolumeComponent from '../MasterVolumeComponent/MasterVolumeComponent';
+import { LfoComponent } from '../LfoComponent/LfoComponent';
 import './synthComponent.scss';
+import { LfoTargetEnum } from '../../models/LfoTargetEnum';
 
 const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: MutableRefObject<SynthEngineModel>) => {
     const [filterType, setFilterType] = useState<BiquadFilterType>(DefaultParams.filterType);
@@ -24,14 +25,6 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
     const [secondaryWaveform, setSecondaryWaveform] = useState<OscillatorType>(DefaultParams.secondaryWaveform);
     const [primaryVcoDetune, setPrimaryVcoDetune] = useState<number>(DefaultParams.detune);
     const [secondaryVcoDetune, setSecondaryVcoDetune] = useState<number>(DefaultParams.detune);
-
-    const [lfo1Gain, setLfo1Gain] = useState<number>(DefaultParams.lfoGain);
-    const [lfo1Frequency, setLfo1Frequency] = useState<number>(DefaultParams.lfoFrequency);
-    const [lfo1Waveform, setLfo1Waveform] = useState<OscillatorType>(DefaultParams.lfoWaveform);
-
-    const [lfo2Gain, setLfo2Gain] = useState<number>(DefaultParams.lfoGain);
-    const [lfo2Frequency, setLfo2Frequency] = useState<number>(DefaultParams.lfoFrequency);
-    const [lfo2Waveform, setLfo2Waveform] = useState<OscillatorType>(DefaultParams.lfoWaveform);
 
     const [attack, setAttack] = useState<number>(DefaultParams.attack);
     const [decay, setDecay] = useState<number>(DefaultParams.decay);
@@ -152,17 +145,6 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
         killOscillators(now + r, note);
     }
 
-    const handleWaveformChange = (
-        setWaveform: Function,
-        oscillatorNode: OscillatorNode,
-        event: React.ChangeEvent<HTMLInputElement>
-    ) => {
-        const selectedWaveform = event.target.value as OscillatorType;
-        console.log(event.target.name, selectedWaveform);
-        oscillatorNode.type = selectedWaveform;
-        setWaveform(selectedWaveform);
-    };
-
     const handleDelayTimeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const changedDelayTime: number = event.target.valueAsNumber;
         console.log('delay time: ', changedDelayTime);
@@ -222,34 +204,6 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
         console.log('filter type: ', selectedFilterType);
         synthEngine.current.filter.type = selectedFilterType;
         setFilterType(selectedFilterType);
-    };
-
-    const handleLfo1GainChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const selectedLfoGain: number = event.target.valueAsNumber;
-        console.log('lfo 1 gain', selectedLfoGain);
-        synthEngine.current.lfo1Gain.gain.value = selectedLfoGain;
-        setLfo1Gain(selectedLfoGain);
-    };
-
-    const handleLfo1FrequencyChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const selectedLfoFrequency: number = event.target.valueAsNumber;
-        console.log('lfo 1 frequency', selectedLfoFrequency);
-        synthEngine.current.lfo1.frequency.value = selectedLfoFrequency;
-        setLfo1Frequency(selectedLfoFrequency);
-    };
-
-    const handleLfo2GainChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const selectedLfoGain: number = event.target.valueAsNumber;
-        console.log('lfo 2 gain', selectedLfoGain);
-        synthEngine.current.lfo2Gain.gain.value = selectedLfoGain;
-        setLfo2Gain(selectedLfoGain);
-    };
-
-    const handleLfo2FrequencyChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const selectedLfoFrequency: number = event.target.valueAsNumber;
-        console.log('lfo 2 frequency', selectedLfoFrequency);
-        synthEngine.current.lfo2.frequency.value = selectedLfoFrequency;
-        setLfo2Frequency(selectedLfoFrequency);
     };
 
     const handleFilterQualityFactorChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -315,86 +269,15 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
                 </div>
             </div>
 
-            <br />
-            <hr />
-
-            <div className="columns">
-                <div className="column-33">
-                    <p>LFO waveform -{'>'} filter</p>
-                    {Object.values(WaveformEnum).map((w, i) => {
-                        return (
-                            <div key={i}>
-                                <input
-                                    type="radio"
-                                    id={w + '-lfo-1-waveform'}
-                                    name="lfo-1-waveform"
-                                    value={w}
-                                    onChange={(e) => handleWaveformChange(setLfo1Waveform, synthEngine.current.lfo1, e)}
-                                    checked={w === lfo1Waveform}
-                                />
-                                <label htmlFor={w + '-lfo-1-waveform'}>{w}</label>
-                                <br />
-                            </div>
-                        );
-                    })}
-                    <br />
-                    <RangeInput
-                        min={DefaultParams.lfoFrequencyMin}
-                        max={DefaultParams.lfoFrequencyMax}
-                        step={0.1}
-                        value={lfo1Frequency}
-                        onChange={handleLfo1FrequencyChange}
-                        label={'Frequency ' + lfo1Frequency + ' Hz'}
-                    />
-                    <br />
-                    <RangeInput
-                        min={DefaultParams.lfoGainMin}
-                        max={DefaultParams.lfoGainMax}
-                        step={0.1}
-                        value={lfo1Gain}
-                        onChange={handleLfo1GainChange}
-                        label={'Gain ' + lfo1Gain}
-                    />
+            <div className="second container">
+                <div className="red flex-100">
+                    <LfoComponent synthEngine={synthEngine} lfoTarget={LfoTargetEnum.FREQUENCY} />
                 </div>
-                <div className="column-33">
-                    <p>LFO waveform -{'>'} master vca</p>
-                    {Object.values(WaveformEnum).map((w, i) => {
-                        return (
-                            <div key={i}>
-                                <input
-                                    type="radio"
-                                    id={w + '-lfo-2-waveform'}
-                                    name="lfo-2-waveform"
-                                    value={w}
-                                    onChange={(e) => handleWaveformChange(setLfo2Waveform, synthEngine.current.lfo2, e)}
-                                    checked={w === lfo2Waveform}
-                                />
-                                <label htmlFor={w + '-lfo-2-waveform'}>{w}</label>
-                                <br />
-                            </div>
-                        );
-                    })}
-                    <br />
-                    <RangeInput
-                        min={DefaultParams.lfoFrequencyMin}
-                        max={DefaultParams.lfoFrequencyMax}
-                        step={0.1}
-                        value={lfo2Frequency}
-                        onChange={handleLfo2FrequencyChange}
-                        label={'Frequency ' + lfo2Frequency + ' Hz'}
-                    />
-                    <br />
-                    <RangeInput
-                        min={DefaultParams.lfoGainMin}
-                        max={0.5}
-                        step={0.1}
-                        value={lfo2Gain}
-                        onChange={handleLfo2GainChange}
-                        label={'Gain ' + lfo2Gain}
-                    />
+                <div className="blue flex-100">
+                    <LfoComponent synthEngine={synthEngine} lfoTarget={LfoTargetEnum.VCA} />
                 </div>
-                <div className="column-33">
-                    <p>Filter type</p>
+                <div className="green flex-100">
+                {/* TODO -> change to compnent */}
                     {Object.values(AVAILABLE_FILTERS).map((f, i) => {
                         return (
                             <div key={i}>
@@ -421,6 +304,21 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
                         onChange={handleFilterQualityFactorChange}
                         label={'Filter quality factor: ' + filterQualityFactor}
                     />
+                </div>
+            </div>
+
+            <br />
+            <hr />
+
+            <div className="columns">
+                <div className="column-33">
+                    <p>LFO waveform -{'>'} filter</p>
+                </div>
+                <div className="column-33">
+                    <p>LFO waveform -{'>'} master vca</p>
+                </div>
+                <div className="column-33">
+                    <p>Filter type</p>
                 </div>
             </div>
             <br />
