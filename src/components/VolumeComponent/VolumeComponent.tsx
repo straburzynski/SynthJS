@@ -16,7 +16,7 @@ const VolumeComponent: FC<VolumeComponentProps> = ({
     min = DefaultParams.gainMin,
     max = DefaultParams.gainMax,
     step = 0.05,
-    initialState = DefaultParams.gain
+    initialState = DefaultParams.gain,
 }) => {
     const [volume, setVolume] = useState<number>(initialState);
 
@@ -29,7 +29,7 @@ const VolumeComponent: FC<VolumeComponentProps> = ({
 
     return (
         <div>
-            <RangeInput min={min} max={max} step={step} value={volume} onChange={handleVolumeChange} />  {name}: {volume}
+            <RangeInput min={min} max={max} step={step} value={volume} onChange={handleVolumeChange} /> {name}: {volume}
             <br />
         </div>
     );

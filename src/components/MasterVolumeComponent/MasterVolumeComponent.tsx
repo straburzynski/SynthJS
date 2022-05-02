@@ -1,7 +1,6 @@
 import React, { FC, useState } from 'react';
 import { DefaultParams } from '../../consts/DefaultParams';
 import SliderComponent from '../shared/SliderComponent/SliderComponent';
-import styles from './MasterVolumeComponent.module.scss';
 
 type MasterVolumeComponentProps = {
     masterVcaNode: GainNode;
@@ -19,11 +18,15 @@ const MasterVolumeComponent: FC<MasterVolumeComponentProps> = ({ masterVcaNode }
     return (
         <div className="component-wrapper">
             <p className="title">VCA</p>
+            <div className="columns top-labels text-center">
+                <div className="column-1">
+                    <label htmlFor="master-vca">Vol</label>
+                </div>
+            </div>
             <div className="columns">
-                <div className={'column-1 vertical-fader-scale ' + styles.faders}>
+                <div className="column-1">
                     <SliderComponent
-                        mode='vertical'
-                        name={'master-vca'}
+                        name="master-vca"
                         minValue={DefaultParams.masterVcaGainMin}
                         maxValue={DefaultParams.masterVcaGainMax}
                         value={volume}
@@ -33,12 +36,9 @@ const MasterVolumeComponent: FC<MasterVolumeComponentProps> = ({ masterVcaNode }
                     />
                 </div>
             </div>
-            <div className="columns">
-                <div className={styles.textCenter + ' column-1'}>
-                    <label htmlFor="master-vca-control">
-                        Master volume:
-                        <br /> {volume}
-                    </label>
+            <div className="columns bottom-labels text-center">
+                <div className="column-1">
+                    <label htmlFor="master-vca">{volume}</label>
                 </div>
             </div>
         </div>

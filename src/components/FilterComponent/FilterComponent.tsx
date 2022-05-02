@@ -2,10 +2,11 @@ import React, { FC, useState } from 'react';
 import { AVAILABLE_FILTERS } from '../../consts/AvailableFilters';
 import { DefaultParams } from '../../consts/DefaultParams';
 import { SynthEngineModel } from '../../models/SynthEngineModel';
-import styles from '../LfoComponent/LfoComponent.module.scss';
 import SliderComponent from '../shared/SliderComponent/SliderComponent';
 import { FilterTypeEnum } from '../../models/FilterTypeEnum';
 import { StringIndex } from '../../types';
+import FilterIconComponent from '../shared/FilterIconComponent/FilterIconComponent';
+import styles from './FilterComponent.module.scss';
 
 type OscillatorComponentProps = {
     synthEngine: React.MutableRefObject<SynthEngineModel>;
@@ -45,13 +46,25 @@ const FilterComponent: FC<OscillatorComponentProps> = ({ synthEngine }) => {
     return (
         <div className="component-wrapper">
             <p className="title">Filter</p>
+            <div className="columns top-labels text-center">
+                <div className="column-3">
+                    <label htmlFor="attack-control">Filter</label>
+                </div>
+                <div className="column-3">
+                    <label htmlFor="decay-control">Freq</label>
+                </div>
+                <div className="column-3">
+                    <label htmlFor="sustain-control">Q</label>
+                </div>
+            </div>
+
             <div className="columns">
-                <div className={`${styles.leftColumn} ${styles.verticalContainer} flex-50`}>
+                <div className="column-3">
                     {Object.values(AVAILABLE_FILTERS).map((f, i) => {
                         return (
-                            <label htmlFor={f + '-filter'} className={styles.iconLabel} key={i}>
+                            <label htmlFor={f + '-filter'} className="icon-label" key={i}>
                                 <input
-                                    className={styles.iconInput}
+                                    className="icon-input"
                                     type="radio"
                                     id={f + '-filter'}
                                     name={f + '-filter'}
@@ -63,48 +76,44 @@ const FilterComponent: FC<OscillatorComponentProps> = ({ synthEngine }) => {
                             </label>
                         );
                     })}
+                    <hr className={styles.divider} />
+                    <div className={styles.iconContainer}>
+                        <FilterIconComponent filter={filterType} />
+                    </div>
                 </div>
-                <div className={`${styles.columnVolume} flex-100`}>
-                    <div className="columns vertical-fader-scale">
-                        <div className="column-2">
-                            <SliderComponent
-                                mode="vertical"
-                                name="frequency"
-                                minValue={DefaultParams.filterMin}
-                                maxValue={DefaultParams.filterMax}
-                                value={frequency}
-                                onChange={handleFrequencyChange}
-                                defaultValue={DefaultParams.filter}
-                                step={1}
-                            />
-                        </div>
-                        <div className="column-2">
-                            <SliderComponent
-                                mode="vertical"
-                                name="quality factor"
-                                minValue={DefaultParams.qualityFactorMin}
-                                maxValue={DefaultParams.qualityFactorMax}
-                                value={filterQualityFactor}
-                                onChange={handleFilterQualityFactorChange}
-                                defaultValue={DefaultParams.qualityFactor}
-                                step={0.1}
-                            />
-                        </div>
-                    </div>
-                    <div className={'columns ' + styles.textCenter}>
-                        <div className="column-2">
-                            <label htmlFor="attack-control">
-                                freq:
-                                <br /> {frequency + ' Hz'}
-                            </label>
-                        </div>
-                        <div className="column-2">
-                            <label htmlFor="decay-control">
-                                gain:
-                                <br /> {`+${filterQualityFactor} db`}
-                            </label>
-                        </div>
-                    </div>
+
+                <div className="column-3">
+                    <SliderComponent
+                        name="frequency"
+                        minValue={DefaultParams.filterMin}
+                        maxValue={DefaultParams.filterMax}
+                        value={frequency}
+                        onChange={handleFrequencyChange}
+                        defaultValue={DefaultParams.filter}
+                        step={1}
+                    />
+                </div>
+                <div className="column-3">
+                    <SliderComponent
+                        name="quality factor"
+                        minValue={DefaultParams.qualityFactorMin}
+                        maxValue={DefaultParams.qualityFactorMax}
+                        value={filterQualityFactor}
+                        onChange={handleFilterQualityFactorChange}
+                        defaultValue={DefaultParams.qualityFactor}
+                        step={0.1}
+                    />
+                </div>
+            </div>
+            <div className="columns bottom-labels text-center">
+                <div className="column-3">
+                    <label>{filterType}</label>
+                </div>
+                <div className="column-3">
+                    <label>{frequency + ' Hz'}</label>
+                </div>
+                <div className="column-3">
+                    <label>{`+${filterQualityFactor} db`}</label>
                 </div>
             </div>
         </div>

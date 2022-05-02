@@ -4,7 +4,6 @@ import { DefaultParams } from '../../consts/DefaultParams';
 import { SynthEngineModel } from '../../models/SynthEngineModel';
 import SliderComponent from '../shared/SliderComponent/SliderComponent';
 import WaveformIconComponent from '../shared/WaveformIconComponent/WaveformIconComponent';
-import styles from './LfoComponent.module.scss';
 import { LfoTargetEnum } from '../../models/LfoTargetEnum';
 
 type LfoComponentProps = {
@@ -67,73 +66,74 @@ export const LfoComponent: FC<LfoComponentProps> = ({ synthEngine, lfoTarget }) 
     return (
         <div className="component-wrapper">
             <p className="title">{`LFO > ${lfoTarget}`} </p>
-            <div className="columns">
-                <div className={`${styles.leftColumn} ${styles.verticalContainer} flex-50`}>
-                    <div className="flex-100">Waveform</div>
-                    <div className={styles.flexContainer}>
-                        <div className={styles.iconsContainer}>
-                            {Object.values(WaveformEnum).map((w, i) => {
-                                return (
-                                    <label htmlFor={w + '-wave-' + lfoTarget} className={styles.iconLabel} key={i}>
-                                        <input
-                                            className={styles.iconInput}
-                                            type="radio"
-                                            id={w + '-wave-' + lfoTarget}
-                                            name={lfoTarget + '-waveform'}
-                                            value={w}
-                                            onChange={handleWaveformChange}
-                                            checked={w === lfoWaveform}
-                                        />
-                                        <span>
-                                            <WaveformIconComponent waveform={w} />
-                                        </span>
-                                    </label>
-                                );
-                            })}
-                        </div>
-                    </div>
+            <div className="columns top-labels text-center">
+                <div className="column-3">
+                    <label htmlFor="attack-control">Wave</label>
                 </div>
-                <div className={`${styles.columnVolume} flex-100`}>
-                    <div className="columns vertical-fader-scale">
-                        <div className="column-2">
-                            <SliderComponent
-                                mode="vertical"
-                                name="frequency"
-                                minValue={DefaultParams.lfoFrequencyMin}
-                                maxValue={DefaultParams.lfoFrequencyMax}
-                                value={lfoFrequency}
-                                onChange={handleLfoFrequencyChange}
-                                defaultValue={DefaultParams.lfoFrequency}
-                                step={0.1}
-                            />
-                        </div>
-                        <div className="column-2">
-                            <SliderComponent
-                                mode="vertical"
-                                name={'gain'}
-                                minValue={DefaultParams.lfoGainMin}
-                                maxValue={lfoTarget === LfoTargetEnum.FREQUENCY ? DefaultParams.lfoGainMax : 0.5}
-                                value={lfoGain}
-                                onChange={handleLfoGainChange}
-                                defaultValue={DefaultParams.lfoGain}
-                                step={0.05}
-                            />
-                        </div>
-                    </div>
-                    <div className={'columns ' + styles.textCenter}>
-                        <div className="column-2">
-                            <label htmlFor="attack-control">
-                                freq:
-                                <br /> {lfoFrequency + ' Hz'}
+                <div className="column-3">
+                    <label htmlFor="decay-control">Freq</label>
+                </div>
+                <div className="column-3">
+                    <label htmlFor="sustain-control">Level</label>
+                </div>
+            </div>
+
+            <div className="columns">
+                <div className="column-3">
+                    {Object.values(WaveformEnum).map((w, i) => {
+                        return (
+                            <label htmlFor={w + '-wave-' + lfoTarget} className="icon-label" key={i}>
+                                <input
+                                    className="icon-input"
+                                    type="radio"
+                                    id={w + '-wave-' + lfoTarget}
+                                    name={lfoTarget + '-waveform'}
+                                    value={w}
+                                    onChange={handleWaveformChange}
+                                    checked={w === lfoWaveform}
+                                />
+                                <span>
+                                    <WaveformIconComponent waveform={w} />
+                                </span>
                             </label>
-                        </div>
-                        <div className="column-2">
-                            <label htmlFor="decay-control">
-                                gain:
-                                <br /> {lfoGain}
-                            </label>
-                        </div>
-                    </div>
+                        );
+                    })}
+                </div>
+                <div className="column-3">
+                    <SliderComponent
+                        mode="vertical"
+                        name="frequency"
+                        minValue={DefaultParams.lfoFrequencyMin}
+                        maxValue={DefaultParams.lfoFrequencyMax}
+                        value={lfoFrequency}
+                        onChange={handleLfoFrequencyChange}
+                        defaultValue={DefaultParams.lfoFrequency}
+                        step={0.1}
+                    />
+                </div>
+                <div className="column-3">
+                    <SliderComponent
+                        mode="vertical"
+                        name={'gain'}
+                        minValue={DefaultParams.lfoGainMin}
+                        maxValue={lfoTarget === LfoTargetEnum.FREQUENCY ? DefaultParams.lfoGainMax : 0.5}
+                        value={lfoGain}
+                        onChange={handleLfoGainChange}
+                        defaultValue={DefaultParams.lfoGain}
+                        step={0.05}
+                    />
+                </div>
+            </div>
+
+            <div className="columns bottom-labels text-center">
+                <div className="column-3">
+                    <label>{lfoWaveform}</label>
+                </div>
+                <div className="column-3">
+                    <label>{lfoFrequency + ' Hz'}</label>
+                </div>
+                <div className="column-3">
+                    <label>{lfoGain}</label>
                 </div>
             </div>
         </div>

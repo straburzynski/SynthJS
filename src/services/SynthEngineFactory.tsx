@@ -25,7 +25,7 @@ export const createSynthEngine = (): SynthEngineModel => {
     let filter = audioContext.createBiquadFilter();
 
     // create distortion
-    const distortion = audioContext.createWaveShaper()
+    const distortion = audioContext.createWaveShaper();
 
     // create analyser
     const analyser = audioContext.createAnalyser();

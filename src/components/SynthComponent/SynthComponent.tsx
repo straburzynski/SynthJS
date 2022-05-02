@@ -16,7 +16,6 @@ import FilterComponent from '../FilterComponent/FilterComponent';
 import './synthComponent.scss';
 
 const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: MutableRefObject<SynthEngineModel>) => {
-
     const [primaryWaveform, setPrimaryWaveform] = useState<OscillatorType>(DefaultParams.primaryWaveform);
     const [secondaryWaveform, setSecondaryWaveform] = useState<OscillatorType>(DefaultParams.secondaryWaveform);
     const [primaryVcoDetune, setPrimaryVcoDetune] = useState<number>(DefaultParams.detune);
@@ -194,8 +193,6 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
         }
         setDistortionActive(changedDistortionActive);
     };
-
-
 
     return (
         <div className="synth-wrapper">

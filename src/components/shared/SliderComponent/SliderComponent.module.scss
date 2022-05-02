@@ -2,16 +2,21 @@
   position: relative;
   width: 100%;
   height: 150px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: nowrap;
+  align-content: center;
 
   input[type=range] {
     -webkit-appearance: none;
-    transform: rotate(270deg) translateY(calc(-50% - 18px));
-    margin: 55px 0 0 0;
+    transform: rotate(270deg) translateY(0%);
     width: 150px;
-    height: 40px;
     outline: none;
-    position: absolute;
     background: none;
+    align-items: center;
+    display: block;
   }
 
   input[type=range]::-webkit-slider-runnable-track {

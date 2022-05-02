@@ -3,7 +3,6 @@ import { WaveformEnum } from '../../models/WaveformEnum';
 import { DefaultParams } from '../../consts/DefaultParams';
 import { SynthEngineModel } from '../../models/SynthEngineModel';
 import SliderComponent from '../shared/SliderComponent/SliderComponent';
-import styles from './OscillatorComponent.module.scss';
 import WaveformIconComponent from '../shared/WaveformIconComponent/WaveformIconComponent';
 
 type OscillatorComponentProps = {
@@ -53,52 +52,55 @@ export const OscillatorComponent: FC<OscillatorComponentProps> = ({
     return (
         <div className="component-wrapper">
             <p className="title">{primary ? 'Primary' : 'Secondary'} OSC</p>
-            <div className="columns">
-                <div className={`${styles.leftColumn} ${styles.verticalContainer} flex-75`}>
-                    <div className="flex-100">Waveform</div>
-                    <div className={styles.flexContainer}>
-                        <div className={styles.iconsContainer}>
-                            {Object.values(WaveformEnum).map((w, i) => {
-                                return (
-                                    <label
-                                        htmlFor={w + '-wave-' + (primary ? 'primary' : 'secondary')}
-                                        className={styles.iconLabel}
-                                        key={i}
-                                    >
-                                        <input
-                                            className={styles.iconInput}
-                                            type="radio"
-                                            id={w + '-wave-' + (primary ? 'primary' : 'secondary')}
-                                            name={(primary ? 'primary' : 'secondary') + '-waveform'}
-                                            value={w}
-                                            onChange={(e) => handleWaveformChange(setWaveform, primary, e)}
-                                            checked={w === waveform}
-                                        />
-                                        <span>
-                                            <WaveformIconComponent waveform={w} />
-                                        </span>
-                                    </label>
-                                );
-                            })}
-                        </div>
-                    </div>
-                    <div className="flex-100">Detune</div>
-                    <div className={styles.detuneColumn}>
-                        <SliderComponent
-                            mode="horizontal"
-                            name={primary ? 'primary-detune' : 'secondary-detune'}
-                            minValue={DefaultParams.detuneMin}
-                            maxValue={DefaultParams.detuneMax}
-                            value={detune}
-                            onChange={handleDetuneChange}
-                            defaultValue={DefaultParams.detune}
-                            step={0.05}
-                        />
-                    </div>
+            <div className="columns top-labels text-center">
+                <div className="column-3">
+                    <label>Wave</label>
                 </div>
-                <div className={`${styles.columnVolume} flex-25 vertical-fader-scale`}>
+                <div className="column-3">
+                    <label>Detune</label>
+                </div>
+                <div className="column-3">
+                    <label>Vol</label>
+                </div>
+            </div>
+            <div className="columns">
+                <div className="column-3">
+                    {Object.values(WaveformEnum).map((w, i) => {
+                        return (
+                            <label
+                                htmlFor={w + '-wave-' + (primary ? 'primary' : 'secondary')}
+                                className="icon-label"
+                                key={i}
+                            >
+                                <input
+                                    className="icon-input"
+                                    type="radio"
+                                    id={w + '-wave-' + (primary ? 'primary' : 'secondary')}
+                                    name={(primary ? 'primary' : 'secondary') + '-waveform'}
+                                    value={w}
+                                    onChange={(e) => handleWaveformChange(setWaveform, primary, e)}
+                                    checked={w === waveform}
+                                />
+                                <span>
+                                    <WaveformIconComponent waveform={w} />
+                                </span>
+                            </label>
+                        );
+                    })}
+                </div>
+                <div className="column-3">
                     <SliderComponent
-                        mode="vertical"
+                        name={primary ? 'primary-detune' : 'secondary-detune'}
+                        minValue={DefaultParams.detuneMin}
+                        maxValue={DefaultParams.detuneMax}
+                        value={detune}
+                        onChange={handleDetuneChange}
+                        defaultValue={DefaultParams.detune}
+                        step={0.05}
+                    />
+                </div>
+                <div className="column-3">
+                    <SliderComponent
                         name={primary ? 'primary-vca' : 'secondary-vca'}
                         minValue={DefaultParams.gainMin}
                         maxValue={DefaultParams.gainMax}
@@ -107,6 +109,17 @@ export const OscillatorComponent: FC<OscillatorComponentProps> = ({
                         defaultValue={DefaultParams.gain}
                         step={0.05}
                     />
+                </div>
+            </div>
+            <div className="columns bottom-labels text-center">
+                <div className="column-3">
+                    <label>{waveform}</label>
+                </div>
+                <div className="column-3">
+                    <label>{detune}</label>
+                </div>
+                <div className="column-3">
+                    <label>{volume}</label>
                 </div>
             </div>
         </div>

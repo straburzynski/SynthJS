@@ -2,7 +2,7 @@ import React, { FC } from 'react';
 import styles from './SliderComponent.module.scss';
 
 type VerticalSliderComponentProps = {
-    mode: 'horizontal' | 'vertical';
+    mode?: 'horizontal' | 'vertical';
     name: string;
     minValue: number;
     maxValue: number;
@@ -12,7 +12,7 @@ type VerticalSliderComponentProps = {
     step: number;
 };
 const SliderComponent: FC<VerticalSliderComponentProps> = ({
-    mode,
+    mode = 'vertical',
     name,
     minValue,
     maxValue,
@@ -35,7 +35,7 @@ const SliderComponent: FC<VerticalSliderComponentProps> = ({
     };
 
     return (
-        <div className={styles[mode]}>
+        <div className={`${styles[mode]} vertical-fader-scale`}>
             <input
                 type="range"
                 id={`${name}-control`}

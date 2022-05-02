@@ -1,6 +1,5 @@
 import React, { FC } from 'react';
 import { DefaultParams } from '../../consts/DefaultParams';
-import styles from './AdsrComponent.module.scss';
 import SliderComponent from '../shared/SliderComponent/SliderComponent';
 
 type AdsrComponentProps = {
@@ -32,10 +31,23 @@ const AdsrComponent: FC<AdsrComponentProps> = ({
     return (
         <div className="component-wrapper">
             <p className="title">Envelope</p>
-            <div className="columns vertical-fader-scale">
+            <div className="columns top-labels text-center">
+                <div className="column-4">
+                    <label htmlFor="attack-control">Att</label>
+                </div>
+                <div className="column-4">
+                    <label htmlFor="decay-control">Dec</label>
+                </div>
+                <div className="column-4">
+                    <label htmlFor="sustain-control">Sus</label>
+                </div>
+                <div className="column-4">
+                    <label htmlFor="release-control">Rel</label>
+                </div>
+            </div>
+            <div className="columns">
                 <div className="column-4">
                     <SliderComponent
-                        mode="vertical"
                         name="attack"
                         minValue={DefaultParams.adsrMin}
                         maxValue={DefaultParams.adsrMax}
@@ -47,7 +59,6 @@ const AdsrComponent: FC<AdsrComponentProps> = ({
                 </div>
                 <div className="column-4">
                     <SliderComponent
-                        mode="vertical"
                         name="decay"
                         minValue={DefaultParams.adsrMin}
                         maxValue={DefaultParams.adsrMax}
@@ -59,7 +70,6 @@ const AdsrComponent: FC<AdsrComponentProps> = ({
                 </div>
                 <div className="column-4">
                     <SliderComponent
-                        mode="vertical"
                         name="sustain"
                         minValue={DefaultParams.adsrMin}
                         maxValue={DefaultParams.adsrMax}
@@ -71,7 +81,6 @@ const AdsrComponent: FC<AdsrComponentProps> = ({
                 </div>
                 <div className="column-4">
                     <SliderComponent
-                        mode="vertical"
                         name="release"
                         minValue={DefaultParams.adsrMin}
                         maxValue={DefaultParams.adsrMax}
@@ -82,30 +91,18 @@ const AdsrComponent: FC<AdsrComponentProps> = ({
                     />
                 </div>
             </div>
-            <div className={'columns ' + styles.textCenter}>
+            <div className="columns bottom-labels text-center">
                 <div className="column-4">
-                    <label htmlFor="attack-control">
-                        Attack Time:
-                        <br /> {attack}
-                    </label>
+                    <label htmlFor="attack-control">{attack}</label>
                 </div>
                 <div className="column-4">
-                    <label htmlFor="decay-control">
-                        Decay Time:
-                        <br /> {decay}
-                    </label>
+                    <label htmlFor="decay-control">{decay}</label>
                 </div>
                 <div className="column-4">
-                    <label htmlFor="sustain-control">
-                        Sustain Level:
-                        <br /> {sustain}
-                    </label>
+                    <label htmlFor="sustain-control">{sustain}</label>
                 </div>
                 <div className="column-4">
-                    <label htmlFor="release-control">
-                        Release Time:
-                        <br /> {release}
-                    </label>
+                    <label htmlFor="release-control">{release}</label>
                 </div>
             </div>
         </div>
