@@ -13,7 +13,7 @@ type OscillatorComponentProps = {
     waveform: OscillatorType;
     setWaveform: Function;
 };
-export const OscillatorComponent: FC<OscillatorComponentProps> = ({
+const OscillatorComponent: FC<OscillatorComponentProps> = ({
     synthEngine,
     primary,
     detune,
@@ -125,3 +125,5 @@ export const OscillatorComponent: FC<OscillatorComponentProps> = ({
         </div>
     );
 };
+
+export default OscillatorComponent;

@@ -11,7 +11,7 @@ type LfoComponentProps = {
     lfoTarget: LfoTargetEnum;
 };
 
-export const LfoComponent: FC<LfoComponentProps> = ({ synthEngine, lfoTarget }) => {
+const LfoComponent: FC<LfoComponentProps> = ({ synthEngine, lfoTarget }) => {
     const [lfoGain, setLfoGain] = useState<number>(DefaultParams.lfoGain);
     const [lfoFrequency, setLfoFrequency] = useState<number>(DefaultParams.lfoFrequency);
     const [lfoWaveform, setLfoWaveform] = useState<OscillatorType>(DefaultParams.lfoWaveform);
@@ -139,3 +139,5 @@ export const LfoComponent: FC<LfoComponentProps> = ({ synthEngine, lfoTarget }) 
         </div>
     );
 };
+
+export default LfoComponent;
