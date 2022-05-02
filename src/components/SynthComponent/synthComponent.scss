@@ -5,18 +5,24 @@
 }
 
 .synth-wrapper {
-  width: 1024px;
+  width: 1200px;
   height: auto;
-  background-color: #eeeeee;
+  background-color: #585d65;
   margin: 20px auto;
+  border-radius: 10px;
+  overflow: hidden;
+  border-top: 2px;
+  border-bottom: 2px;
+  border-right: 1px;
+  border-left: 1px;
+  border-style: solid;
+  border-color: #707070;
+  padding: 10px;
 }
 
 .container {
-  display: flex;
-}
-
-.container div {
   color: white;
+  display: flex;
 }
 
 canvas.visualizer {

@@ -148,7 +148,7 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
             <br />
 
             <div className="first container">
-                <div className="flex-30">
+                <div className="flex-100">
                     <OscillatorComponent
                         synthEngine={synthEngine}
                         primary={true}
@@ -158,7 +158,7 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
                         setWaveform={setPrimaryWaveform}
                     />
                 </div>
-                <div className="flex-30">
+                <div className="flex-100">
                     <OscillatorComponent
                         synthEngine={synthEngine}
                         primary={false}
@@ -168,7 +168,7 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
                         setWaveform={setSecondaryWaveform}
                     />
                 </div>
-                <div className="flex-30">
+                <div className="flex-100">
                     <AdsrComponent
                         attack={attack}
                         setAttack={setAttack}
@@ -180,11 +180,10 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
                         setRelease={setRelease}
                     />
                 </div>
-                <div className="flex-10">
-                    <MasterVolumeComponent masterVcaNode={synthEngine.current.masterVca} />
+                <div className="flex-100">
+                    <FilterComponent synthEngine={synthEngine} />
                 </div>
             </div>
-
             <div className="second container">
                 <div className="flex-100">
                     <LfoComponent synthEngine={synthEngine} lfoTarget={LfoTargetEnum.FREQUENCY} />
@@ -192,12 +191,9 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
                 <div className="flex-100">
                     <LfoComponent synthEngine={synthEngine} lfoTarget={LfoTargetEnum.VCA} />
                 </div>
-                <div className="flex-100">
-                    <FilterComponent synthEngine={synthEngine} />
+                <div className="flex-50">
+                    <DistortionComponent synthEngine={synthEngine} />
                 </div>
-            </div>
-
-            <div className="third container">
                 <div className="flex-50">
                     <DelayComponent synthEngine={synthEngine} />
                 </div>
@@ -205,9 +201,8 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
                     <ReverbComponent synthEngine={synthEngine} />
                 </div>
                 <div className="flex-30">
-                    <DistortionComponent synthEngine={synthEngine} />
+                    <MasterVolumeComponent masterVcaNode={synthEngine.current.masterVca} />
                 </div>
-                <div className="flex-100"></div>
             </div>
         </div>
     );
