@@ -28,7 +28,7 @@ const DelayComponent: FC<DelayComponentProps> = ({ synthEngine }) => {
 
     return (
         <div className="component-wrapper">
-            <p className="title">Delay</p>
+            <p className="title yellow">Delay</p>
             <div className="columns top-labels text-center">
                 <div className="column-2">
                     <label>Time</label>

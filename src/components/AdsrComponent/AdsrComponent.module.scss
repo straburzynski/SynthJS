@@ -1,0 +1,23 @@
+.envColumn {
+  margin: 10px 5px 0 -5px;
+}
+
+.verticalRadioInput {
+  width: 10px;
+  height: 25px;
+  margin: 7px auto;
+  display: block;
+  appearance: none;
+  background-color: #444;
+
+  &:checked {
+    background-color: orange;
+  }
+}
+
+.verticalRadioLabel {
+  p {
+    margin: 5px auto;
+    text-align: center;
+  }
+}

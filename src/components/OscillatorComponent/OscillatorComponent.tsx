@@ -51,7 +51,7 @@ const OscillatorComponent: FC<OscillatorComponentProps> = ({
 
     return (
         <div className="component-wrapper">
-            <p className="title">{primary ? 'Primary' : 'Secondary'} OSC</p>
+            <p className="title orange">{primary ? 'Primary' : 'Secondary'} OSC</p>
             <div className="columns top-labels text-center">
                 <div className="column-3">
                     <label>Wave</label>

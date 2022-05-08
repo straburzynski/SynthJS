@@ -42,6 +42,11 @@ code {
   overflow: hidden;
 }
 
+.column-5 {
+  width: 20%;
+  overflow: hidden;
+}
+
 .column-1 {
   width: 100%;
   overflow: hidden;
@@ -152,12 +157,31 @@ input[type=range].horizontal-slider::-webkit-slider-runnable-track {
 /* container */
 
 p.title {
-  background: darkorange;
   margin: 0 -10px 10px -10px;
   padding: 5px;
   color: white;
   text-align: center;
   font-weight: bold;
+}
+
+.teal {
+  background-color: #015562;
+}
+
+.orange {
+  background-color: #b13b05;
+}
+
+.red {
+  background-color: #931414;
+}
+
+.yellow {
+  background-color: #a07d00;
+}
+
+.brown {
+  background-color: #733C3C;
 }
 
 .top-labels {

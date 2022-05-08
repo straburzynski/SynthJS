@@ -28,7 +28,7 @@ const ReverbComponent: FC<ReverbComponentProps> = ({ synthEngine }) => {
 
     return (
         <div className="component-wrapper">
-            <p className="title">Reverb</p>
+            <p className="title yellow">Reverb</p>
             <div className="columns top-labels text-center">
                 <div className="column-2">
                     <label>Length</label>

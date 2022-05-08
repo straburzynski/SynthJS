@@ -65,7 +65,7 @@ const LfoComponent: FC<LfoComponentProps> = ({ synthEngine, lfoTarget }) => {
 
     return (
         <div className="component-wrapper">
-            <p className="title">{`LFO > ${lfoTarget}`} </p>
+            <p className="title teal">{`LFO > ${lfoTarget}`} </p>
             <div className="columns top-labels text-center">
                 <div className="column-3">
                     <label htmlFor="attack-control">Wave</label>

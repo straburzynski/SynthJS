@@ -17,7 +17,7 @@ const MasterVolumeComponent: FC<MasterVolumeComponentProps> = ({ masterVcaNode }
 
     return (
         <div className="component-wrapper">
-            <p className="title">VCA</p>
+            <p className="title brown">VCA</p>
             <div className="columns top-labels text-center">
                 <div className="column-1">
                     <label htmlFor="master-vca">Vol</label>

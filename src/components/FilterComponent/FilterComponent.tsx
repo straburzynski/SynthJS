@@ -45,7 +45,7 @@ const FilterComponent: FC<OscillatorComponentProps> = ({ synthEngine }) => {
 
     return (
         <div className="component-wrapper">
-            <p className="title">Filter</p>
+            <p className="title red">Filter</p>
             <div className="columns top-labels text-center">
                 <div className="column-3">
                     <label htmlFor="attack-control">Filter</label>

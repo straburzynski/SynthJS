@@ -24,6 +24,7 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
     const [decay, setDecay] = useState<number>(DefaultParams.decay);
     const [release, setRelease] = useState<number>(DefaultParams.release);
     const [sustain, setSustain] = useState<number>(DefaultParams.sustain);
+    const [envelope, setEnvelope] = useState<string>('env');
     const [currentNote, setCurrentNote] = useState<string>();
     const canvasRef = useRef<any>();
 
@@ -178,6 +179,8 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
                         setSustain={setSustain}
                         release={release}
                         setRelease={setRelease}
+                        envelope={envelope}
+                        setEnvelope={setEnvelope}
                     />
                 </div>
                 <div className="flex-100">
