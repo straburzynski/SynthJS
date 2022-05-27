@@ -1,4 +1,4 @@
-import React, { FC, useState } from 'react';
+import React, { FC, useCallback, useState } from 'react';
 import { DefaultParams } from '../../consts/DefaultParams';
 import SliderComponent from '../shared/SliderComponent/SliderComponent';
 import { SynthEngineModel } from '../../models/SynthEngineModel';
@@ -11,20 +11,26 @@ const ReverbComponent: FC<ReverbComponentProps> = ({ synthEngine }) => {
     const [reverbLength, setReverbLength] = useState<number>(DefaultParams.reverbLength);
     const [reverbAmount, setReverbAmount] = useState<number>(DefaultParams.reverbGain);
 
-    const handleReverbLengthChange = (changedReverbLength: number) => {
-        synthEngine.current.reverbNode.buffer = createImpulseResponse(
-            synthEngine.current.audioContext,
-            reverbLength,
-            2,
-            false
-        );
-        setReverbLength(changedReverbLength);
-    };
+    const handleReverbLengthChange = useCallback(
+        (changedReverbLength: number) => {
+            synthEngine.current.reverbNode.buffer = createImpulseResponse(
+                synthEngine.current.audioContext,
+                reverbLength,
+                2,
+                false
+            );
+            setReverbLength(changedReverbLength);
+        },
+        [reverbLength, synthEngine]
+    );
 
-    const handleReverbAmountChange = (value: number) => {
-        synthEngine.current.reverbGain.gain.value = value;
-        setReverbAmount(value);
-    };
+    const handleReverbAmountChange = useCallback(
+        (value: number) => {
+            synthEngine.current.reverbGain.gain.value = value;
+            setReverbAmount(value);
+        },
+        [synthEngine]
+    );
 
     return (
         <div className="component-wrapper">
@@ -74,4 +80,4 @@ const ReverbComponent: FC<ReverbComponentProps> = ({ synthEngine }) => {
     );
 };
 
-export default ReverbComponent;
+export default React.memo(ReverbComponent);

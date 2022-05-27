@@ -1,4 +1,4 @@
-import React, { FC, useState } from 'react';
+import React, { FC, useCallback, useState } from 'react';
 import { WaveformEnum } from '../../models/WaveformEnum';
 import { DefaultParams } from '../../consts/DefaultParams';
 import { SynthEngineModel } from '../../models/SynthEngineModel';
@@ -23,31 +23,36 @@ const OscillatorComponent: FC<OscillatorComponentProps> = ({
 }) => {
     const [volume, setVolume] = useState<number>(DefaultParams.gain);
 
-    const handleWaveformChange = (
-        setWaveform: Function,
-        primary: boolean,
-        event: React.ChangeEvent<HTMLInputElement>
-    ) => {
-        const selectedWaveform = event.target.value as OscillatorType;
-        console.log(event.target.name, selectedWaveform);
-        const oscillatorNode = primary ? synthEngine.current.primaryVco : synthEngine.current.secondaryVco;
-        oscillatorNode.type = selectedWaveform;
-        setWaveform(selectedWaveform);
-    };
+    const handleWaveformChange = useCallback(
+        (setWaveform: Function, primary: boolean, event: React.ChangeEvent<HTMLInputElement>) => {
+            const selectedWaveform = event.target.value as OscillatorType;
+            console.log(event.target.name, selectedWaveform);
+            const oscillatorNode = primary ? synthEngine.current.primaryVco : synthEngine.current.secondaryVco;
+            oscillatorNode.type = selectedWaveform;
+            setWaveform(selectedWaveform);
+        },
+        [synthEngine]
+    );
 
-    const handleDetuneChange = (changedDetune: number) => {
-        console.log((primary ? 'Primary' : 'Secondary') + ' detune change: ', changedDetune);
-        const oscillatorNode = primary ? synthEngine.current.primaryVco : synthEngine.current.secondaryVco;
-        oscillatorNode.detune.setValueAtTime(changedDetune, synthEngine.current.audioContext.currentTime); // value in cents
-        setDetune(changedDetune);
-    };
+    const handleDetuneChange = useCallback(
+        (changedDetune: number) => {
+            console.log((primary ? 'Primary' : 'Secondary') + ' detune change: ', changedDetune);
+            const oscillatorNode = primary ? synthEngine.current.primaryVco : synthEngine.current.secondaryVco;
+            oscillatorNode.detune.setValueAtTime(changedDetune, synthEngine.current.audioContext.currentTime); // value in cents
+            setDetune(changedDetune);
+        },
+        [primary, setDetune, synthEngine]
+    );
 
-    const handleVolumeChange = (changedVolume: number) => {
-        console.log((primary ? 'Primary' : 'Secondary') + ' volume change: ', changedVolume);
-        const volumeNode = primary ? synthEngine.current.primaryVca : synthEngine.current.secondaryVca;
-        volumeNode.gain.value = changedVolume;
-        setVolume(changedVolume);
-    };
+    const handleVolumeChange = useCallback(
+        (changedVolume: number) => {
+            console.log((primary ? 'Primary' : 'Secondary') + ' volume change: ', changedVolume);
+            const volumeNode = primary ? synthEngine.current.primaryVca : synthEngine.current.secondaryVca;
+            volumeNode.gain.value = changedVolume;
+            setVolume(changedVolume);
+        },
+        [primary, synthEngine]
+    );
 
     return (
         <div className="component-wrapper">
@@ -126,4 +131,4 @@ const OscillatorComponent: FC<OscillatorComponentProps> = ({
     );
 };
 
-export default OscillatorComponent;
+export default React.memo(OscillatorComponent);

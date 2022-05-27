@@ -1,4 +1,4 @@
-import React, { FC } from 'react';
+import React, { FC, useCallback } from 'react';
 import { DefaultParams } from '../../consts/DefaultParams';
 import SliderComponent from '../shared/SliderComponent/SliderComponent';
 import styles from './AdsrComponent.module.scss';
@@ -28,25 +28,19 @@ const AdsrComponent: FC<AdsrComponentProps> = ({
     envelope,
     setEnvelope,
 }) => {
-    const handleAdsrChange = (name: string, changedValue: number, setterFunction: Function) => {
+    const handleAdsrChange = useCallback((name: string, changedValue: number, setterFunction: Function) => {
         console.log(name, changedValue);
         setterFunction(changedValue);
-    };
+    }, []);
 
-    const handleEnvelopeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const changedEnv = event.target.value;
-        console.log('env', changedEnv);
-        setEnvelope(changedEnv);
-        // switch (changedEnv) {
-        //     case 'gate':
-        //         setEnvelope(true);
-        //         break;
-        //     case 'env':
-        //     default:
-        //         setEnvelope(false);
-        //         break;
-        // }
-    };
+    const handleEnvelopeChange = useCallback(
+        (event: React.ChangeEvent<HTMLInputElement>) => {
+            const changedEnv = event.target.value;
+            console.log('adsr mode', changedEnv);
+            setEnvelope(changedEnv);
+        },
+        [setEnvelope]
+    );
 
     return (
         <div className="component-wrapper">
@@ -161,4 +155,4 @@ const AdsrComponent: FC<AdsrComponentProps> = ({
     );
 };
 
-export default AdsrComponent;
+export default React.memo(AdsrComponent);

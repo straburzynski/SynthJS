@@ -1,4 +1,4 @@
-import React, { FC, useState } from 'react';
+import React, { FC, useCallback, useState } from 'react';
 import { AVAILABLE_FILTERS } from '../../consts/AvailableFilters';
 import { DefaultParams } from '../../consts/DefaultParams';
 import { SynthEngineModel } from '../../models/SynthEngineModel';
@@ -24,24 +24,33 @@ const FilterComponent: FC<OscillatorComponentProps> = ({ synthEngine }) => {
         [FilterTypeEnum.ALLPASS]: 'AP',
     };
 
-    const handleFilterTypeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const selectedFilterType = event.target.value as BiquadFilterType;
-        console.log('filter type: ', selectedFilterType);
-        synthEngine.current.filter.type = selectedFilterType;
-        setFilterType(selectedFilterType);
-    };
+    const handleFilterTypeChange = useCallback(
+        (event: React.ChangeEvent<HTMLInputElement>) => {
+            const selectedFilterType = event.target.value as BiquadFilterType;
+            console.log('filter type: ', selectedFilterType);
+            synthEngine.current.filter.type = selectedFilterType;
+            setFilterType(selectedFilterType);
+        },
+        [synthEngine]
+    );
 
-    const handleFrequencyChange = (value: number) => {
-        console.log('filter frequency change: ', value);
-        setFrequency(value);
-        synthEngine.current.filter.frequency.value = value;
-    };
+    const handleFrequencyChange = useCallback(
+        (value: number) => {
+            console.log('filter frequency change: ', value);
+            setFrequency(value);
+            synthEngine.current.filter.frequency.value = value;
+        },
+        [synthEngine]
+    );
 
-    const handleFilterQualityFactorChange = (value: number) => {
-        console.log('filter Q: ', value);
-        synthEngine.current.filter.Q.value = value;
-        setFilterQualityFactor(value);
-    };
+    const handleFilterQualityFactorChange = useCallback(
+        (value: number) => {
+            console.log('filter Q: ', value);
+            synthEngine.current.filter.Q.value = value;
+            setFilterQualityFactor(value);
+        },
+        [synthEngine]
+    );
 
     return (
         <div className="component-wrapper">
@@ -120,4 +129,4 @@ const FilterComponent: FC<OscillatorComponentProps> = ({ synthEngine }) => {
     );
 };
 
-export default FilterComponent;
+export default React.memo(FilterComponent);

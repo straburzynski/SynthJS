@@ -1,4 +1,4 @@
-import React, { FC, useState } from 'react';
+import React, { FC, useCallback, useState } from 'react';
 import { DefaultParams } from '../../consts/DefaultParams';
 import SliderComponent from '../shared/SliderComponent/SliderComponent';
 import { SynthEngineModel } from '../../models/SynthEngineModel';
@@ -10,21 +10,27 @@ const DelayComponent: FC<DelayComponentProps> = ({ synthEngine }) => {
     const [delayTime, setDelayTime] = useState<number>(DefaultParams.delayTime);
     const [delayFeedback, setDelayFeedback] = useState<number>(DefaultParams.delayFeedback);
 
-    const handleDelayTimeChange = (value: number) => {
-        synthEngine.current.delayNode.delayTime.linearRampToValueAtTime(
-            value,
-            synthEngine.current.audioContext.currentTime + 0.01
-        );
-        setDelayTime(value);
-    };
+    const handleDelayTimeChange = useCallback(
+        (value: number) => {
+            synthEngine.current.delayNode.delayTime.linearRampToValueAtTime(
+                value,
+                synthEngine.current.audioContext.currentTime + 0.01
+            );
+            setDelayTime(value);
+        },
+        [synthEngine]
+    );
 
-    const handleDelayFeedbackChange = (value: number) => {
-        synthEngine.current.delayFeedback.gain.linearRampToValueAtTime(
-            value,
-            synthEngine.current.audioContext.currentTime + 0.01
-        );
-        setDelayFeedback(value);
-    };
+    const handleDelayFeedbackChange = useCallback(
+        (value: number) => {
+            synthEngine.current.delayFeedback.gain.linearRampToValueAtTime(
+                value,
+                synthEngine.current.audioContext.currentTime + 0.01
+            );
+            setDelayFeedback(value);
+        },
+        [synthEngine]
+    );
 
     return (
         <div className="component-wrapper">
@@ -74,4 +80,4 @@ const DelayComponent: FC<DelayComponentProps> = ({ synthEngine }) => {
     );
 };
 
-export default DelayComponent;
+export default React.memo(DelayComponent);

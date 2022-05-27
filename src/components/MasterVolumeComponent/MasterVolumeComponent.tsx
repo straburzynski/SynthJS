@@ -1,4 +1,4 @@
-import React, { FC, useState } from 'react';
+import React, { FC, useCallback, useState } from 'react';
 import { DefaultParams } from '../../consts/DefaultParams';
 import SliderComponent from '../shared/SliderComponent/SliderComponent';
 
@@ -9,11 +9,14 @@ type MasterVolumeComponentProps = {
 const MasterVolumeComponent: FC<MasterVolumeComponentProps> = ({ masterVcaNode }) => {
     const [volume, setVolume] = useState<number>(DefaultParams.masterVcaGain);
 
-    const handleVolumeChange = (name: string, changedValue: number, setterFunction: Function) => {
-        console.log(name, changedValue);
-        masterVcaNode.gain.value = changedValue;
-        setterFunction(changedValue);
-    };
+    const handleVolumeChange = useCallback(
+        (name: string, changedValue: number, setterFunction: Function) => {
+            console.log(name, changedValue);
+            masterVcaNode.gain.value = changedValue;
+            setterFunction(changedValue);
+        },
+        [masterVcaNode.gain]
+    );
 
     return (
         <div className="component-wrapper">
@@ -45,4 +48,4 @@ const MasterVolumeComponent: FC<MasterVolumeComponentProps> = ({ masterVcaNode }
     );
 };
 
-export default MasterVolumeComponent;
+export default React.memo(MasterVolumeComponent);

@@ -1,4 +1,4 @@
-import React, { FC, useState } from 'react';
+import React, { FC, useCallback, useState } from 'react';
 import { WaveformEnum } from '../../models/WaveformEnum';
 import { DefaultParams } from '../../consts/DefaultParams';
 import { SynthEngineModel } from '../../models/SynthEngineModel';
@@ -16,52 +16,61 @@ const LfoComponent: FC<LfoComponentProps> = ({ synthEngine, lfoTarget }) => {
     const [lfoFrequency, setLfoFrequency] = useState<number>(DefaultParams.lfoFrequency);
     const [lfoWaveform, setLfoWaveform] = useState<OscillatorType>(DefaultParams.lfoWaveform);
 
-    const handleLfoFrequencyChange = (value: number) => {
-        console.log('lfo frequency', value);
-        setLfoFrequency(value);
-        switch (lfoTarget) {
-            case LfoTargetEnum.FREQUENCY:
-                synthEngine.current.lfo1.frequency.value = value;
-                break;
-            case LfoTargetEnum.VCA:
-                synthEngine.current.lfo2.frequency.value = value;
-                break;
-            default:
-                console.error('lfo frequency error');
-        }
-    };
+    const handleLfoFrequencyChange = useCallback(
+        (value: number) => {
+            console.log('lfo frequency', value);
+            setLfoFrequency(value);
+            switch (lfoTarget) {
+                case LfoTargetEnum.FREQUENCY:
+                    synthEngine.current.lfo1.frequency.value = value;
+                    break;
+                case LfoTargetEnum.VCA:
+                    synthEngine.current.lfo2.frequency.value = value;
+                    break;
+                default:
+                    console.error('lfo frequency error');
+            }
+        },
+        [lfoTarget, synthEngine]
+    );
 
-    const handleLfoGainChange = (value: number) => {
-        console.log('lfo gain', value);
-        setLfoGain(value);
-        switch (lfoTarget) {
-            case LfoTargetEnum.FREQUENCY:
-                synthEngine.current.lfo1Gain.gain.value = value;
-                break;
-            case LfoTargetEnum.VCA:
-                synthEngine.current.lfo2Gain.gain.value = value;
-                break;
-            default:
-                console.error('lfo gain error');
-        }
-    };
+    const handleLfoGainChange = useCallback(
+        (value: number) => {
+            console.log('lfo gain', value);
+            setLfoGain(value);
+            switch (lfoTarget) {
+                case LfoTargetEnum.FREQUENCY:
+                    synthEngine.current.lfo1Gain.gain.value = value;
+                    break;
+                case LfoTargetEnum.VCA:
+                    synthEngine.current.lfo2Gain.gain.value = value;
+                    break;
+                default:
+                    console.error('lfo gain error');
+            }
+        },
+        [lfoTarget, synthEngine]
+    );
 
-    const handleWaveformChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const selectedWaveform = event.target.value as OscillatorType;
-        console.log(event.target.name, selectedWaveform);
-        switch (lfoTarget) {
-            case LfoTargetEnum.FREQUENCY:
-                setLfoWaveform(selectedWaveform);
-                synthEngine.current.lfo1.type = selectedWaveform;
-                break;
-            case LfoTargetEnum.VCA:
-                setLfoWaveform(selectedWaveform);
-                synthEngine.current.lfo2.type = selectedWaveform;
-                break;
-            default:
-                console.error('lfo waveform error');
-        }
-    };
+    const handleWaveformChange = useCallback(
+        (event: React.ChangeEvent<HTMLInputElement>) => {
+            const selectedWaveform = event.target.value as OscillatorType;
+            console.log(event.target.name, selectedWaveform);
+            switch (lfoTarget) {
+                case LfoTargetEnum.FREQUENCY:
+                    setLfoWaveform(selectedWaveform);
+                    synthEngine.current.lfo1.type = selectedWaveform;
+                    break;
+                case LfoTargetEnum.VCA:
+                    setLfoWaveform(selectedWaveform);
+                    synthEngine.current.lfo2.type = selectedWaveform;
+                    break;
+                default:
+                    console.error('lfo waveform error');
+            }
+        },
+        [lfoTarget, synthEngine]
+    );
 
     return (
         <div className="component-wrapper">
@@ -140,4 +149,4 @@ const LfoComponent: FC<LfoComponentProps> = ({ synthEngine, lfoTarget }) => {
     );
 };
 
-export default LfoComponent;
+export default React.memo(LfoComponent);

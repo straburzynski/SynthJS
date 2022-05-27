@@ -1,4 +1,4 @@
-import React, { FC } from 'react';
+import React, { FC, useCallback } from 'react';
 import styles from './SliderComponent.module.scss';
 
 type VerticalSliderComponentProps = {
@@ -21,18 +21,24 @@ const SliderComponent: FC<VerticalSliderComponentProps> = ({
     defaultValue,
     step,
 }) => {
-    const handleOnChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const changedValue: number = event.target.valueAsNumber;
-        console.log(name, changedValue);
-        onChange(changedValue);
-    };
+    const handleOnChange = useCallback(
+        (event: React.ChangeEvent<HTMLInputElement>) => {
+            const changedValue: number = event.target.valueAsNumber;
+            console.log(name, changedValue);
+            onChange(changedValue);
+        },
+        [name, onChange]
+    );
 
-    const handleDoubleClick = (event: React.MouseEvent<HTMLInputElement>, setterFunction: Function, value: number) => {
-        console.log(name, 'double click -> reset to default value: ', defaultValue);
-        if (event.detail === 2) {
-            setterFunction(value);
-        }
-    };
+    const handleDoubleClick = useCallback(
+        (event: React.MouseEvent<HTMLInputElement>, setterFunction: Function, value: number) => {
+            console.log(name, 'double click -> reset to default value: ', defaultValue);
+            if (event.detail === 2) {
+                setterFunction(value);
+            }
+        },
+        [defaultValue, name]
+    );
 
     return (
         <div className={`${styles[mode]} vertical-fader-scale`}>

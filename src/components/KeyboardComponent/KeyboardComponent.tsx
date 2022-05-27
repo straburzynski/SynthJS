@@ -1,4 +1,4 @@
-import React, { FC, useEffect, useState } from 'react';
+import React, { FC, useCallback, useEffect, useMemo, useState } from 'react';
 import './keyboardComponent.scss';
 import { StringIndex } from '../../types';
 
@@ -9,34 +9,42 @@ type KeyboardComponentProps = {
 const KeyboardComponent: FC<KeyboardComponentProps> = ({ onHandleKey }) => {
     const [octave, setOctave] = useState(3);
 
-    const KEY_MAPPING: StringIndex = {
-        a: `C${octave}`,
-        w: `C#${octave}`,
-        s: `D${octave}`,
-        e: `D#${octave}`,
-        d: `E${octave}`,
-        f: `F${octave}`,
-        t: `F#${octave}`,
-        g: `G${octave}`,
-        y: `G#${octave}`,
-        h: `A${octave}`,
-        u: `A#${octave}`,
-        j: `B${octave}`,
-        k: `C${octave + 1}`,
-    };
+    const KEY_MAPPING: StringIndex = useMemo(() => {
+        return {
+            a: `C${octave}`,
+            w: `C#${octave}`,
+            s: `D${octave}`,
+            e: `D#${octave}`,
+            d: `E${octave}`,
+            f: `F${octave}`,
+            t: `F#${octave}`,
+            g: `G${octave}`,
+            y: `G#${octave}`,
+            h: `A${octave}`,
+            u: `A#${octave}`,
+            j: `B${octave}`,
+            k: `C${octave + 1}`,
+        };
+    }, [octave]);
 
-    const handleKeyEvent = (e: KeyboardEvent) => {
-        if (KEY_MAPPING.hasOwnProperty(e.key) && !e.repeat) {
-            onHandleKey(e, KEY_MAPPING[e.key]);
-        }
-    };
+    const handleKeyEvent = useCallback(
+        (e: KeyboardEvent) => {
+            if (KEY_MAPPING.hasOwnProperty(e.key) && !e.repeat) {
+                onHandleKey(e, KEY_MAPPING[e.key]);
+            }
+        },
+        [KEY_MAPPING, onHandleKey]
+    );
 
-    const handleOctaveChange = (value: number) => {
-        const newOctaveValue = octave + value;
-        if (newOctaveValue <= 7 && newOctaveValue >= 1) {
-            setOctave((o) => o + value);
-        }
-    };
+    const handleOctaveChange = useCallback(
+        (value: number) => {
+            const newOctaveValue = octave + value;
+            if (newOctaveValue <= 7 && newOctaveValue >= 1) {
+                setOctave((o) => o + value);
+            }
+        },
+        [octave]
+    );
 
     useEffect(() => {
         window.addEventListener('keyup', handleKeyEvent);

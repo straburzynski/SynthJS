@@ -1,18 +1,19 @@
-import React, { FC, MutableRefObject, useEffect, useRef, useState } from 'react';
+import React, { FC, MutableRefObject, useCallback, useEffect, useRef, useState } from 'react';
 import { DefaultParams } from '../../consts/DefaultParams';
 import { LfoTargetEnum } from '../../models/LfoTargetEnum';
 import { Note } from '@tonaljs/tonal';
 import { SynthEngineModel } from '../../models/SynthEngineModel';
 import AdsrComponent from '../AdsrComponent/AdsrComponent';
-import CurrentNoteComponent from '../CurrentNoteComponent/CurrentNoteComponent';
 import DistortionComponent from '../DistortionComponent/DistortionComponent';
 import DelayComponent from '../DelayComponent/DelayComponent';
 import FilterComponent from '../FilterComponent/FilterComponent';
-import KeyboardComponent from '../KeyboardComponent/KeyboardComponent';
 import LfoComponent from '../LfoComponent/LfoComponent';
 import MasterVolumeComponent from '../MasterVolumeComponent/MasterVolumeComponent';
 import OscillatorComponent from '../OscillatorComponent/OscillatorComponent';
 import ReverbComponent from '../ReverbComponent/ReverbComponent';
+import CurrentNoteComponent from '../CurrentNoteComponent/CurrentNoteComponent';
+import useSyncState from '../../hooks/useSyncState';
+import KeyboardComponent from '../KeyboardComponent/KeyboardComponent';
 import './synthComponent.scss';
 
 const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: MutableRefObject<SynthEngineModel>) => {
@@ -25,7 +26,7 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
     const [release, setRelease] = useState<number>(DefaultParams.release);
     const [sustain, setSustain] = useState<number>(DefaultParams.sustain);
     const [envelope, setEnvelope] = useState<string>('env');
-    const [currentNote, setCurrentNote] = useState<string>();
+    const currentNote = useSyncState<string | undefined>(undefined);
     const canvasRef = useRef<any>();
 
     useEffect(() => {
@@ -56,80 +57,122 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
         draw();
     }, [synthEngine]);
 
-    const createOscillator = (freq: number | null | undefined, isPrimary: boolean, detune: number) => {
-        if (freq == null) {
-            throw new Error('unrecognized note');
-        } else {
-            const osc = synthEngine.current.audioContext.createOscillator();
-            osc.type = isPrimary ? primaryWaveform : secondaryWaveform;
-            osc.frequency.value = freq;
-            osc.detune.value = detune;
-            osc.connect(isPrimary ? synthEngine.current.primaryAdsr : synthEngine.current.secondaryAdsr);
-            return osc;
-        }
-    };
+    const createOscillator = useCallback(
+        (freq: number | null | undefined, isPrimary: boolean, detune: number) => {
+            console.log('createOscillator ', isPrimary);
+            if (freq == null) {
+                throw new Error('unrecognized note');
+            } else {
+                const osc = synthEngine.current.audioContext.createOscillator();
+                osc.type = isPrimary ? primaryWaveform : secondaryWaveform;
+                osc.frequency.value = freq;
+                osc.detune.value = detune;
+                osc.connect(isPrimary ? synthEngine.current.primaryAdsr : synthEngine.current.secondaryAdsr);
+                return osc;
+            }
+        },
+        [primaryWaveform, secondaryWaveform, synthEngine]
+    );
 
-    const killOscillators = (t = 0, note?: string) => {
-        synthEngine.current.primaryAdsr.gain.cancelAndHoldAtTime(t);
-        synthEngine.current.secondaryAdsr.gain.cancelAndHoldAtTime(t);
-        synthEngine.current.filter.frequency.cancelAndHoldAtTime(t);
-        if (synthEngine.current.primaryVco) {
-            synthEngine.current.primaryVco.stop(t);
-            synthEngine.current.primaryVco.onended = () => {
-                if (note) {
-                    setCurrentNote(undefined);
+    const killOscillators = useCallback(
+        (t = 0, note?: string) => {
+            console.log('killOscillators');
+            synthEngine.current.primaryAdsr.gain.cancelAndHoldAtTime(t);
+            synthEngine.current.secondaryAdsr.gain.cancelAndHoldAtTime(t);
+            synthEngine.current.filter.frequency.cancelAndHoldAtTime(t);
+            if (synthEngine.current.primaryVco) {
+                synthEngine.current.primaryVco.stop(t);
+                synthEngine.current.primaryVco.onended = () => {
+                    if (note) {
+                        currentNote.set(undefined);
+                    }
+                };
+            }
+            if (synthEngine.current.secondaryVco) {
+                synthEngine.current.secondaryVco.stop(t);
+            }
+        },
+        [currentNote, synthEngine]
+    );
+
+    const handleKey = useCallback(
+        (e: React.MouseEvent<HTMLButtonElement> | KeyboardEvent, note: string) => {
+            console.log('handleKey');
+            const envelopeOn = (vcaGain: AudioParam, a: number, d: number, s: number, envelope: string) => {
+                const now = synthEngine.current.audioContext.currentTime;
+                switch (envelope) {
+                    case 'env':
+                        vcaGain.cancelScheduledValues(0);
+                        vcaGain.setValueAtTime(0, now);
+                        vcaGain.linearRampToValueAtTime(1, now + a);
+                        vcaGain.linearRampToValueAtTime(s, now + a + d);
+                        break;
+                    case 'gate':
+                    default:
+                        vcaGain.value = DefaultParams.adsrMax;
+                        break;
                 }
             };
-        }
-        if (synthEngine.current.secondaryVco) {
-            synthEngine.current.secondaryVco.stop(t);
-        }
-    };
-
-    const handleKey = (e: React.MouseEvent<HTMLButtonElement> | KeyboardEvent, note: string) => {
-        const s = synthEngine.current;
-        switch (e.type) {
-            case 'mousedown':
-            case 'keydown':
-                console.log('note on: ', note);
-                killOscillators();
-                setCurrentNote(note);
-                const freq = Note.get(note).freq;
-                document.getElementById(note)?.classList.add('active');
-                s.primaryVco = createOscillator(freq, true, primaryVcoDetune);
-                s.secondaryVco = createOscillator(freq, false, secondaryVcoDetune);
-                envelopeOn(s.primaryAdsr.gain, attack, decay, sustain);
-                envelopeOn(s.secondaryAdsr.gain, attack, decay, sustain);
-                s.primaryVco.start();
-                s.secondaryVco.start();
-                break;
-            case 'mouseup':
-            case 'keyup':
-                console.log('note off: ', note);
-                document.getElementById(note)?.classList.remove('active');
-                if (currentNote === note) {
-                    envelopeOff(s.primaryAdsr.gain, release, note);
-                    envelopeOff(s.secondaryAdsr.gain, release, note);
-                    break;
+            const envelopeOff = (vcaGain: AudioParam, r: number, envelope: string, note?: string) => {
+                const now = synthEngine.current.audioContext.currentTime;
+                switch (envelope) {
+                    case 'env':
+                        vcaGain.cancelScheduledValues(0);
+                        vcaGain.setValueAtTime(vcaGain.value, now);
+                        vcaGain.linearRampToValueAtTime(0, now + r);
+                        killOscillators(now + r, note);
+                        break;
+                    case 'gate':
+                    default:
+                        vcaGain.value = 0;
+                        killOscillators(now, note);
+                        break;
                 }
-        }
-    };
+            };
 
-    function envelopeOn(vcaGain: AudioParam, a: number, d: number, s: number) {
-        const now = synthEngine.current.audioContext.currentTime;
-        vcaGain.cancelScheduledValues(0);
-        vcaGain.setValueAtTime(0, now);
-        vcaGain.linearRampToValueAtTime(1, now + a);
-        vcaGain.linearRampToValueAtTime(s, now + a + d);
-    }
-
-    function envelopeOff(vcaGain: AudioParam, r: number, note?: string) {
-        const now = synthEngine.current.audioContext.currentTime;
-        vcaGain.cancelScheduledValues(0);
-        vcaGain.setValueAtTime(vcaGain.value, now);
-        vcaGain.linearRampToValueAtTime(0, now + r);
-        killOscillators(now + r, note);
-    }
+            const s = synthEngine.current;
+            switch (e.type) {
+                case 'mousedown':
+                case 'keydown':
+                    console.log('note on: ', note);
+                    currentNote.set(note);
+                    killOscillators();
+                    const freq = Note.get(note).freq;
+                    document.getElementById(note)?.classList.add('active');
+                    s.primaryVco = createOscillator(freq, true, primaryVcoDetune);
+                    s.secondaryVco = createOscillator(freq, false, secondaryVcoDetune);
+                    envelopeOn(s.primaryAdsr.gain, attack, decay, sustain, envelope);
+                    envelopeOn(s.secondaryAdsr.gain, attack, decay, sustain, envelope);
+                    s.primaryVco.start();
+                    s.secondaryVco.start();
+                    break;
+                case 'mouseup':
+                case 'keyup':
+                    console.log('note off: ', note);
+                    document.getElementById(note)?.classList.remove('active');
+                    console.log('currentNote', currentNote);
+                    console.log('note', note);
+                    if (currentNote.get() === note) {
+                        envelopeOff(s.primaryAdsr.gain, release, envelope, note);
+                        envelopeOff(s.secondaryAdsr.gain, release, envelope, note);
+                        break;
+                    }
+            }
+        },
+        [
+            attack,
+            createOscillator,
+            currentNote,
+            decay,
+            envelope,
+            killOscillators,
+            primaryVcoDetune,
+            release,
+            secondaryVcoDetune,
+            sustain,
+            synthEngine,
+        ]
+    );
 
     return (
         <div className="synth-wrapper">
@@ -137,15 +180,16 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
                 <div className="flex-100">
                     <KeyboardComponent onHandleKey={handleKey} />
                 </div>
+                <div className="flex-30">
+                    <p className='text-center'>Current note:</p>
+                    <hr />
+                    <CurrentNoteComponent currentNote={currentNote.get()} />
+                    <hr />
+                </div>
                 <div className="flex-100">
                     <canvas className="visualizer" width="500" height="100" ref={canvasRef} />
                 </div>
             </div>
-            <br />
-            <br />
-            <hr />
-            <CurrentNoteComponent currentNote={currentNote} />
-            <hr />
             <br />
 
             <div className="first container">

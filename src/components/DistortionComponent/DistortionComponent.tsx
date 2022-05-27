@@ -1,4 +1,4 @@
-import React, { FC, useState } from 'react';
+import React, { FC, useCallback, useState } from 'react';
 import { DefaultParams } from '../../consts/DefaultParams';
 import SliderComponent from '../shared/SliderComponent/SliderComponent';
 import { SynthEngineModel } from '../../models/SynthEngineModel';
@@ -12,29 +12,35 @@ const DistortionComponent: FC<DistortionComponentProps> = ({ synthEngine }) => {
     const [distortionType, setDistortionType] = useState<DistortionType>('off');
     const [distortionGain, setDistortionGain] = useState<number>(0);
 
-    const handleDistortionGainChange = (changedDistortionGain: number) => {
-        if (distortionType) {
-            synthEngine.current.distortion.curve = createDistortionCurve(changedDistortionGain);
-        }
-        setDistortionGain(changedDistortionGain);
-    };
+    const handleDistortionGainChange = useCallback(
+        (changedDistortionGain: number) => {
+            if (distortionType) {
+                synthEngine.current.distortion.curve = createDistortionCurve(changedDistortionGain);
+            }
+            setDistortionGain(changedDistortionGain);
+        },
+        [distortionType, synthEngine]
+    );
 
-    const handleDistortionTypeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const changedDistortionActive = event.target.value as DistortionType;
-        console.log('distortion type', changedDistortionActive);
-        switch (changedDistortionActive) {
-            case 'type1':
-                console.log('distortion type1');
-                synthEngine.current.distortion.curve = createDistortionCurve(distortionGain);
-                break;
-            case 'off':
-            default:
-                console.log('distortion off');
-                synthEngine.current.distortion.curve = null;
-                break;
-        }
-        setDistortionType(changedDistortionActive);
-    };
+    const handleDistortionTypeChange = useCallback(
+        (event: React.ChangeEvent<HTMLInputElement>) => {
+            const changedDistortionActive = event.target.value as DistortionType;
+            console.log('distortion type', changedDistortionActive);
+            switch (changedDistortionActive) {
+                case 'type1':
+                    console.log('distortion type1');
+                    synthEngine.current.distortion.curve = createDistortionCurve(distortionGain);
+                    break;
+                case 'off':
+                default:
+                    console.log('distortion off');
+                    synthEngine.current.distortion.curve = null;
+                    break;
+            }
+            setDistortionType(changedDistortionActive);
+        },
+        [distortionGain, synthEngine]
+    );
 
     return (
         <div className="component-wrapper">
@@ -99,4 +105,4 @@ const DistortionComponent: FC<DistortionComponentProps> = ({ synthEngine }) => {
     );
 };
 
-export default DistortionComponent;
+export default React.memo(DistortionComponent);
