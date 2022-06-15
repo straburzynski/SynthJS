@@ -11,9 +11,9 @@ import LfoComponent from '../LfoComponent/LfoComponent';
 import MasterVolumeComponent from '../MasterVolumeComponent/MasterVolumeComponent';
 import OscillatorComponent from '../OscillatorComponent/OscillatorComponent';
 import ReverbComponent from '../ReverbComponent/ReverbComponent';
+import ControlsComponent from '../ControlsComponent/ControlsComponent';
 import CurrentNoteComponent from '../CurrentNoteComponent/CurrentNoteComponent';
 import useSyncState from '../../hooks/useSyncState';
-import KeyboardComponent from '../KeyboardComponent/KeyboardComponent';
 import './synthComponent.scss';
 
 const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: MutableRefObject<SynthEngineModel>) => {
@@ -96,7 +96,7 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
     );
 
     const handleKey = useCallback(
-        (e: React.MouseEvent<HTMLButtonElement> | KeyboardEvent, note: string) => {
+        (e: React.MouseEvent<HTMLElement> | KeyboardEvent, note: string) => {
             console.log('handleKey');
             const envelopeOn = (vcaGain: AudioParam, a: number, d: number, s: number, envelope: string) => {
                 const now = synthEngine.current.audioContext.currentTime;
@@ -138,7 +138,11 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
                     currentNote.set(note);
                     killOscillators();
                     const freq = Note.get(note).freq;
-                    document.getElementById(note)?.classList.add('active');
+
+                    const actives = document.querySelectorAll('.btn-active');
+                    actives.forEach((a) => a.id !== currentNote.get() && a.classList.remove('btn-active'));
+                    Array.from(document.getElementsByClassName(note)).forEach((el) => el.classList.add('btn-active'));
+
                     s.primaryVco = createOscillator(freq, true, primaryVcoDetune);
                     s.secondaryVco = createOscillator(freq, false, secondaryVcoDetune);
                     envelopeOn(s.primaryAdsr.gain, attack, decay, sustain, envelope);
@@ -149,9 +153,10 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
                 case 'mouseup':
                 case 'keyup':
                     console.log('note off: ', note);
-                    document.getElementById(note)?.classList.remove('active');
-                    console.log('currentNote', currentNote);
-                    console.log('note', note);
+                    Array.from(document.getElementsByClassName(note)).forEach((el) => {
+                        el.id !== currentNote.get() && el.classList.remove('btn-active');
+                    });
+                    console.log('currentNote', currentNote.get());
                     if (currentNote.get() === note) {
                         envelopeOff(s.primaryAdsr.gain, release, envelope, note);
                         envelopeOff(s.secondaryAdsr.gain, release, envelope, note);
@@ -177,11 +182,9 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
     return (
         <div className="synth-wrapper">
             <div className="container">
-                <div className="flex-100">
-                    <KeyboardComponent onHandleKey={handleKey} />
-                </div>
+                <div className="flex-100">{/*<KeyboardComponent onHandleKey={handleKey} />*/}</div>
                 <div className="flex-30">
-                    <p className='text-center'>Current note:</p>
+                    <p className="text-center">Current note:</p>
                     <hr />
                     <CurrentNoteComponent currentNote={currentNote.get()} />
                     <hr />
@@ -251,8 +254,13 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
                     <MasterVolumeComponent masterVcaNode={synthEngine.current.masterVca} />
                 </div>
             </div>
+            <div className="third container">
+                <div className="flex-100">
+                    <ControlsComponent onHandleKey={handleKey} />
+                </div>
+            </div>
         </div>
     );
 };
 
-export default SynthComponent;
+export default React.memo(SynthComponent);

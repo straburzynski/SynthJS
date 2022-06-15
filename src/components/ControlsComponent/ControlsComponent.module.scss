@@ -1,0 +1,31 @@
+.parentWrapper {
+  height: 100%;
+}
+
+.parent {
+  display: flex;
+  font-size: 0;
+  flex-wrap: wrap;
+  margin: 10px 0 10px 0;
+}
+
+.child {
+  border-radius: 3px;
+  display: flex;
+  height: 100px;
+  flex: 0 0 12.5%;
+}
+
+.controlBtn {
+  background: #8c8a8a;
+  width: 100%;
+  margin: 5px;
+  display: flex;
+}
+
+.label {
+  font-size: 14px;
+  width: 100%;
+  align-self: center;
+  text-align: center;
+}
