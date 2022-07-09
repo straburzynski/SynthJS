@@ -15,6 +15,7 @@ import ControlsComponent from '../ControlsComponent/ControlsComponent';
 import CurrentNoteComponent from '../CurrentNoteComponent/CurrentNoteComponent';
 import useSyncState from '../../hooks/useSyncState';
 import './synthComponent.scss';
+import LogoComponent from '../LogoComponent/LogoComponent';
 
 const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: MutableRefObject<SynthEngineModel>) => {
     const [primaryWaveform, setPrimaryWaveform] = useState<OscillatorType>(DefaultParams.primaryWaveform);
@@ -182,7 +183,9 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
     return (
         <div className="synth-wrapper">
             <div className="container">
-                <div className="flex-100">{/*<KeyboardComponent onHandleKey={handleKey} />*/}</div>
+                <div className="flex-100">
+                    <LogoComponent />
+                </div>
                 <div className="flex-30">
                     <p className="text-center">Current note:</p>
                     <hr />
