@@ -41,8 +41,7 @@ const ControlsComponent: FC<ControlsComponentProps> = ({ onHandleKey }) => {
             window.removeEventListener('keyup', handleKeyEvent);
             window.removeEventListener('keydown', handleKeyEvent);
         };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [handleKeyEvent]);
 
     return (
         <div className="component-wrapper">
