@@ -237,3 +237,16 @@ p.title {
   color: #D9E7FD;
   border-left: 10px solid orange;
 }
+
+.link {
+  color: #ccc;
+  text-decoration: none;
+  text-align: right;
+  display: block;
+  margin: 10px 3px 0 0;
+
+  &:hover {
+    color: white;
+    text-decoration: underline;
+  }
+}

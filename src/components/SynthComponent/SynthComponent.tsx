@@ -14,8 +14,8 @@ import ReverbComponent from '../ReverbComponent/ReverbComponent';
 import ControlsComponent from '../ControlsComponent/ControlsComponent';
 import CurrentNoteComponent from '../CurrentNoteComponent/CurrentNoteComponent';
 import useSyncState from '../../hooks/useSyncState';
-import './synthComponent.scss';
 import LogoComponent from '../LogoComponent/LogoComponent';
+import './synthComponent.scss';
 
 const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: MutableRefObject<SynthEngineModel>) => {
     const [primaryWaveform, setPrimaryWaveform] = useState<OscillatorType>(DefaultParams.primaryWaveform);
@@ -262,6 +262,7 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
                     <ControlsComponent onHandleKey={handleKey} />
                 </div>
             </div>
+            <p><a className="link" href="https://github.com/straburzynski/synth-js">https://github.com/straburzynski/synth-js</a></p>
         </div>
     );
 };
