@@ -145,3 +145,5 @@ thumb
 sketch
 /.idea/
 /data/
+build
+build/*

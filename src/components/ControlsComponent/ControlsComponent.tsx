@@ -12,9 +12,11 @@ type ControlsComponentProps = {
 const ControlsComponent: FC<ControlsComponentProps> = ({ onHandleKey }) => {
     console.log('-- ControlsComponent render --');
     const [octave, setOctave] = useState(3);
+    const [rootNote, setRootNote] = useState("C")
+    const [scale, setScale] = useState("major")
     const [notes, setNotes] = useState(
-        Scale.rangeOf('C major')(`C${octave + 1}`, `C${octave + 2}`).concat(
-            Scale.rangeOf('C major')(`C${octave}`, `C${octave + 1}`)
+        Scale.rangeOf(`${rootNote} ${scale}`)(`${rootNote}${octave + 1}`, `${rootNote}${octave + 2}`).concat(
+            Scale.rangeOf(`${rootNote} ${scale}`)(`${rootNote}${octave}`, `${rootNote}${octave + 1}`)
         )
     );
 
@@ -45,7 +47,12 @@ const ControlsComponent: FC<ControlsComponentProps> = ({ onHandleKey }) => {
 
     return (
         <div className="component-wrapper">
-            <p className="title teal">Keyboard</p>
+            <div className={styles.title + " teal"}>
+                <span>Keyboard</span>
+                <span style={{marginLeft: "45px"}}>Octave: {octave}</span>
+                <span style={{marginLeft: "15px"}}>Root note: {rootNote}</span>
+                <span style={{marginLeft: "15px"}}>Scale: {scale}</span>
+            </div>
             <div className={styles.parentWrapper}>
                 <div className={styles.parent}>
                     {Object.entries(keyMapping).map(([key, value]) => {
