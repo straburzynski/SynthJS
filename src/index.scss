@@ -197,10 +197,79 @@ p.title {
   text-align: center;
 }
 
+.margin-left-50 {
+  margin-left: 50px;
+}
 /* controls component */
 
 .btn-active {
   background-color: orange !important;
+}
+
+/* buttons */
+
+.button1 {
+  display: inline-block;
+  outline: none;
+  cursor: pointer;
+  border: none;
+  line-height: 24px;
+  font-size: 16px;
+  color: #ffffff;
+  background-color: #ffffff1a;
+  padding: 0 10px;
+  margin: 0 10px;
+  &:hover {
+    color: #ffffff;
+    background-color: #FFFFFF33;
+  }
+}
+
+/* dropdown */
+.dropdown {
+  position: relative;
+  display: inline-block;
+  margin-left: 10px;
+}
+
+.dropbtn {
+  background-color: #ffffff1a;
+  color: white;
+  padding: 5px 10px;
+  font-size: 16px;
+  border: none;
+  cursor: pointer;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #efefef;
+  min-width: 100px;
+  z-index: 1;
+  cursor: pointer;
+}
+
+.dropdown-content span {
+  color: black;
+  font-weight: 500;
+  padding: 1px 10px 0 15px;
+  text-decoration: none;
+  display: block;
+}
+
+.dropdown-content span:hover {
+  background-color: #c7c7c7
+}
+
+.dropdown:hover .dropdown-content {
+  display: block;
+  height: 250px;
+  overflow: auto;
+}
+
+.dropdown:hover .dropbtn {
+  background-color: #FFFFFF33;
 }
 
 /* lists and icons */
