@@ -96,41 +96,75 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
         [currentNote, synthEngine]
     );
 
+    const envelopeOn = useCallback((vcaGain: AudioParam, a: number, d: number, s: number, envelope: string) => {
+        const now = synthEngine.current.audioContext.currentTime;
+        switch (envelope) {
+            case 'env':
+                vcaGain.cancelScheduledValues(0);
+                vcaGain.setValueAtTime(0, now);
+                vcaGain.linearRampToValueAtTime(1, now + a);
+                vcaGain.linearRampToValueAtTime(s, now + a + d);
+                break;
+            case 'gate':
+            default:
+                vcaGain.value = DefaultParams.adsrMax;
+                break;
+        }
+    }, [synthEngine]);
+
+    const envelopeOff = useCallback((vcaGain: AudioParam, r: number, envelope: string, note?: string) => {
+        const now = synthEngine.current.audioContext.currentTime;
+        switch (envelope) {
+            case 'env':
+                vcaGain.cancelScheduledValues(0);
+                vcaGain.setValueAtTime(vcaGain.value, now);
+                vcaGain.linearRampToValueAtTime(0, now + r);
+                killOscillators(now + r, note);
+                break;
+            case 'gate':
+            default:
+                vcaGain.value = 0;
+                killOscillators(now, note);
+                break;
+        }
+    }, [synthEngine, killOscillators]);
+
+    // const envelopeOn = (vcaGain: AudioParam, a: number, d: number, s: number, envelope: string) => {
+    //     const now = synthEngine.current.audioContext.currentTime;
+    //     switch (envelope) {
+    //         case 'env':
+    //             vcaGain.cancelScheduledValues(0);
+    //             vcaGain.setValueAtTime(0, now);
+    //             vcaGain.linearRampToValueAtTime(1, now + a);
+    //             vcaGain.linearRampToValueAtTime(s, now + a + d);
+    //             break;
+    //         case 'gate':
+    //         default:
+    //             vcaGain.value = DefaultParams.adsrMax;
+    //             break;
+    //     }
+    // };
+
+    // const envelopeOff = (vcaGain: AudioParam, r: number, envelope: string, note?: string) => {
+    //     const now = synthEngine.current.audioContext.currentTime;
+    //     switch (envelope) {
+    //         case 'env':
+    //             vcaGain.cancelScheduledValues(0);
+    //             vcaGain.setValueAtTime(vcaGain.value, now);
+    //             vcaGain.linearRampToValueAtTime(0, now + r);
+    //             killOscillators(now + r, note);
+    //             break;
+    //         case 'gate':
+    //         default:
+    //             vcaGain.value = 0;
+    //             killOscillators(now, note);
+    //             break;
+    //     }
+    // };
+
     const handleKey = useCallback(
         (e: React.MouseEvent<HTMLElement> | KeyboardEvent, note: string) => {
             console.log('handleKey');
-            const envelopeOn = (vcaGain: AudioParam, a: number, d: number, s: number, envelope: string) => {
-                const now = synthEngine.current.audioContext.currentTime;
-                switch (envelope) {
-                    case 'env':
-                        vcaGain.cancelScheduledValues(0);
-                        vcaGain.setValueAtTime(0, now);
-                        vcaGain.linearRampToValueAtTime(1, now + a);
-                        vcaGain.linearRampToValueAtTime(s, now + a + d);
-                        break;
-                    case 'gate':
-                    default:
-                        vcaGain.value = DefaultParams.adsrMax;
-                        break;
-                }
-            };
-            const envelopeOff = (vcaGain: AudioParam, r: number, envelope: string, note?: string) => {
-                const now = synthEngine.current.audioContext.currentTime;
-                switch (envelope) {
-                    case 'env':
-                        vcaGain.cancelScheduledValues(0);
-                        vcaGain.setValueAtTime(vcaGain.value, now);
-                        vcaGain.linearRampToValueAtTime(0, now + r);
-                        killOscillators(now + r, note);
-                        break;
-                    case 'gate':
-                    default:
-                        vcaGain.value = 0;
-                        killOscillators(now, note);
-                        break;
-                }
-            };
-
             const s = synthEngine.current;
             switch (e.type) {
                 case 'mousedown':
@@ -177,11 +211,13 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
             secondaryVcoDetune,
             sustain,
             synthEngine,
+            envelopeOff,
+            envelopeOn,
         ]
     );
 
     return (
-        <div className="synth-wrapper">
+        <div className="synth-śwrapper">
             <div className="container">
                 <div className="flex-100">
                     <LogoComponent />
@@ -262,7 +298,11 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
                     <ControlsComponent onHandleKey={handleKey} />
                 </div>
             </div>
-            <p><a className="link" href="https://github.com/straburzynski/synth-js">https://github.com/straburzynski/synth-js</a></p>
+            <p>
+                <a className="link" href="https://github.com/straburzynski/synth-js">
+                    https://github.com/straburzynski/synth-js
+                </a>
+            </p>
         </div>
     );
 };
