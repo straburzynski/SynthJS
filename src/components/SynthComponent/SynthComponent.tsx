@@ -15,7 +15,10 @@ import ControlsComponent from '../ControlsComponent/ControlsComponent';
 import CurrentNoteComponent from '../CurrentNoteComponent/CurrentNoteComponent';
 import useSyncState from '../../hooks/useSyncState';
 import LogoComponent from '../LogoComponent/LogoComponent';
+import { Midi as TonejsMidi } from '@tonejs/midi';
+import { Midi as TonaljsMidi } from '@tonaljs/tonal';
 import './synthComponent.scss';
+import { MidiFileModel } from '../../models/MidiFileModel';
 
 const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: MutableRefObject<SynthEngineModel>) => {
     const [primaryWaveform, setPrimaryWaveform] = useState<OscillatorType>(DefaultParams.primaryWaveform);
@@ -27,8 +30,10 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
     const [release, setRelease] = useState<number>(DefaultParams.release);
     const [sustain, setSustain] = useState<number>(DefaultParams.sustain);
     const [envelope, setEnvelope] = useState<string>('env');
+    const [midi, setMidi] = useState<MidiFileModel | undefined>(undefined);
     const currentNote = useSyncState<string | undefined>(undefined);
     const canvasRef = useRef<any>();
+    const fileUploadRef = useRef<any>();
 
     useEffect(() => {
         const getAnalyserData = () => {
@@ -96,108 +101,61 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
         [currentNote, synthEngine]
     );
 
-    const envelopeOn = useCallback((vcaGain: AudioParam, a: number, d: number, s: number, envelope: string) => {
-        const now = synthEngine.current.audioContext.currentTime;
-        switch (envelope) {
-            case 'env':
-                vcaGain.cancelScheduledValues(0);
-                vcaGain.setValueAtTime(0, now);
-                vcaGain.linearRampToValueAtTime(1, now + a);
-                vcaGain.linearRampToValueAtTime(s, now + a + d);
-                break;
-            case 'gate':
-            default:
-                vcaGain.value = DefaultParams.adsrMax;
-                break;
-        }
-    }, [synthEngine]);
-
-    const envelopeOff = useCallback((vcaGain: AudioParam, r: number, envelope: string, note?: string) => {
-        const now = synthEngine.current.audioContext.currentTime;
-        switch (envelope) {
-            case 'env':
-                vcaGain.cancelScheduledValues(0);
-                vcaGain.setValueAtTime(vcaGain.value, now);
-                vcaGain.linearRampToValueAtTime(0, now + r);
-                killOscillators(now + r, note);
-                break;
-            case 'gate':
-            default:
-                vcaGain.value = 0;
-                killOscillators(now, note);
-                break;
-        }
-    }, [synthEngine, killOscillators]);
-
-    // const envelopeOn = (vcaGain: AudioParam, a: number, d: number, s: number, envelope: string) => {
-    //     const now = synthEngine.current.audioContext.currentTime;
-    //     switch (envelope) {
-    //         case 'env':
-    //             vcaGain.cancelScheduledValues(0);
-    //             vcaGain.setValueAtTime(0, now);
-    //             vcaGain.linearRampToValueAtTime(1, now + a);
-    //             vcaGain.linearRampToValueAtTime(s, now + a + d);
-    //             break;
-    //         case 'gate':
-    //         default:
-    //             vcaGain.value = DefaultParams.adsrMax;
-    //             break;
-    //     }
-    // };
-
-    // const envelopeOff = (vcaGain: AudioParam, r: number, envelope: string, note?: string) => {
-    //     const now = synthEngine.current.audioContext.currentTime;
-    //     switch (envelope) {
-    //         case 'env':
-    //             vcaGain.cancelScheduledValues(0);
-    //             vcaGain.setValueAtTime(vcaGain.value, now);
-    //             vcaGain.linearRampToValueAtTime(0, now + r);
-    //             killOscillators(now + r, note);
-    //             break;
-    //         case 'gate':
-    //         default:
-    //             vcaGain.value = 0;
-    //             killOscillators(now, note);
-    //             break;
-    //     }
-    // };
-
-    const handleKey = useCallback(
-        (e: React.MouseEvent<HTMLElement> | KeyboardEvent, note: string) => {
-            console.log('handleKey');
-            const s = synthEngine.current;
-            switch (e.type) {
-                case 'mousedown':
-                case 'keydown':
-                    console.log('note on: ', note);
-                    currentNote.set(note);
-                    killOscillators();
-                    const freq = Note.get(note).freq;
-
-                    const actives = document.querySelectorAll('.btn-active');
-                    actives.forEach((a) => a.id !== currentNote.get() && a.classList.remove('btn-active'));
-                    Array.from(document.getElementsByClassName(note)).forEach((el) => el.classList.add('btn-active'));
-
-                    s.primaryVco = createOscillator(freq, true, primaryVcoDetune);
-                    s.secondaryVco = createOscillator(freq, false, secondaryVcoDetune);
-                    envelopeOn(s.primaryAdsr.gain, attack, decay, sustain, envelope);
-                    envelopeOn(s.secondaryAdsr.gain, attack, decay, sustain, envelope);
-                    s.primaryVco.start();
-                    s.secondaryVco.start();
+    const envelopeOn = useCallback(
+        (vcaGain: AudioParam, a: number, d: number, s: number, envelope: string) => {
+            const now = synthEngine.current.audioContext.currentTime;
+            switch (envelope) {
+                case 'env':
+                    vcaGain.cancelScheduledValues(0);
+                    vcaGain.setValueAtTime(0, now);
+                    vcaGain.linearRampToValueAtTime(1, now + a);
+                    vcaGain.linearRampToValueAtTime(s, now + a + d);
                     break;
-                case 'mouseup':
-                case 'keyup':
-                    console.log('note off: ', note);
-                    Array.from(document.getElementsByClassName(note)).forEach((el) => {
-                        el.id !== currentNote.get() && el.classList.remove('btn-active');
-                    });
-                    console.log('currentNote', currentNote.get());
-                    if (currentNote.get() === note) {
-                        envelopeOff(s.primaryAdsr.gain, release, envelope, note);
-                        envelopeOff(s.secondaryAdsr.gain, release, envelope, note);
-                        break;
-                    }
+                case 'gate':
+                default:
+                    vcaGain.value = DefaultParams.adsrMax;
+                    break;
             }
+        },
+        [synthEngine]
+    );
+
+    const envelopeOff = useCallback(
+        (vcaGain: AudioParam, r: number, envelope: string, note?: string) => {
+            const now = synthEngine.current.audioContext.currentTime;
+            switch (envelope) {
+                case 'env':
+                    vcaGain.cancelScheduledValues(0);
+                    vcaGain.setValueAtTime(vcaGain.value, now);
+                    vcaGain.linearRampToValueAtTime(0, now + r);
+                    killOscillators(now + r, note);
+                    break;
+                case 'gate':
+                default:
+                    vcaGain.value = 0;
+                    killOscillators(now, note);
+                    break;
+            }
+        },
+        [synthEngine, killOscillators]
+    );
+
+    const playNote = useCallback(
+        (note: string) => {
+            const s = synthEngine.current;
+            console.log('note on: ', note);
+            currentNote.set(note);
+            killOscillators();
+            const freq = Note.get(note).freq;
+            const actives = document.querySelectorAll('.btn-active');
+            actives.forEach((a) => a.id !== currentNote.get() && a.classList.remove('btn-active'));
+            Array.from(document.getElementsByClassName(note)).forEach((el) => el.classList.add('btn-active'));
+            s.primaryVco = createOscillator(freq, true, primaryVcoDetune);
+            s.secondaryVco = createOscillator(freq, false, secondaryVcoDetune);
+            envelopeOn(s.primaryAdsr.gain, attack, decay, sustain, envelope);
+            envelopeOn(s.secondaryAdsr.gain, attack, decay, sustain, envelope);
+            s.primaryVco.start();
+            s.secondaryVco.start();
         },
         [
             attack,
@@ -205,19 +163,88 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
             currentNote,
             decay,
             envelope,
+            envelopeOn,
             killOscillators,
             primaryVcoDetune,
-            release,
             secondaryVcoDetune,
             sustain,
             synthEngine,
-            envelopeOff,
-            envelopeOn,
         ]
     );
 
+    const stopNote = useCallback(
+        (note: string) => {
+            console.log('note off: ', note);
+            Array.from(document.getElementsByClassName(note)).forEach((el) => {
+                el.id !== currentNote.get() && el.classList.remove('btn-active');
+            });
+            console.log('currentNote', currentNote.get());
+            if (currentNote.get() === note) {
+                envelopeOff(synthEngine.current.primaryAdsr.gain, release, envelope, note);
+                envelopeOff(synthEngine.current.secondaryAdsr.gain, release, envelope, note);
+            }
+        },
+        [currentNote, envelope, envelopeOff, release, synthEngine]
+    );
+
+    const handleKey = useCallback(
+        (e: React.MouseEvent<HTMLElement> | KeyboardEvent, note: string) => {
+            console.log('handleKey');
+            switch (e.type) {
+                case 'mousedown':
+                case 'keydown':
+                    playNote(note);
+                    break;
+                case 'mouseup':
+                case 'keyup':
+                    stopNote(note);
+                    break;
+            }
+        },
+        [playNote, stopNote]
+    );
+
+    // todo schedule notes to play at fixed time
+    async function handlePlay() {
+        const sleep = (s: number) => new Promise((r) => setTimeout(r, s));
+        console.log('Play midi file', {midi});
+        const notes = midi?.midi.tracks[0].notes;
+        const bpm = midi?.midi.header.tempos[0]?.bpm || 120;
+        const ppq = midi?.midi.header.ppq // Pulses Per Quarter
+        if (notes == null || ppq == null) return;
+        const tickMsValue = 60000 / (bpm * ppq)
+        for (let i = 0; i <= notes.length; i++) {
+            const currentNote = TonaljsMidi.midiToNoteName(notes[i].midi, { sharps: true });
+            playNote(currentNote);
+            await sleep(notes[i].durationTicks * tickMsValue);
+            stopNote(currentNote);
+            const currentPauseFromTicks = (notes[i+1].ticks * tickMsValue) - (notes[i].ticks * tickMsValue) - (notes[i].durationTicks * tickMsValue);
+            await sleep(currentPauseFromTicks);
+        }
+    }
+
+    const handleClear = () => {
+        fileUploadRef.current.value = '';
+        setMidi(undefined);
+    };
+
+    const handleLoadMidiFile = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>): void => {
+        const files = (e.target as HTMLInputElement).files;
+        if (files && files.length > 0) {
+            const file = files[0];
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const midiJson = new TonejsMidi(e.target?.result as ArrayBuffer);
+                const midi = { midi: midiJson, name: file.name };
+                setMidi(midi);
+                console.log(midi);
+            };
+            reader.readAsArrayBuffer(file);
+        }
+    };
+
     return (
-        <div className="synth-śwrapper">
+        <div className="synth-wrapper">
             <div className="container">
                 <div className="flex-100">
                     <LogoComponent />
@@ -232,8 +259,7 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
                     <canvas className="visualizer" width="500" height="100" ref={canvasRef} />
                 </div>
             </div>
-            <br />
-
+            <br />d
             <div className="first container">
                 <div className="flex-100">
                     <OscillatorComponent
@@ -298,11 +324,47 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
                     <ControlsComponent onHandleKey={handleKey} />
                 </div>
             </div>
-            <p>
-                <a className="link" href="https://github.com/straburzynski/synth-js">
-                    https://github.com/straburzynski/synth-js
-                </a>
-            </p>
+            <div className="container">
+                <div className="flex-100">
+                    <div className="custom-input">
+                        <input
+                            ref={fileUploadRef}
+                            id="file-upload"
+                            onChange={handleLoadMidiFile}
+                            type="file"
+                            accept="*.mid, *.midi"
+                            style={{ display: 'none' }}
+                        />
+                        <label htmlFor="file-upload">Upload midi file</label>
+                        {midi && (
+                            <>
+                                <div className='midi-name'>{midi.name}</div>
+                                <div
+                                    className="button1"
+                                    onClick={handleClear}
+                                    style={{ display: 'inline-block', padding: '3px 10px', marginLeft: '10px' }}
+                                >
+                                    X
+                                </div>
+                                <div
+                                    className="button1"
+                                    onClick={handlePlay}
+                                    style={{ display: 'inline-block', padding: '3px 20px', marginLeft: '20px' }}
+                                >
+                                    Play
+                                </div>
+                            </>
+                        )}
+                    </div>
+                </div>
+                <div className="flex-100">
+                    <p>
+                        <a className="link" href="https://github.com/straburzynski/synth-js">
+                            https://github.com/straburzynski/synth-js
+                        </a>
+                    </p>
+                </div>
+            </div>
         </div>
     );
 };
