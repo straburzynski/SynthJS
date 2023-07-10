@@ -97,7 +97,7 @@ const AdsrComponent: FC<AdsrComponentProps> = ({
                         value={attack}
                         onChange={(changedValue: number) => handleAdsrChange('attack', changedValue, setAttack)}
                         defaultValue={DefaultParams.attack}
-                        step={0.05}
+                        step={0.1}
                     />
                 </div>
                 <div className="column-5">
@@ -108,7 +108,7 @@ const AdsrComponent: FC<AdsrComponentProps> = ({
                         value={decay}
                         onChange={(changedValue: number) => handleAdsrChange('decay', changedValue, setDecay)}
                         defaultValue={DefaultParams.decay}
-                        step={0.05}
+                        step={0.1}
                     />
                 </div>
                 <div className="column-5">
@@ -119,7 +119,7 @@ const AdsrComponent: FC<AdsrComponentProps> = ({
                         value={sustain}
                         onChange={(changedValue: number) => handleAdsrChange('sustain', changedValue, setSustain)}
                         defaultValue={DefaultParams.sustain}
-                        step={0.05}
+                        step={0.1}
                     />
                 </div>
                 <div className="column-5">
@@ -130,7 +130,7 @@ const AdsrComponent: FC<AdsrComponentProps> = ({
                         value={release}
                         onChange={(changedValue: number) => handleAdsrChange('release', changedValue, setRelease)}
                         defaultValue={DefaultParams.release}
-                        step={0.05}
+                        step={0.1}
                     />
                 </div>
             </div>

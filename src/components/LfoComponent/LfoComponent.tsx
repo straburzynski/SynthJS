@@ -9,9 +9,10 @@ import { LfoTargetEnum } from '../../models/LfoTargetEnum';
 type LfoComponentProps = {
     synthEngine: React.MutableRefObject<SynthEngineModel>;
     lfoTarget: LfoTargetEnum;
+    levelStep: number;
 };
 
-const LfoComponent: FC<LfoComponentProps> = ({ synthEngine, lfoTarget }) => {
+const LfoComponent: FC<LfoComponentProps> = ({ synthEngine, lfoTarget, levelStep }) => {
     const [lfoGain, setLfoGain] = useState<number>(DefaultParams.lfoGain);
     const [lfoFrequency, setLfoFrequency] = useState<number>(DefaultParams.lfoFrequency);
     const [lfoWaveform, setLfoWaveform] = useState<OscillatorType>(DefaultParams.lfoWaveform);
@@ -123,13 +124,13 @@ const LfoComponent: FC<LfoComponentProps> = ({ synthEngine, lfoTarget }) => {
                 <div className="column-3">
                     <SliderComponent
                         mode="vertical"
-                        name={'gain'}
+                        name="gain"
                         minValue={DefaultParams.lfoGainMin}
                         maxValue={lfoTarget === LfoTargetEnum.FREQUENCY ? DefaultParams.lfoGainMax : 0.5}
                         value={lfoGain}
                         onChange={handleLfoGainChange}
                         defaultValue={DefaultParams.lfoGain}
-                        step={0.05}
+                        step={levelStep}
                     />
                 </div>
             </div>

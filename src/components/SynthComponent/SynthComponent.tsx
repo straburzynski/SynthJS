@@ -17,8 +17,8 @@ import useSyncState from '../../hooks/useSyncState';
 import LogoComponent from '../LogoComponent/LogoComponent';
 import { Midi as TonejsMidi } from '@tonejs/midi';
 import { Midi as TonaljsMidi } from '@tonaljs/tonal';
-import './synthComponent.scss';
 import { MidiFileModel } from '../../models/MidiFileModel';
+import './synthComponent.scss';
 
 const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: MutableRefObject<SynthEngineModel>) => {
     const [primaryWaveform, setPrimaryWaveform] = useState<OscillatorType>(DefaultParams.primaryWaveform);
@@ -204,22 +204,26 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
         [playNote, stopNote]
     );
 
-    // todo schedule notes to play at fixed time
     async function handlePlay() {
         const sleep = (s: number) => new Promise((r) => setTimeout(r, s));
-        console.log('Play midi file', {midi});
+        const playAndStopNote = async (note: string, stopAfterMs: number) => {
+            playNote(note);
+            setTimeout(() => stopNote(note), stopAfterMs);
+        };
+        console.log('Play midi file', { midi });
         const notes = midi?.midi.tracks[0].notes;
         const bpm = midi?.midi.header.tempos[0]?.bpm || 120;
-        const ppq = midi?.midi.header.ppq // Pulses Per Quarter
+        const ppq = midi?.midi.header.ppq; // Pulses Per Quarter
         if (notes == null || ppq == null) return;
-        const tickMsValue = 60000 / (bpm * ppq)
-        for (let i = 0; i <= notes.length; i++) {
+        const tickMsValue = 60000 / (bpm * ppq);
+
+        let currentTime = 0;
+
+        for (let i = 0; i < notes.length; i++) {            
+            await sleep((notes[i].ticks * tickMsValue) - currentTime);
+            currentTime = notes[i].ticks * tickMsValue
             const currentNote = TonaljsMidi.midiToNoteName(notes[i].midi, { sharps: true });
-            playNote(currentNote);
-            await sleep(notes[i].durationTicks * tickMsValue);
-            stopNote(currentNote);
-            const currentPauseFromTicks = (notes[i+1].ticks * tickMsValue) - (notes[i].ticks * tickMsValue) - (notes[i].durationTicks * tickMsValue);
-            await sleep(currentPauseFromTicks);
+            playAndStopNote(currentNote, notes[i].durationTicks * tickMsValue);
         }
     }
 
@@ -259,7 +263,6 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
                     <canvas className="visualizer" width="500" height="100" ref={canvasRef} />
                 </div>
             </div>
-            <br />d
             <div className="first container">
                 <div className="flex-100">
                     <OscillatorComponent
@@ -301,10 +304,10 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
             </div>
             <div className="second container">
                 <div className="flex-100">
-                    <LfoComponent synthEngine={synthEngine} lfoTarget={LfoTargetEnum.FREQUENCY} />
+                    <LfoComponent synthEngine={synthEngine} lfoTarget={LfoTargetEnum.FREQUENCY} levelStep={500} />
                 </div>
                 <div className="flex-100">
-                    <LfoComponent synthEngine={synthEngine} lfoTarget={LfoTargetEnum.VCA} />
+                    <LfoComponent synthEngine={synthEngine} lfoTarget={LfoTargetEnum.VCA} levelStep={0.05}/>
                 </div>
                 <div className="flex-50">
                     <DistortionComponent synthEngine={synthEngine} />
@@ -338,7 +341,7 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
                         <label htmlFor="file-upload">Upload midi file</label>
                         {midi && (
                             <>
-                                <div className='midi-name'>{midi.name}</div>
+                                <div className="midi-name">{midi.name}</div>
                                 <div
                                     className="button1"
                                     onClick={handleClear}

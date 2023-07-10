@@ -99,7 +99,7 @@ const FilterComponent: FC<OscillatorComponentProps> = ({ synthEngine }) => {
                         value={frequency}
                         onChange={handleFrequencyChange}
                         defaultValue={DefaultParams.filter}
-                        step={1}
+                        step={100}
                     />
                 </div>
                 <div className="column-3">
