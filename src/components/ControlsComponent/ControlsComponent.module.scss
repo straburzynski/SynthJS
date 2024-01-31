@@ -17,13 +17,20 @@
 }
 
 .controlBtn {
-  background: #8c8a8a;
   width: 100%;
   margin: 5px;
   display: flex;
   &:hover {
     background: #6d6c6c;
   }
+}
+
+.white {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.black {
+  background: rgba(0, 0, 0, 0.1);
 }
 
 .label {
