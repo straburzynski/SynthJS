@@ -1,7 +1,7 @@
 import React, { FC, MutableRefObject, useCallback, useEffect, useRef, useState } from 'react';
 import { DefaultParams } from '../../consts/DefaultParams';
 import { LfoTargetEnum } from '../../models/LfoTargetEnum';
-import { Note } from '@tonaljs/tonal';
+import { Midi as TonaljsMidi, Note } from '@tonaljs/tonal';
 import { SynthEngineModel } from '../../models/SynthEngineModel';
 import AdsrComponent from '../AdsrComponent/AdsrComponent';
 import DistortionComponent from '../DistortionComponent/DistortionComponent';
@@ -16,7 +16,6 @@ import CurrentNoteComponent from '../CurrentNoteComponent/CurrentNoteComponent';
 import useSyncState from '../../hooks/useSyncState';
 import LogoComponent from '../LogoComponent/LogoComponent';
 import { Midi as TonejsMidi } from '@tonejs/midi';
-import { Midi as TonaljsMidi } from '@tonaljs/tonal';
 import { MidiFileModel } from '../../models/MidiFileModel';
 import './synthComponent.scss';
 
@@ -83,9 +82,12 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
     const killOscillators = useCallback(
         (t = 0, note?: string) => {
             console.log('killOscillators');
-            synthEngine.current.primaryAdsr.gain.cancelAndHoldAtTime(t);
-            synthEngine.current.secondaryAdsr.gain.cancelAndHoldAtTime(t);
-            synthEngine.current.filter.frequency.cancelAndHoldAtTime(t);
+            synthEngine.current.primaryAdsr.gain.cancelAndHoldAtTime &&
+                synthEngine.current.primaryAdsr.gain.cancelAndHoldAtTime(t);
+            synthEngine.current.secondaryAdsr.gain.cancelAndHoldAtTime &&
+                synthEngine.current.secondaryAdsr.gain.cancelAndHoldAtTime(t);
+            synthEngine.current.filter.frequency.cancelAndHoldAtTime &&
+                synthEngine.current.filter.frequency.cancelAndHoldAtTime(t);
             if (synthEngine.current.primaryVco) {
                 synthEngine.current.primaryVco.stop(t);
                 synthEngine.current.primaryVco.onended = () => {
@@ -113,7 +115,7 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
                     break;
                 case 'gate':
                 default:
-                    vcaGain.value = DefaultParams.adsrMax;
+                    vcaGain.setValueAtTime(1, now)
                     break;
             }
         },
@@ -219,9 +221,9 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
 
         let currentTime = 0;
 
-        for (let i = 0; i < notes.length; i++) {            
-            await sleep((notes[i].ticks * tickMsValue) - currentTime);
-            currentTime = notes[i].ticks * tickMsValue
+        for (let i = 0; i < notes.length; i++) {
+            await sleep(notes[i].ticks * tickMsValue - currentTime);
+            currentTime = notes[i].ticks * tickMsValue;
             const currentNote = TonaljsMidi.midiToNoteName(notes[i].midi, { sharps: true });
             playAndStopNote(currentNote, notes[i].durationTicks * tickMsValue);
         }
@@ -307,7 +309,7 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
                     <LfoComponent synthEngine={synthEngine} lfoTarget={LfoTargetEnum.FREQUENCY} levelStep={500} />
                 </div>
                 <div className="flex-100">
-                    <LfoComponent synthEngine={synthEngine} lfoTarget={LfoTargetEnum.VCA} levelStep={0.05}/>
+                    <LfoComponent synthEngine={synthEngine} lfoTarget={LfoTargetEnum.VCA} levelStep={0.05} />
                 </div>
                 <div className="flex-50">
                     <DistortionComponent synthEngine={synthEngine} />

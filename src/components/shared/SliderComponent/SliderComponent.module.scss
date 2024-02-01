@@ -19,7 +19,8 @@
     display: block;
   }
 
-  input[type=range]::-webkit-slider-runnable-track {
+  input[type=range]::-webkit-slider-runnable-track,
+  input[type="range"]::-moz-range-track {
     -webkit-appearance: none;
     background-color: #444;
     color: #444;
