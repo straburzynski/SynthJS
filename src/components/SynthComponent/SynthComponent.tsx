@@ -18,6 +18,9 @@ import LogoComponent from '../LogoComponent/LogoComponent';
 import { Midi as TonejsMidi } from '@tonejs/midi';
 import { MidiFileModel } from '../../models/MidiFileModel';
 import './synthComponent.scss';
+import { MidiMessageModel } from '../../models/MidiMessageModel';
+import { midiMessageConverter } from '../../services/Converter';
+import { NOTE_OFF, NOTE_ON } from '../../consts/MidiMessageCodes';
 
 const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: MutableRefObject<SynthEngineModel>) => {
     const [primaryWaveform, setPrimaryWaveform] = useState<OscillatorType>(DefaultParams.primaryWaveform);
@@ -33,6 +36,23 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
     const currentNote = useSyncState<string | undefined>(undefined);
     const canvasRef = useRef<any>();
     const fileUploadRef = useRef<any>();
+    const midiInterfaceRef = useRef<MIDIInput>();
+
+    useEffect(() => {
+        console.log('initialize midi device');
+        if (!('requestMIDIAccess' in navigator)) {
+            console.log('error - cannot run midi');
+        } else {
+            navigator.requestMIDIAccess().then((midi: MIDIAccess) => {
+                refresh(midi);
+                midi.onstatechange = (e: MIDIConnectionEvent | Event) => {
+                    console.log('midi device change detected');
+                    console.log(e.target);
+                    refresh(e.target as MIDIAccess);
+                };
+            });
+        } // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     useEffect(() => {
         const getAnalyserData = () => {
@@ -61,6 +81,27 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
         };
         draw();
     }, [synthEngine]);
+
+    const refresh = (midi: MIDIAccess) => {
+        midiInterfaceRef.current = midi.inputs.size ? midi.inputs.values().next().value : void 0;
+        const device = midiInterfaceRef.current;
+        console.log(
+            device
+                ? `Status: connected to ${device.manufacturer} ${device.name}`
+                : 'Status: not connected to a MIDI device'
+        );
+        if (device) {
+            device.onmidimessage = (msg: MIDIMessageEvent) => {
+                console.log('raw midi message', msg);
+                if (msg.data) {
+                    const midiMessage = midiMessageConverter(msg);
+                    const note = TonaljsMidi.midiToNoteName(midiMessage.note, { sharps: true });
+                    console.log(midiMessage);
+                    handleKey(midiMessage, note);
+                }
+            };
+        }
+    };
 
     const createOscillator = useCallback(
         (freq: number | null | undefined, isPrimary: boolean, detune: number) => {
@@ -115,7 +156,7 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
                     break;
                 case 'gate':
                 default:
-                    vcaGain.setValueAtTime(1, now)
+                    vcaGain.setValueAtTime(1, now);
                     break;
             }
         },
@@ -190,15 +231,17 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
     );
 
     const handleKey = useCallback(
-        (e: React.MouseEvent<HTMLElement> | KeyboardEvent, note: string) => {
+        (e: React.MouseEvent<HTMLElement> | KeyboardEvent | MidiMessageModel, note: string) => {
             console.log('handleKey');
             switch (e.type) {
                 case 'mousedown':
                 case 'keydown':
+                case NOTE_ON:
                     playNote(note);
                     break;
                 case 'mouseup':
                 case 'keyup':
+                case NOTE_OFF:
                     stopNote(note);
                     break;
             }
