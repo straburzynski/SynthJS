@@ -10,6 +10,7 @@ type VerticalSliderComponentProps = {
     onChange: Function;
     defaultValue: number;
     step: number;
+    disabled?: boolean
 };
 const SliderComponent: FC<VerticalSliderComponentProps> = ({
     mode = 'vertical',
@@ -20,6 +21,7 @@ const SliderComponent: FC<VerticalSliderComponentProps> = ({
     onChange,
     defaultValue,
     step,
+    disabled = false
 }) => {
     const handleOnChange = useCallback(
         (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -50,6 +52,7 @@ const SliderComponent: FC<VerticalSliderComponentProps> = ({
                 max={maxValue}
                 step={step}
                 value={value}
+                disabled={disabled}
                 onChange={handleOnChange}
                 onClick={(e) => handleDoubleClick(e, onChange, defaultValue)}
             />

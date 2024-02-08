@@ -14,8 +14,10 @@ const DistortionComponent: FC<DistortionComponentProps> = ({ synthEngine }) => {
 
     const handleDistortionGainChange = useCallback(
         (changedDistortionGain: number) => {
-            if (distortionType) {
+            if (distortionType === 'type1') {
                 synthEngine.current.distortion.curve = createDistortionCurve(changedDistortionGain);
+            } else if (distortionType === 'off') {
+                synthEngine.current.distortion.curve = null;
             }
             setDistortionGain(changedDistortionGain);
         },
@@ -90,6 +92,7 @@ const DistortionComponent: FC<DistortionComponentProps> = ({ synthEngine }) => {
                         onChange={handleDistortionGainChange}
                         defaultValue={DefaultParams.distortion}
                         step={1}
+                        disabled={'off' === distortionType}
                     />
                 </div>
             </div>

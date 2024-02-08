@@ -18,7 +18,7 @@ export const DefaultParams = {
     release: 0.3,
     sustain: 1.0,
 
-    adsrMin: 0,
+    adsrMin: 0.01,
     adsrMax: 1,
 
     gain: 0.5,
