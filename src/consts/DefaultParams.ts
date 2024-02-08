@@ -4,8 +4,9 @@ import { FilterTypeEnum } from '../models/FilterTypeEnum';
 const oscillators = 2;
 
 export const DefaultParams = {
-    primaryWaveform: WaveformEnum.SAWTOOTH,
-    secondaryWaveform: WaveformEnum.SQUARE,
+    firstOscillatorWaveForm: WaveformEnum.SAWTOOTH,
+    secondOscillatorWaveForm: WaveformEnum.SQUARE,
+
     filterType: FilterTypeEnum.LOWPASS,
 
     detune: 0,

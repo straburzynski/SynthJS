@@ -21,38 +21,26 @@ import './synthComponent.scss';
 import { MidiMessageModel } from '../../models/MidiMessageModel';
 import { midiMessageConverter } from '../../services/Converter';
 import { NOTE_OFF, NOTE_ON } from '../../consts/MidiMessageCodes';
+import { SynthParametersModel } from '../../models/SynthParametersModel';
 
-const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: MutableRefObject<SynthEngineModel>) => {
-    const [primaryWaveform, setPrimaryWaveform] = useState<OscillatorType>(DefaultParams.primaryWaveform);
-    const [secondaryWaveform, setSecondaryWaveform] = useState<OscillatorType>(DefaultParams.secondaryWaveform);
-    const [primaryVcoDetune, setPrimaryVcoDetune] = useState<number>(DefaultParams.detune);
-    const [secondaryVcoDetune, setSecondaryVcoDetune] = useState<number>(DefaultParams.detune);
+type SynthComponentProps = {
+    synthEngine: MutableRefObject<SynthEngineModel>;
+    synthParameters: MutableRefObject<SynthParametersModel>;
+};
+
+const SynthComponent: FC<SynthComponentProps> = ({ synthEngine, synthParameters }) => {
     const [attack, setAttack] = useState<number>(DefaultParams.attack);
     const [decay, setDecay] = useState<number>(DefaultParams.decay);
     const [release, setRelease] = useState<number>(DefaultParams.release);
     const [sustain, setSustain] = useState<number>(DefaultParams.sustain);
     const [envelope, setEnvelope] = useState<string>('env');
+
     const [midi, setMidi] = useState<MidiFileModel | undefined>(undefined);
+
     const currentNote = useSyncState<string | undefined>(undefined);
     const canvasRef = useRef<any>();
     const fileUploadRef = useRef<any>();
     const midiInterfaceRef = useRef<MIDIInput>();
-
-    useEffect(() => {
-        console.log('initialize midi device');
-        if (!('requestMIDIAccess' in navigator)) {
-            console.log('error - cannot run midi');
-        } else {
-            navigator.requestMIDIAccess().then((midi: MIDIAccess) => {
-                refresh(midi);
-                midi.onstatechange = (e: MIDIConnectionEvent | Event) => {
-                    console.log('midi device change detected');
-                    console.log(e.target);
-                    refresh(e.target as MIDIAccess);
-                };
-            });
-        } // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
 
     useEffect(() => {
         const getAnalyserData = () => {
@@ -82,27 +70,6 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
         draw();
     }, [synthEngine]);
 
-    const refresh = (midi: MIDIAccess) => {
-        midiInterfaceRef.current = midi.inputs.size ? midi.inputs.values().next().value : void 0;
-        const device = midiInterfaceRef.current;
-        console.log(
-            device
-                ? `Status: connected to ${device.manufacturer} ${device.name}`
-                : 'Status: not connected to a MIDI device'
-        );
-        if (device) {
-            device.onmidimessage = (msg: MIDIMessageEvent) => {
-                console.log('raw midi message', msg);
-                if (msg.data) {
-                    const midiMessage = midiMessageConverter(msg);
-                    const note = TonaljsMidi.midiToNoteName(midiMessage.note, { sharps: true });
-                    console.log(midiMessage);
-                    handleKey(midiMessage, note);
-                }
-            };
-        }
-    };
-
     const createOscillator = useCallback(
         (freq: number | null | undefined, isPrimary: boolean, detune: number) => {
             console.log('createOscillator ', isPrimary);
@@ -110,14 +77,16 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
                 throw new Error('unrecognized note');
             } else {
                 const osc = synthEngine.current.audioContext.createOscillator();
-                osc.type = isPrimary ? primaryWaveform : secondaryWaveform;
+                osc.type = isPrimary
+                    ? synthParameters.current.firstOscillatorWaveForm
+                    : synthParameters.current.secondOscillatorWaveForm;
                 osc.frequency.value = freq;
                 osc.detune.value = detune;
                 osc.connect(isPrimary ? synthEngine.current.primaryAdsr : synthEngine.current.secondaryAdsr);
                 return osc;
             }
         },
-        [primaryWaveform, secondaryWaveform, synthEngine]
+        [synthEngine, synthParameters]
     );
 
     const killOscillators = useCallback(
@@ -193,8 +162,8 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
             const actives = document.querySelectorAll('.btn-active');
             actives.forEach((a) => a.id !== currentNote.get() && a.classList.remove('btn-active'));
             Array.from(document.getElementsByClassName(note)).forEach((el) => el.classList.add('btn-active'));
-            s.primaryVco = createOscillator(freq, true, primaryVcoDetune);
-            s.secondaryVco = createOscillator(freq, false, secondaryVcoDetune);
+            s.primaryVco = createOscillator(freq, true, synthParameters.current.firstOscillatorDetune);
+            s.secondaryVco = createOscillator(freq, false, synthParameters.current.secondOscillatorDetune);
             envelopeOn(s.primaryAdsr.gain, attack, decay, sustain, envelope);
             envelopeOn(s.secondaryAdsr.gain, attack, decay, sustain, envelope);
             s.primaryVco.start();
@@ -208,10 +177,9 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
             envelope,
             envelopeOn,
             killOscillators,
-            primaryVcoDetune,
-            secondaryVcoDetune,
             sustain,
             synthEngine,
+            synthParameters,
         ]
     );
 
@@ -248,6 +216,47 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
         },
         [playNote, stopNote]
     );
+
+    const refresh = useCallback(
+        (midi: MIDIAccess) => {
+            midiInterfaceRef.current = midi.inputs.size ? midi.inputs.values().next().value : void 0;
+            const device = midiInterfaceRef.current;
+            console.log(
+                device
+                    ? `Status: connected to ${device.manufacturer} ${device.name}`
+                    : 'Status: not connected to a MIDI device'
+            );
+            if (device) {
+                device.onmidimessage = (msg: MIDIMessageEvent) => {
+                    console.log('raw midi message', msg);
+                    if (msg.data) {
+                        const midiMessage = midiMessageConverter(msg);
+                        const note = TonaljsMidi.midiToNoteName(midiMessage.note, { sharps: true });
+                        console.log(midiMessage);
+                        handleKey(midiMessage, note);
+                    }
+                };
+            }
+        },
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        []
+    );
+
+    useEffect(() => {
+        console.log('initialize midi device');
+        if (!('requestMIDIAccess' in navigator)) {
+            console.log('error - cannot run midi');
+        } else {
+            navigator.requestMIDIAccess().then((midi: MIDIAccess) => {
+                refresh(midi);
+                midi.onstatechange = (e: MIDIConnectionEvent | Event) => {
+                    console.log('midi device change detected');
+                    console.log(e.target);
+                    refresh(e.target as MIDIAccess);
+                };
+            });
+        }
+    }, [refresh]);
 
     async function handlePlay() {
         const sleep = (s: number) => new Promise((r) => setTimeout(r, s));
@@ -310,24 +319,10 @@ const SynthComponent: FC<MutableRefObject<SynthEngineModel>> = (synthEngine: Mut
             </div>
             <div className="first container">
                 <div className="flex-100">
-                    <OscillatorComponent
-                        synthEngine={synthEngine}
-                        primary={true}
-                        detune={primaryVcoDetune}
-                        setDetune={setPrimaryVcoDetune}
-                        waveform={primaryWaveform}
-                        setWaveform={setPrimaryWaveform}
-                    />
+                    <OscillatorComponent synthEngine={synthEngine} synthParameters={synthParameters} primary={true} />
                 </div>
                 <div className="flex-100">
-                    <OscillatorComponent
-                        synthEngine={synthEngine}
-                        primary={false}
-                        detune={secondaryVcoDetune}
-                        setDetune={setSecondaryVcoDetune}
-                        waveform={secondaryWaveform}
-                        setWaveform={setSecondaryWaveform}
-                    />
+                    <OscillatorComponent synthEngine={synthEngine} synthParameters={synthParameters} primary={false} />
                 </div>
                 <div className="flex-100">
                     <AdsrComponent

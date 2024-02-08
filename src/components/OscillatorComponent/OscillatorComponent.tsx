@@ -4,34 +4,35 @@ import { DefaultParams } from '../../consts/DefaultParams';
 import { SynthEngineModel } from '../../models/SynthEngineModel';
 import SliderComponent from '../shared/SliderComponent/SliderComponent';
 import WaveformIconComponent from '../shared/WaveformIconComponent/WaveformIconComponent';
+import { SynthParametersModel } from '../../models/SynthParametersModel';
 
 type OscillatorComponentProps = {
     synthEngine: React.MutableRefObject<SynthEngineModel>;
+    synthParameters: React.MutableRefObject<SynthParametersModel>;
     primary: boolean;
-    detune: number;
-    setDetune: Function;
-    waveform: OscillatorType;
-    setWaveform: Function;
 };
-const OscillatorComponent: FC<OscillatorComponentProps> = ({
-    synthEngine,
-    primary,
-    detune,
-    setDetune,
-    waveform,
-    setWaveform,
-}) => {
+const OscillatorComponent: FC<OscillatorComponentProps> = ({ synthEngine, synthParameters, primary }) => {
     const [volume, setVolume] = useState<number>(DefaultParams.gain);
+    const [waveForm, setWaveForm] = useState<OscillatorType>(
+        primary ? synthParameters.current.firstOscillatorWaveForm : synthParameters.current.secondOscillatorWaveForm
+    );
+    const [detune, setDetune] = useState<number>(DefaultParams.detune);
 
     const handleWaveformChange = useCallback(
-        (setWaveform: Function, primary: boolean, event: React.ChangeEvent<HTMLInputElement>) => {
-            const selectedWaveform = event.target.value as OscillatorType;
-            console.log(event.target.name, selectedWaveform);
+        (primary: boolean, event: React.ChangeEvent<HTMLInputElement>) => {
+            const changedWaveForm = event.target.value as OscillatorType;
+            console.log(event.target.name, changedWaveForm);
             const oscillatorNode = primary ? synthEngine.current.primaryVco : synthEngine.current.secondaryVco;
-            oscillatorNode.type = selectedWaveform;
-            setWaveform(selectedWaveform);
+            oscillatorNode.type = changedWaveForm;
+            setWaveForm(changedWaveForm);
+            // todo more generic solution for multiple oscillators
+            if (primary) {
+                synthParameters.current.firstOscillatorWaveForm = changedWaveForm;
+            } else {
+                synthParameters.current.secondOscillatorWaveForm = changedWaveForm;
+            }
         },
-        [synthEngine]
+        [synthEngine, synthParameters]
     );
 
     const handleDetuneChange = useCallback(
@@ -40,8 +41,14 @@ const OscillatorComponent: FC<OscillatorComponentProps> = ({
             const oscillatorNode = primary ? synthEngine.current.primaryVco : synthEngine.current.secondaryVco;
             oscillatorNode.detune.setValueAtTime(changedDetune, synthEngine.current.audioContext.currentTime); // value in cents
             setDetune(changedDetune);
+            // todo more generic solution for multiple oscillators
+            if (primary) {
+                synthParameters.current.firstOscillatorDetune = changedDetune;
+            } else {
+                synthParameters.current.secondOscillatorDetune = changedDetune;
+            }
         },
-        [primary, setDetune, synthEngine]
+        [primary, synthEngine, synthParameters]
     );
 
     const handleVolumeChange = useCallback(
@@ -83,8 +90,8 @@ const OscillatorComponent: FC<OscillatorComponentProps> = ({
                                     id={w + '-wave-' + (primary ? 'primary' : 'secondary')}
                                     name={(primary ? 'primary' : 'secondary') + '-waveform'}
                                     value={w}
-                                    onChange={(e) => handleWaveformChange(setWaveform, primary, e)}
-                                    checked={w === waveform}
+                                    onChange={(e) => handleWaveformChange(primary, e)}
+                                    checked={w === waveForm}
                                 />
                                 <span>
                                     <WaveformIconComponent waveform={w} />
@@ -118,7 +125,7 @@ const OscillatorComponent: FC<OscillatorComponentProps> = ({
             </div>
             <div className="columns bottom-labels text-center">
                 <div className="column-3">
-                    <label>{waveform}</label>
+                    <label>{waveForm}</label>
                 </div>
                 <div className="column-3">
                     <label>{detune}</label>
