@@ -1,45 +1,35 @@
-import React, { FC, useCallback } from 'react';
+import React, { FC, useCallback, useState } from 'react';
 import { DefaultParams } from '../../consts/DefaultParams';
 import SliderComponent from '../shared/SliderComponent/SliderComponent';
 import styles from './AdsrComponent.module.scss';
+import { SynthParametersModel } from '../../models/SynthParametersModel';
 
 type AdsrComponentProps = {
-    attack: number;
-    setAttack: Function;
-    decay: number;
-    setDecay: Function;
-    sustain: number;
-    setSustain: Function;
-    release: number;
-    setRelease: Function;
-    envelope: string;
-    setEnvelope: Function;
+    synthParameters: React.MutableRefObject<SynthParametersModel>;
 };
 
-const AdsrComponent: FC<AdsrComponentProps> = ({
-    attack,
-    setAttack,
-    decay,
-    setDecay,
-    sustain,
-    setSustain,
-    release,
-    setRelease,
-    envelope,
-    setEnvelope,
-}) => {
-    const handleAdsrChange = useCallback((name: string, changedValue: number, setterFunction: Function) => {
+const AdsrComponent: FC<AdsrComponentProps> = ({ synthParameters }) => {
+    // todo make one model
+    const [attack, setAttack] = useState<number>(synthParameters.current.attack);
+    const [decay, setDecay] = useState<number>(synthParameters.current.decay);
+    const [release, setRelease] = useState<number>(synthParameters.current.release);
+    const [sustain, setSustain] = useState<number>(synthParameters.current.sustain);
+    const [envelope, setEnvelope] = useState<string>(synthParameters.current.envelope);
+
+    const handleAdsrChange = (name: string, changedValue: number, setterFunction: Function) => {
         console.log(name, changedValue);
         setterFunction(changedValue);
-    }, []);
+        (synthParameters.current as any)[name] = changedValue;
+    };
 
     const handleEnvelopeChange = useCallback(
         (event: React.ChangeEvent<HTMLInputElement>) => {
             const changedEnv = event.target.value;
             console.log('adsr mode', changedEnv);
             setEnvelope(changedEnv);
+            synthParameters.current.envelope = changedEnv;
         },
-        [setEnvelope]
+        [synthParameters]
     );
 
     return (

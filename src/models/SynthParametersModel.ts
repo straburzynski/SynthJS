@@ -1,4 +1,5 @@
 export interface SynthParametersModel {
+    // todo extract to OscillatorParams
     firstOscillatorWaveForm: OscillatorType;
     firstOscillatorDetune: number;
 
@@ -11,4 +12,10 @@ export interface SynthParametersModel {
     release: number;
 
     envelope: string;
+}
+
+export interface OscillatorParams {
+    name: string;
+    waveForm: OscillatorType;
+    detune: number;
 }

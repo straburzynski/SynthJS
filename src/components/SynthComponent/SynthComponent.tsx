@@ -1,5 +1,4 @@
 import React, { FC, MutableRefObject, useCallback, useEffect, useRef, useState } from 'react';
-import { DefaultParams } from '../../consts/DefaultParams';
 import { LfoTargetEnum } from '../../models/LfoTargetEnum';
 import { Midi as TonaljsMidi, Note } from '@tonaljs/tonal';
 import { SynthEngineModel } from '../../models/SynthEngineModel';
@@ -17,11 +16,11 @@ import useSyncState from '../../hooks/useSyncState';
 import LogoComponent from '../LogoComponent/LogoComponent';
 import { Midi as TonejsMidi } from '@tonejs/midi';
 import { MidiFileModel } from '../../models/MidiFileModel';
-import './synthComponent.scss';
 import { MidiMessageModel } from '../../models/MidiMessageModel';
 import { midiMessageConverter } from '../../services/Converter';
 import { NOTE_OFF, NOTE_ON } from '../../consts/MidiMessageCodes';
 import { SynthParametersModel } from '../../models/SynthParametersModel';
+import './synthComponent.scss';
 
 type SynthComponentProps = {
     synthEngine: MutableRefObject<SynthEngineModel>;
@@ -29,14 +28,8 @@ type SynthComponentProps = {
 };
 
 const SynthComponent: FC<SynthComponentProps> = ({ synthEngine, synthParameters }) => {
-    const [attack, setAttack] = useState<number>(DefaultParams.attack);
-    const [decay, setDecay] = useState<number>(DefaultParams.decay);
-    const [release, setRelease] = useState<number>(DefaultParams.release);
-    const [sustain, setSustain] = useState<number>(DefaultParams.sustain);
-    const [envelope, setEnvelope] = useState<string>('env');
-
+    // todo make player with start, stop
     const [midi, setMidi] = useState<MidiFileModel | undefined>(undefined);
-
     const currentNote = useSyncState<string | undefined>(undefined);
     const canvasRef = useRef<any>();
     const fileUploadRef = useRef<any>();
@@ -47,6 +40,8 @@ const SynthComponent: FC<SynthComponentProps> = ({ synthEngine, synthParameters 
             synthEngine.current.analyserNode.getByteTimeDomainData(synthEngine.current.analyserData);
             return synthEngine.current.analyserData;
         };
+        // todo select node to connect
+        // todo switchable to eq analyser
         const draw = () => {
             if (canvasRef.current) {
                 const canvas: CanvasRenderingContext2D | null = canvasRef.current.getContext('2d');
@@ -154,7 +149,8 @@ const SynthComponent: FC<SynthComponentProps> = ({ synthEngine, synthParameters 
 
     const playNote = useCallback(
         (note: string) => {
-            const s = synthEngine.current;
+            const engine = synthEngine.current;
+            const params = synthParameters.current;
             console.log('note on: ', note);
             currentNote.set(note);
             killOscillators();
@@ -162,40 +158,32 @@ const SynthComponent: FC<SynthComponentProps> = ({ synthEngine, synthParameters 
             const actives = document.querySelectorAll('.btn-active');
             actives.forEach((a) => a.id !== currentNote.get() && a.classList.remove('btn-active'));
             Array.from(document.getElementsByClassName(note)).forEach((el) => el.classList.add('btn-active'));
-            s.primaryVco = createOscillator(freq, true, synthParameters.current.firstOscillatorDetune);
-            s.secondaryVco = createOscillator(freq, false, synthParameters.current.secondOscillatorDetune);
-            envelopeOn(s.primaryAdsr.gain, attack, decay, sustain, envelope);
-            envelopeOn(s.secondaryAdsr.gain, attack, decay, sustain, envelope);
-            s.primaryVco.start();
-            s.secondaryVco.start();
+            engine.primaryVco = createOscillator(freq, true, params.firstOscillatorDetune);
+            engine.secondaryVco = createOscillator(freq, false, params.secondOscillatorDetune);
+            // todo make envelopeOn play all oscillators
+            envelopeOn(engine.primaryAdsr.gain, params.attack, params.decay, params.sustain, params.envelope);
+            envelopeOn(engine.secondaryAdsr.gain, params.attack, params.decay, params.sustain, params.envelope);
+            engine.primaryVco.start();
+            engine.secondaryVco.start();
         },
-        [
-            attack,
-            createOscillator,
-            currentNote,
-            decay,
-            envelope,
-            envelopeOn,
-            killOscillators,
-            sustain,
-            synthEngine,
-            synthParameters,
-        ]
+        [createOscillator, currentNote, envelopeOn, killOscillators, synthEngine, synthParameters]
     );
 
     const stopNote = useCallback(
         (note: string) => {
+            const engine = synthEngine.current;
+            const params = synthParameters.current;
             console.log('note off: ', note);
             Array.from(document.getElementsByClassName(note)).forEach((el) => {
                 el.id !== currentNote.get() && el.classList.remove('btn-active');
             });
             console.log('currentNote', currentNote.get());
             if (currentNote.get() === note) {
-                envelopeOff(synthEngine.current.primaryAdsr.gain, release, envelope, note);
-                envelopeOff(synthEngine.current.secondaryAdsr.gain, release, envelope, note);
+                envelopeOff(engine.primaryAdsr.gain, params.release, params.envelope, note);
+                envelopeOff(engine.secondaryAdsr.gain, params.release, params.envelope, note);
             }
         },
-        [currentNote, envelope, envelopeOff, release, synthEngine]
+        [currentNote, envelopeOff, synthEngine, synthParameters]
     );
 
     const handleKey = useCallback(
@@ -301,6 +289,8 @@ const SynthComponent: FC<SynthComponentProps> = ({ synthEngine, synthParameters 
         }
     };
 
+    // @ts-ignore
+    // @ts-ignore
     return (
         <div className="synth-wrapper">
             <div className="container">
@@ -325,18 +315,7 @@ const SynthComponent: FC<SynthComponentProps> = ({ synthEngine, synthParameters 
                     <OscillatorComponent synthEngine={synthEngine} synthParameters={synthParameters} primary={false} />
                 </div>
                 <div className="flex-100">
-                    <AdsrComponent
-                        attack={attack}
-                        setAttack={setAttack}
-                        decay={decay}
-                        setDecay={setDecay}
-                        sustain={sustain}
-                        setSustain={setSustain}
-                        release={release}
-                        setRelease={setRelease}
-                        envelope={envelope}
-                        setEnvelope={setEnvelope}
-                    />
+                    <AdsrComponent synthParameters={synthParameters} />
                 </div>
                 <div className="flex-100">
                     <FilterComponent synthEngine={synthEngine} />
