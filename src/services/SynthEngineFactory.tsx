@@ -107,6 +107,7 @@ export const createSynthEngine = (): SynthEngineModel => {
         primaryVca: primaryVca,
         secondaryVca: secondaryVca,
         filter: filter,
+        limiter: limiter,
         distortion: distortion,
         reverbNode: reverbNode,
         reverbGain: reverbGain,

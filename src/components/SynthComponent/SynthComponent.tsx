@@ -21,6 +21,7 @@ import { midiMessageConverter } from '../../services/Converter';
 import { NOTE_OFF, NOTE_ON } from '../../consts/MidiMessageCodes';
 import { SynthParametersModel } from '../../models/SynthParametersModel';
 import './synthComponent.scss';
+import DrumPadsComponent from '../DrumPadsComponent/DrumPadsComponent';
 
 type SynthComponentProps = {
     synthEngine: MutableRefObject<SynthEngineModel>;
@@ -86,7 +87,6 @@ const SynthComponent: FC<SynthComponentProps> = ({ synthEngine, synthParameters 
 
     const killOscillators = useCallback(
         (t = 0, note?: string) => {
-            console.log('killOscillators');
             synthEngine.current.primaryAdsr.gain.cancelAndHoldAtTime &&
                 synthEngine.current.primaryAdsr.gain.cancelAndHoldAtTime(t);
             synthEngine.current.secondaryAdsr.gain.cancelAndHoldAtTime &&
@@ -135,11 +135,13 @@ const SynthComponent: FC<SynthComponentProps> = ({ synthEngine, synthParameters 
                     vcaGain.cancelScheduledValues(0);
                     vcaGain.setValueAtTime(vcaGain.value, now);
                     vcaGain.linearRampToValueAtTime(0, now + r);
+                    console.log(`killOscillators env, note: ${note}`);
                     killOscillators(now + r, note);
                     break;
                 case 'gate':
                 default:
                     vcaGain.value = 0;
+                    console.log(`killOscillators gate, note: ${note}`);
                     killOscillators(now, note);
                     break;
             }
@@ -153,6 +155,7 @@ const SynthComponent: FC<SynthComponentProps> = ({ synthEngine, synthParameters 
             const params = synthParameters.current;
             console.log('note on: ', note);
             currentNote.set(note);
+            console.log(`killOscillators play, note: ${note}`);
             killOscillators();
             const freq = Note.get(note).freq;
             const actives = document.querySelectorAll('.btn-active');
@@ -289,8 +292,6 @@ const SynthComponent: FC<SynthComponentProps> = ({ synthEngine, synthParameters 
         }
     };
 
-    // @ts-ignore
-    // @ts-ignore
     return (
         <div className="synth-wrapper">
             <div className="container">
@@ -344,6 +345,11 @@ const SynthComponent: FC<SynthComponentProps> = ({ synthEngine, synthParameters 
             <div className="third container">
                 <div className="flex-100">
                     <ControlsComponent onHandleKey={handleKey} />
+                </div>
+            </div>
+            <div className="fourth container">
+                <div className="flex-100">
+                    <DrumPadsComponent synthEngine={synthEngine} />
                 </div>
             </div>
             <div className="container">

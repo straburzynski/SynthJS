@@ -7,6 +7,7 @@ export interface SynthEngineModel {
     primaryVca: GainNode;
     secondaryVca: GainNode;
     filter: BiquadFilterNode;
+    limiter: DynamicsCompressorNode;
     distortion: WaveShaperNode;
     lfo1: OscillatorNode;
     lfo1Gain: GainNode;

@@ -1,0 +1,45 @@
+.parentWrapper {
+  height: 100%;
+}
+
+.parent {
+  display: flex;
+  font-size: 0;
+  flex-wrap: wrap;
+  margin: 10px 0 10px 0;
+}
+
+.child {
+  border-radius: 3px;
+  display: flex;
+  height: 100px;
+  flex: 0 0 12.5%;
+}
+
+.controlBtn {
+  width: 100%;
+  margin: 5px;
+  display: flex;
+
+  &:hover {
+    background: #6d6c6c;
+  }
+}
+
+.white {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.label {
+  font-size: 14px;
+  width: 100%;
+  align-self: center;
+  text-align: center;
+}
+
+div.title {
+  margin: 0 -10px 10px -10px;
+  padding: 5px 25px;
+  color: white;
+  font-weight: bold;
+}
