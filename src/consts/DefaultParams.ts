@@ -13,17 +13,17 @@ export const DefaultParams = {
     detuneMin: -100,
     detuneMax: 100,
 
-    attack: 0.01,
+    attack: 0.001,
     decay: 0.5,
     release: 0.3,
     sustain: 1.0,
 
-    adsrMin: 0.01,
+    adsrMin: 0,
     adsrMax: 1,
 
-    gain: 0.5,
+    gain: 0.25,
     gainMin: 0,
-    gainMax: 1 / oscillators,
+    gainMax: 1 / oscillators / 2,
 
     masterVcaGain: 0.7,
     masterVcaGainMin: 0,

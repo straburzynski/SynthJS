@@ -6,12 +6,14 @@ import { Kick } from '../../sounds/kick';
 import { Snare } from '../../sounds/snare';
 import { HiHat } from '../../sounds/hihat';
 import { SynthEngineModel } from '../../models/SynthEngineModel';
+import { Crash } from '../../sounds/crash';
 
 const KEY_MAPPING: StringIndex = {
     z: `kick`,
     x: `snare`,
     c: `hihat_closed`,
     v: `hihat_opened`,
+    b: `crash`,
 };
 
 type DrumPadsComponentProps = {
@@ -33,6 +35,9 @@ const DrumPadsComponent: FC<DrumPadsComponentProps> = ({ synthEngine }) => {
                     break;
                 case 'hihat_opened':
                     sample = new HiHat(synthEngine, true);
+                    break;
+                case 'crash':
+                    sample = new Crash(synthEngine);
                     break;
                 default:
                     throw Error(`Unrecognized drum sound ${sound}`);

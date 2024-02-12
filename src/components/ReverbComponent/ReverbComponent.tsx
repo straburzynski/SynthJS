@@ -53,7 +53,7 @@ const ReverbComponent: FC<ReverbComponentProps> = ({ synthEngine }) => {
                         value={reverbLength}
                         onChange={handleReverbLengthChange}
                         defaultValue={DefaultParams.delayTime}
-                        step={0.05}
+                        step={0.01}
                     />
                 </div>
                 <div className="column-2">
@@ -64,7 +64,7 @@ const ReverbComponent: FC<ReverbComponentProps> = ({ synthEngine }) => {
                         value={reverbAmount}
                         onChange={handleReverbAmountChange}
                         defaultValue={DefaultParams.reverbGain}
-                        step={0.1}
+                        step={0.01}
                     />
                 </div>
             </div>
