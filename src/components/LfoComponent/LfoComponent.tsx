@@ -126,7 +126,7 @@ const LfoComponent: FC<LfoComponentProps> = ({ synthEngine, lfoTarget, levelStep
                         mode="vertical"
                         name="gain"
                         minValue={DefaultParams.lfoGainMin}
-                        maxValue={lfoTarget === LfoTargetEnum.FREQUENCY ? DefaultParams.lfoGainMax : 0.5}
+                        maxValue={lfoTarget === LfoTargetEnum.FREQUENCY ? DefaultParams.lfoGainMax : 1}
                         value={lfoGain}
                         onChange={handleLfoGainChange}
                         defaultValue={DefaultParams.lfoGain}

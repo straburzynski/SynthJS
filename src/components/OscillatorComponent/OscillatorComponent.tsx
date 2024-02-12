@@ -119,7 +119,7 @@ const OscillatorComponent: FC<OscillatorComponentProps> = ({ synthEngine, synthP
                         value={volume}
                         onChange={handleVolumeChange}
                         defaultValue={DefaultParams.gain}
-                        step={0.05}
+                        step={0.01}
                     />
                 </div>
             </div>

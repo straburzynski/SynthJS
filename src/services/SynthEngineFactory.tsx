@@ -20,6 +20,7 @@ export const createSynthEngine = (): SynthEngineModel => {
     let secondaryAdsr = audioContext.createGain();
     let primaryVca = audioContext.createGain();
     let secondaryVca = audioContext.createGain();
+    let allOscillatorsVca = audioContext.createGain();
 
     // create filter
     let filter = audioContext.createBiquadFilter();
@@ -70,7 +71,7 @@ export const createSynthEngine = (): SynthEngineModel => {
     delayFeedback.gain.value = DefaultParams.delayFeedback;
 
     // configure analyser
-    analyser.smoothingTimeConstant = 0.5;
+    analyser.smoothingTimeConstant = 0.1;
     analyser.fftSize = 512;
     const analyserBufferLength = analyser.fftSize;
 
@@ -85,10 +86,11 @@ export const createSynthEngine = (): SynthEngineModel => {
     masterVca.gain.value = DefaultParams.gain;
 
     // connect nodes
-    primaryAdsr.connect(primaryVca).connect(filter);
-    secondaryAdsr.connect(secondaryVca).connect(filter);
+    primaryAdsr.connect(primaryVca).connect(allOscillatorsVca);
+    secondaryAdsr.connect(secondaryVca).connect(allOscillatorsVca);
+    allOscillatorsVca.connect(filter)
     lfo1.connect(lfo1Gain).connect(filter.detune);
-    lfo2.connect(lfo2Gain).connect(masterVca.gain);
+    lfo2.connect(lfo2Gain).connect(allOscillatorsVca.gain);
     filter.connect(distortion).connect(limiter).connect(masterVca).connect(analyser).connect(audioContext.destination);
 
     filter.connect(delayNode).connect(delayFeedback).connect(filter); // delay

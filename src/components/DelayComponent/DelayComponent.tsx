@@ -53,7 +53,7 @@ const DelayComponent: FC<DelayComponentProps> = ({ synthEngine }) => {
                         value={delayTime}
                         onChange={handleDelayTimeChange}
                         defaultValue={DefaultParams.delayTime}
-                        step={0.05}
+                        step={0.01}
                     />
                 </div>
                 <div className="column-2">
@@ -64,7 +64,7 @@ const DelayComponent: FC<DelayComponentProps> = ({ synthEngine }) => {
                         value={delayFeedback}
                         onChange={handleDelayFeedbackChange}
                         defaultValue={DefaultParams.delayFeedback}
-                        step={0.05}
+                        step={0.01}
                     />
                 </div>
             </div>
