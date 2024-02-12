@@ -53,8 +53,8 @@ export class HiHat implements Instrument {
             osc.stop(time + this.decay);
         });
         this.oscEnvelope.gain.setValueAtTime(0.00001 * this.volume, time);
-        this.oscEnvelope.gain.exponentialRampToValueAtTime(0.3 * this.volume, time + 0.01 * this.decay);
-        this.oscEnvelope.gain.exponentialRampToValueAtTime(0.2 * this.volume, time + 0.1 * this.decay);
+        this.oscEnvelope.gain.exponentialRampToValueAtTime(0.6 * this.volume, time + 0.01 * this.decay);
+        this.oscEnvelope.gain.exponentialRampToValueAtTime(0.3 * this.volume, time + 0.1 * this.decay);
         this.oscEnvelope.gain.exponentialRampToValueAtTime(0.00001 * this.volume, time + this.decay);
     }
 }

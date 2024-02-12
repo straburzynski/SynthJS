@@ -94,7 +94,7 @@ export const createSynthEngine = (): SynthEngineModel => {
     filter.connect(distortion).connect(limiter).connect(masterVca).connect(analyser).connect(audioContext.destination);
 
     filter.connect(delayNode).connect(delayFeedback).connect(filter); // delay
-    limiter.connect(reverbGain).connect(reverbNode).connect(masterVca); // reverb
+    distortion.connect(reverbGain).connect(reverbNode).connect(distortion); // reverb
 
     // start oscillators
     primaryVco.start();
