@@ -137,9 +137,7 @@ const ControlsComponent: FC<ControlsComponentProps> = ({ onHandleKey }) => {
                             onMouseDown={(e) => onHandleKey(e, value)}
                             onMouseUp={(e) => onHandleKey(e, value)}
                         >
-                            <div
-                                className={`${styles.controlBtn} ${value} ${normalizeNotes(value).includes('#') ? styles.black : styles.white}`}
-                            >
+                            <div className={`${styles.controlBtn} ${value} ${styles.white}`}>
                                 <p className={styles.label}>
                                     {key} - {normalizeNotes(value)}
                                 </p>

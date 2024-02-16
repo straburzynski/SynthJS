@@ -1,4 +1,4 @@
-import React, { FC, MutableRefObject, useCallback, useEffect } from 'react';
+import React, { FC, MutableRefObject, useCallback, useEffect, useState } from 'react';
 import styles from './DrumPadsComponent.module.scss';
 import { StringIndex } from '../../types';
 import { Instrument } from '../../models/Instrument';
@@ -20,6 +20,8 @@ type DrumPadsComponentProps = {
     synthEngine: MutableRefObject<SynthEngineModel>;
 };
 const DrumPadsComponent: FC<DrumPadsComponentProps> = ({ synthEngine }) => {
+    const [activeKey, setActiveKey] = useState(new Set());
+
     const playDrumSound = useCallback(
         (sound: string) => {
             let sample: Instrument;
@@ -47,33 +49,49 @@ const DrumPadsComponent: FC<DrumPadsComponentProps> = ({ synthEngine }) => {
         [synthEngine]
     );
 
-    const handleMouseEvent = useCallback(
-        (e: React.MouseEvent<HTMLDivElement>, sound: string) => {
-            if (e.type === 'mousedown') {
-                // todo set button active
-                playDrumSound(sound);
-            } else if (e.type === 'mouseup') {
-                // todo unset button active
+    const handleActiveKey = useCallback(
+        (key: string, operation: string) => {
+            const newSet = new Set(activeKey);
+            switch (operation) {
+                case 'add':
+                    setActiveKey(newSet.add(key));
+                    break;
+                case 'delete':
+                    newSet.delete(key);
+                    setActiveKey(newSet);
+                    break;
             }
         },
-        [playDrumSound]
+        [activeKey, setActiveKey]
+    );
+
+    const handleMouseEvent = useCallback(
+        (e: React.MouseEvent<HTMLDivElement>, key: string) => {
+            if (e.type === 'mousedown') {
+                playDrumSound(KEY_MAPPING[key]);
+                handleActiveKey(key, 'add');
+            } else if (e.type === 'mouseup') {
+                handleActiveKey(key, 'delete');
+            }
+        },
+        [handleActiveKey, playDrumSound]
     );
 
     const handleKeyEvent = useCallback(
         (e: KeyboardEvent) => {
             switch (e.type) {
                 case 'keydown':
-                    // todo set button active
                     if (KEY_MAPPING.hasOwnProperty(e.key) && !e.repeat && !e.metaKey) {
                         playDrumSound(KEY_MAPPING[e.key]);
+                        handleActiveKey(e.key, 'add');
                     }
                     break;
                 case 'keyup':
-                    // todo unset button active
+                    handleActiveKey(e.key, 'delete');
                     break;
             }
         },
-        [playDrumSound]
+        [handleActiveKey, playDrumSound]
     );
 
     useEffect(() => {
@@ -99,10 +117,12 @@ const DrumPadsComponent: FC<DrumPadsComponentProps> = ({ synthEngine }) => {
                             id={value}
                             key={key + value}
                             className={styles.child}
-                            onMouseDown={(e) => handleMouseEvent(e, value)}
-                            onMouseUp={(e) => handleMouseEvent(e, value)}
+                            onMouseDown={(e) => handleMouseEvent(e, key)}
+                            onMouseUp={(e) => handleMouseEvent(e, key)}
                         >
-                            <div className={`${styles.controlBtn} ${value} ${styles.white}`}>
+                            <div
+                                className={`${styles.controlBtn} ${value} ${styles.white} ${activeKey.has(key) ? ' btn-active' : ''}`}
+                            >
                                 <p className={styles.label}>
                                     {key} - {value}
                                 </p>

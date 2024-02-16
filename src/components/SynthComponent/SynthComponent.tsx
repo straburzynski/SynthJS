@@ -220,7 +220,7 @@ const SynthComponent: FC<SynthComponentProps> = ({ synthEngine, synthParameters 
             if (device) {
                 device.onmidimessage = (msg: MIDIMessageEvent) => {
                     console.log('raw midi message', msg);
-                    if (msg.data) {
+                    if (msg.data && [NOTE_ON, NOTE_OFF].includes(msg.data[0])) {
                         const midiMessage = midiMessageConverter(msg);
                         const note = TonaljsMidi.midiToNoteName(midiMessage.note, { sharps: true });
                         console.log(midiMessage);
