@@ -4,7 +4,7 @@ Monophonic synthesizer based on JavaScript Web API AudioContext.
 
 [Demo](https://straburzynski.github.io/SynthJS/) hosted on GitHub Pages.
 
-![](SynthJS.png)
+![](SynthJS.jpg)
 
 ## Features:
 - 2 oscillators
