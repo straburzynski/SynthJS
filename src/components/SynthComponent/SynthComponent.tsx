@@ -32,7 +32,7 @@ const SynthComponent: FC<SynthComponentProps> = ({ synthEngine, synthParameters 
     // todo make player with start, stop
     const [midi, setMidi] = useState<MidiFileModel | undefined>(undefined);
     const [midiDevice, setMidiDevice] = useState<MIDIInput>();
-    const [midiDeviceList, setMidiDeviceList] = useState<MIDIInput[]>([]);
+    const [, setMidiDeviceList] = useState<MIDIInput[]>([]);
     const currentNote = useSyncState<string | undefined>(undefined);
     const canvasRef = useRef<any>();
     const fileUploadRef = useRef<any>();
