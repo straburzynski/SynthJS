@@ -17,11 +17,11 @@ import LogoComponent from '../LogoComponent/LogoComponent';
 import { Midi as TonejsMidi } from '@tonejs/midi';
 import { MidiFileModel } from '../../models/MidiFileModel';
 import { MidiMessageModel } from '../../models/MidiMessageModel';
-import { midiMessageConverter } from '../../services/Converter';
 import { NOTE_OFF, NOTE_ON } from '../../consts/MidiMessageCodes';
 import { SynthParametersModel } from '../../models/SynthParametersModel';
-import './synthComponent.scss';
 import DrumPadsComponent from '../DrumPadsComponent/DrumPadsComponent';
+import { midiMessageConverter } from '../../services/Converter';
+import './synthComponent.scss';
 
 type SynthComponentProps = {
     synthEngine: MutableRefObject<SynthEngineModel>;
@@ -31,10 +31,11 @@ type SynthComponentProps = {
 const SynthComponent: FC<SynthComponentProps> = ({ synthEngine, synthParameters }) => {
     // todo make player with start, stop
     const [midi, setMidi] = useState<MidiFileModel | undefined>(undefined);
+    const [midiDevice, setMidiDevice] = useState<MIDIInput>();
+    const [midiDeviceList, setMidiDeviceList] = useState<MIDIInput[]>([]);
     const currentNote = useSyncState<string | undefined>(undefined);
     const canvasRef = useRef<any>();
     const fileUploadRef = useRef<any>();
-    const midiInterfaceRef = useRef<MIDIInput>();
 
     useEffect(() => {
         const getAnalyserData = () => {
@@ -87,22 +88,18 @@ const SynthComponent: FC<SynthComponentProps> = ({ synthEngine, synthParameters 
 
     const killOscillators = useCallback(
         (t = 0, note?: string) => {
-            synthEngine.current.primaryAdsr.gain.cancelAndHoldAtTime &&
-                synthEngine.current.primaryAdsr.gain.cancelAndHoldAtTime(t);
-            synthEngine.current.secondaryAdsr.gain.cancelAndHoldAtTime &&
-                synthEngine.current.secondaryAdsr.gain.cancelAndHoldAtTime(t);
-            synthEngine.current.filter.frequency.cancelAndHoldAtTime &&
-                synthEngine.current.filter.frequency.cancelAndHoldAtTime(t);
-            if (synthEngine.current.primaryVco) {
-                synthEngine.current.primaryVco.stop(t);
-                synthEngine.current.primaryVco.onended = () => {
-                    if (note) {
-                        currentNote.set(undefined);
-                    }
+            const s = synthEngine.current;
+            s.primaryAdsr.gain.cancelAndHoldAtTime && s.primaryAdsr.gain.cancelAndHoldAtTime(t);
+            s.secondaryAdsr.gain.cancelAndHoldAtTime && s.secondaryAdsr.gain.cancelAndHoldAtTime(t);
+            s.filter.frequency.cancelAndHoldAtTime && s.filter.frequency.cancelAndHoldAtTime(t);
+            if (s.primaryVco) {
+                s.primaryVco.stop(t);
+                s.primaryVco.onended = () => {
+                    if (note) currentNote.set(undefined);
                 };
             }
-            if (synthEngine.current.secondaryVco) {
-                synthEngine.current.secondaryVco.stop(t);
+            if (s.secondaryVco) {
+                s.secondaryVco.stop(t);
             }
         },
         [currentNote, synthEngine]
@@ -153,9 +150,8 @@ const SynthComponent: FC<SynthComponentProps> = ({ synthEngine, synthParameters 
         (note: string) => {
             const engine = synthEngine.current;
             const params = synthParameters.current;
-            console.log('note on: ', note);
+            console.log('Note on: ', note);
             currentNote.set(note);
-            console.log(`killOscillators play, note: ${note}`);
             killOscillators();
             const freq = Note.get(note).freq;
             const actives = document.querySelectorAll('.btn-active');
@@ -176,11 +172,11 @@ const SynthComponent: FC<SynthComponentProps> = ({ synthEngine, synthParameters 
         (note: string) => {
             const engine = synthEngine.current;
             const params = synthParameters.current;
-            console.log('note off: ', note);
+            console.log('Note off: ', note);
             Array.from(document.getElementsByClassName(note)).forEach((el) => {
                 el.id !== currentNote.get() && el.classList.remove('btn-active');
             });
-            console.log('currentNote', currentNote.get());
+            console.log('Current note', currentNote.get());
             if (currentNote.get() === note) {
                 envelopeOff(engine.primaryAdsr.gain, params.release, params.envelope, note);
                 envelopeOff(engine.secondaryAdsr.gain, params.release, params.envelope, note);
@@ -191,7 +187,7 @@ const SynthComponent: FC<SynthComponentProps> = ({ synthEngine, synthParameters 
 
     const handleKey = useCallback(
         (e: React.MouseEvent<HTMLElement> | KeyboardEvent | MidiMessageModel, note: string) => {
-            console.log('handleKey');
+            console.log('handleKey synth', e);
             switch (e.type) {
                 case 'mousedown':
                 case 'keydown':
@@ -208,46 +204,44 @@ const SynthComponent: FC<SynthComponentProps> = ({ synthEngine, synthParameters 
         [playNote, stopNote]
     );
 
-    const refresh = useCallback(
-        (midi: MIDIAccess) => {
-            midiInterfaceRef.current = midi.inputs.size ? midi.inputs.values().next().value : void 0;
-            const device = midiInterfaceRef.current;
-            console.log(
-                device
-                    ? `Status: connected to ${device.manufacturer} ${device.name}`
-                    : 'Status: not connected to a MIDI device'
-            );
-            if (device) {
-                device.onmidimessage = (msg: MIDIMessageEvent) => {
-                    console.log('raw midi message', msg);
-                    if (msg.data && [NOTE_ON, NOTE_OFF].includes(msg.data[0])) {
-                        const midiMessage = midiMessageConverter(msg);
-                        const note = TonaljsMidi.midiToNoteName(midiMessage.note, { sharps: true });
-                        console.log(midiMessage);
-                        handleKey(midiMessage, note);
-                    }
-                };
+    useEffect(() => {
+        const onMidiMessageEvent = (midiMessageEvent: MIDIMessageEvent) => {
+            if (midiMessageEvent.data && [NOTE_ON, NOTE_OFF].includes(midiMessageEvent.data[0])) {
+                console.log('Raw midi message for synthesizer', midiMessageEvent);
+                const midiMessage = midiMessageConverter(midiMessageEvent);
+                console.log('Parsed midi message for synthesizer', midiMessage);
+                const note = TonaljsMidi.midiToNoteName(midiMessage.note, { sharps: true });
+                handleKey(midiMessage, note);
             }
-        },
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        []
-    );
+        };
+        midiDevice?.addEventListener('midimessage', onMidiMessageEvent);
+        return () => {
+            midiDevice?.removeEventListener('midimessage', onMidiMessageEvent);
+        };
+    }, [handleKey, midiDevice]);
 
     useEffect(() => {
-        console.log('initialize midi device');
+        console.log('Initialize midi devices');
+        const onMidiStateChange = (midiAccess: MIDIAccess) => {
+            const midiInputs = Array.from(midiAccess.inputs.values());
+            console.log(
+                'Found midi devices',
+                midiInputs.map((d) => `${d.manufacturer} - ${d.name}`)
+            );
+            setMidiDeviceList(midiInputs);
+            // todo make dropdown menu for midi device selection
+            midiInputs.length > 0 && setMidiDevice(midiInputs[0]);
+        };
+
         if (!('requestMIDIAccess' in navigator)) {
-            console.log('error - cannot run midi');
+            console.log('Error - cannot run midi on this browser');
         } else {
-            navigator.requestMIDIAccess().then((midi: MIDIAccess) => {
-                refresh(midi);
-                midi.onstatechange = (e: MIDIConnectionEvent | Event) => {
-                    console.log('midi device change detected');
-                    console.log(e.target);
-                    refresh(e.target as MIDIAccess);
-                };
+            navigator.requestMIDIAccess().then((midiAccess: MIDIAccess) => {
+                onMidiStateChange(midiAccess);
+                midiAccess.onstatechange = (e: Event) => onMidiStateChange(e.target as MIDIAccess);
             });
         }
-    }, [refresh]);
+    }, []);
 
     async function handlePlay() {
         const sleep = (s: number) => new Promise((r) => setTimeout(r, s));
@@ -349,7 +343,7 @@ const SynthComponent: FC<SynthComponentProps> = ({ synthEngine, synthParameters 
             </div>
             <div className="fourth container">
                 <div className="flex-100">
-                    <DrumPadsComponent synthEngine={synthEngine} />
+                    <DrumPadsComponent synthEngine={synthEngine} midiDevice={midiDevice} />
                 </div>
             </div>
             <div className="container">

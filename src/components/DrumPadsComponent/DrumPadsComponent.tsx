@@ -7,6 +7,9 @@ import { Snare } from '../../sounds/snare';
 import { HiHat } from '../../sounds/hihat';
 import { SynthEngineModel } from '../../models/SynthEngineModel';
 import { Crash } from '../../sounds/crash';
+import { NOTE_CC, VOL_MAX, VOL_MIN } from '../../consts/MidiMessageCodes';
+import { midiMessageConverter } from '../../services/Converter';
+import { MidiMessageModel } from '../../models/MidiMessageModel';
 
 const KEY_MAPPING: StringIndex = {
     z: `kick`,
@@ -18,9 +21,10 @@ const KEY_MAPPING: StringIndex = {
 
 type DrumPadsComponentProps = {
     synthEngine: MutableRefObject<SynthEngineModel>;
+    midiDevice: MIDIInput | undefined;
 };
-const DrumPadsComponent: FC<DrumPadsComponentProps> = ({ synthEngine }) => {
-    const [activeKey, setActiveKey] = useState(new Set());
+const DrumPadsComponent: FC<DrumPadsComponentProps> = ({ synthEngine, midiDevice }) => {
+    const [activeKey, setActiveKey] = useState<Set<string>>(new Set());
 
     const playDrumSound = useCallback(
         (sound: string) => {
@@ -79,20 +83,47 @@ const DrumPadsComponent: FC<DrumPadsComponentProps> = ({ synthEngine }) => {
 
     const handleKeyEvent = useCallback(
         (e: KeyboardEvent) => {
-            switch (e.type) {
-                case 'keydown':
-                    if (KEY_MAPPING.hasOwnProperty(e.key) && !e.repeat && !e.metaKey) {
+            if (KEY_MAPPING.hasOwnProperty(e.key) && !e.repeat && !e.metaKey) {
+                console.log('handleKey drums', e);
+                switch (e.type) {
+                    case 'keydown':
                         playDrumSound(KEY_MAPPING[e.key]);
                         handleActiveKey(e.key, 'add');
-                    }
-                    break;
-                case 'keyup':
-                    handleActiveKey(e.key, 'delete');
-                    break;
+                        break;
+                    case 'keyup':
+                        handleActiveKey(e.key, 'delete');
+                        break;
+                }
             }
         },
         [handleActiveKey, playDrumSound]
     );
+
+    useEffect(() => {
+        const onMidiMessageEvent = (midiMessageEvent: MIDIMessageEvent) => {
+            if (!midiMessageEvent.data) return;
+            const midiMessage: MidiMessageModel = midiMessageConverter(midiMessageEvent);
+            if ([NOTE_CC].includes(midiMessage.type)) {
+                const drumSoundsArray: string[] = Object.values(KEY_MAPPING);
+                if (midiMessage.note in drumSoundsArray) {
+                    console.log('raw midi message CC', midiMessageEvent);
+                    // todo simplify with better key mapping object
+                    const key =
+                        Object.keys(KEY_MAPPING)[Object.values(KEY_MAPPING).indexOf(drumSoundsArray[midiMessage.note])];
+                    if (midiMessage.velocity > VOL_MIN && midiMessageEvent.eventPhase < VOL_MAX) {
+                        playDrumSound(drumSoundsArray[midiMessage.note]);
+                        handleActiveKey(key, 'add');
+                    } else if (midiMessage.velocity === VOL_MIN) {
+                        handleActiveKey(key, 'delete');
+                    }
+                }
+            }
+        };
+        midiDevice?.addEventListener('midimessage', onMidiMessageEvent);
+        return () => {
+            midiDevice?.removeEventListener('midimessage', onMidiMessageEvent);
+        };
+    }, [handleActiveKey, midiDevice, playDrumSound]);
 
     useEffect(() => {
         console.log('DrumPadsComponent render');
@@ -135,4 +166,4 @@ const DrumPadsComponent: FC<DrumPadsComponentProps> = ({ synthEngine }) => {
     );
 };
 
-export default React.memo(DrumPadsComponent);
+export default DrumPadsComponent;
