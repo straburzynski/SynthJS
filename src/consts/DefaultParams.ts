@@ -1,9 +1,10 @@
 import { WaveformEnum } from '../models/WaveformEnum';
 import { FilterTypeEnum } from '../models/FilterTypeEnum';
+import { StringIndex } from '../types';
 
 const oscillators = 2;
 
-export const DefaultParams = {
+export const DefaultParams: StringIndex = {
     firstOscillatorWaveForm: WaveformEnum.SAWTOOTH,
     secondOscillatorWaveForm: WaveformEnum.SQUARE,
 
@@ -13,7 +14,7 @@ export const DefaultParams = {
     detuneMin: -100,
     detuneMax: 100,
 
-    attack: 0.001,
+    attack: 0.01,
     decay: 0.5,
     release: 0.3,
     sustain: 1.0,

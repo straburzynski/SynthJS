@@ -1,3 +1,5 @@
+import { ADSRModel } from './ADSRModel';
+
 export interface SynthParametersModel {
     // todo extract to OscillatorParams
     firstOscillatorWaveForm: OscillatorType;
@@ -6,11 +8,7 @@ export interface SynthParametersModel {
     secondOscillatorWaveForm: OscillatorType;
     secondOscillatorDetune: number;
 
-    attack: number;
-    decay: number;
-    sustain: number;
-    release: number;
-
+    adsr: ADSRModel;
     envelope: string;
 }
 

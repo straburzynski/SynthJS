@@ -21,6 +21,7 @@ import { NOTE_OFF, NOTE_ON } from '../../consts/MidiMessageCodes';
 import { SynthParametersModel } from '../../models/SynthParametersModel';
 import DrumPadsComponent from '../DrumPadsComponent/DrumPadsComponent';
 import { midiMessageConverter } from '../../services/Converter';
+import { ADSRModel } from '../../models/ADSRModel';
 import './synthComponent.scss';
 
 type SynthComponentProps = {
@@ -106,14 +107,14 @@ const SynthComponent: FC<SynthComponentProps> = ({ synthEngine, synthParameters 
     );
 
     const envelopeOn = useCallback(
-        (vcaGain: AudioParam, a: number, d: number, s: number, envelope: string) => {
+        (vcaGain: AudioParam, adsr: ADSRModel, envelope: string) => {
             const now = synthEngine.current.audioContext.currentTime;
             switch (envelope) {
                 case 'env':
                     vcaGain.cancelScheduledValues(0);
                     vcaGain.setValueAtTime(0, now);
-                    vcaGain.linearRampToValueAtTime(1, now + a);
-                    vcaGain.linearRampToValueAtTime(s, now + a + d);
+                    vcaGain.linearRampToValueAtTime(1, now + adsr.attack);
+                    vcaGain.linearRampToValueAtTime(adsr.sustain, now + adsr.attack + adsr.decay);
                     break;
                 case 'gate':
                 default:
@@ -160,8 +161,8 @@ const SynthComponent: FC<SynthComponentProps> = ({ synthEngine, synthParameters 
             engine.primaryVco = createOscillator(freq, true, params.firstOscillatorDetune);
             engine.secondaryVco = createOscillator(freq, false, params.secondOscillatorDetune);
             // todo make envelopeOn play all oscillators
-            envelopeOn(engine.primaryAdsr.gain, params.attack, params.decay, params.sustain, params.envelope);
-            envelopeOn(engine.secondaryAdsr.gain, params.attack, params.decay, params.sustain, params.envelope);
+            envelopeOn(engine.primaryAdsr.gain, params.adsr, params.envelope);
+            envelopeOn(engine.secondaryAdsr.gain, params.adsr, params.envelope);
             engine.primaryVco.start();
             engine.secondaryVco.start();
         },
@@ -178,8 +179,8 @@ const SynthComponent: FC<SynthComponentProps> = ({ synthEngine, synthParameters 
             });
             console.log('Current note', currentNote.get());
             if (currentNote.get() === note) {
-                envelopeOff(engine.primaryAdsr.gain, params.release, params.envelope, note);
-                envelopeOff(engine.secondaryAdsr.gain, params.release, params.envelope, note);
+                envelopeOff(engine.primaryAdsr.gain, params.adsr.release, params.envelope, note);
+                envelopeOff(engine.secondaryAdsr.gain, params.adsr.release, params.envelope, note);
             }
         },
         [currentNote, envelopeOff, synthEngine, synthParameters]

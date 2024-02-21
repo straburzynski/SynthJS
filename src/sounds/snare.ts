@@ -1,9 +1,9 @@
 import { MutableRefObject } from 'react';
 import { SynthEngineModel } from '../models/SynthEngineModel';
 import { FilterTypeEnum } from '../models/FilterTypeEnum';
-import { Instrument } from '../models/Instrument';
+import { InstrumentModel } from '../models/InstrumentModel';
 
-export class Snare implements Instrument {
+export class Snare implements InstrumentModel {
     private synthEngine: MutableRefObject<SynthEngineModel>;
     public tone: number;
     public decay: number;

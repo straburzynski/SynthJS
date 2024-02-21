@@ -2,9 +2,9 @@ import { MutableRefObject } from 'react';
 import { SynthEngineModel } from '../models/SynthEngineModel';
 import { FilterTypeEnum } from '../models/FilterTypeEnum';
 import { WaveformEnum } from '../models/WaveformEnum';
-import { Instrument } from '../models/Instrument';
+import { InstrumentModel } from '../models/InstrumentModel';
 
-export class HiHat implements Instrument {
+export class HiHat implements InstrumentModel {
     private synthEngine: MutableRefObject<SynthEngineModel>;
     private ratios: number[];
     public tone: number;

@@ -1,10 +1,10 @@
 import { MutableRefObject } from 'react';
 import { SynthEngineModel } from '../models/SynthEngineModel';
 import { WaveformEnum } from '../models/WaveformEnum';
-import { Instrument } from '../models/Instrument';
+import { InstrumentModel } from '../models/InstrumentModel';
 import { FilterTypeEnum } from '../models/FilterTypeEnum';
 
-export class Crash implements Instrument {
+export class Crash implements InstrumentModel {
     private synthEngine: MutableRefObject<SynthEngineModel>;
     private ratios: number[];
     public tone: number;

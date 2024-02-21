@@ -1,7 +1,7 @@
 import React, { FC, MutableRefObject, useCallback, useEffect, useState } from 'react';
 import styles from './DrumPadsComponent.module.scss';
 import { StringIndex } from '../../types';
-import { Instrument } from '../../models/Instrument';
+import { InstrumentModel } from '../../models/InstrumentModel';
 import { Kick } from '../../sounds/kick';
 import { Snare } from '../../sounds/snare';
 import { HiHat } from '../../sounds/hihat';
@@ -28,7 +28,7 @@ const DrumPadsComponent: FC<DrumPadsComponentProps> = ({ synthEngine, midiDevice
 
     const playDrumSound = useCallback(
         (sound: string) => {
-            let sample: Instrument;
+            let sample: InstrumentModel;
             switch (sound) {
                 case 'kick':
                     sample = new Kick(synthEngine);

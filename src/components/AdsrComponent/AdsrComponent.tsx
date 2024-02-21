@@ -3,29 +3,28 @@ import { DefaultParams } from '../../consts/DefaultParams';
 import SliderComponent from '../shared/SliderComponent/SliderComponent';
 import styles from './AdsrComponent.module.scss';
 import { SynthParametersModel } from '../../models/SynthParametersModel';
+import { StringIndex } from '../../types';
+import { ADSRModel } from '../../models/ADSRModel';
 
 type AdsrComponentProps = {
     synthParameters: React.MutableRefObject<SynthParametersModel>;
 };
 
 const AdsrComponent: FC<AdsrComponentProps> = ({ synthParameters }) => {
-    // todo make one model
-    const [attack, setAttack] = useState<number>(synthParameters.current.attack);
-    const [decay, setDecay] = useState<number>(synthParameters.current.decay);
-    const [release, setRelease] = useState<number>(synthParameters.current.release);
-    const [sustain, setSustain] = useState<number>(synthParameters.current.sustain);
+    const [adsr, setAdsr] = useState<ADSRModel>(synthParameters.current.adsr);
     const [envelope, setEnvelope] = useState<string>(synthParameters.current.envelope);
 
-    const handleAdsrChange = (name: string, changedValue: number, setterFunction: Function) => {
-        console.log(name, changedValue);
-        setterFunction(changedValue);
-        (synthParameters.current as any)[name] = changedValue;
-    };
+    const handleAdsrChangeNew = useCallback(
+        (name: string, changedValue: number) => {
+            synthParameters.current.adsr = { ...adsr, [name]: changedValue };
+            setAdsr((prevState) => ({ ...prevState, [name]: changedValue }));
+        },
+        [adsr, synthParameters]
+    );
 
     const handleEnvelopeChange = useCallback(
         (event: React.ChangeEvent<HTMLInputElement>) => {
             const changedEnv = event.target.value;
-            console.log('adsr mode', changedEnv);
             setEnvelope(changedEnv);
             synthParameters.current.envelope = changedEnv;
         },
@@ -79,66 +78,37 @@ const AdsrComponent: FC<AdsrComponentProps> = ({ synthParameters }) => {
                         <p>gate</p>
                     </label>
                 </div>
-                <div className="column-5">
-                    <SliderComponent
-                        name="attack"
-                        minValue={DefaultParams.adsrMin}
-                        maxValue={DefaultParams.adsrMax}
-                        value={attack}
-                        onChange={(changedValue: number) => handleAdsrChange('attack', changedValue, setAttack)}
-                        defaultValue={DefaultParams.attack}
-                        step={0.1}
-                    />
-                </div>
-                <div className="column-5">
-                    <SliderComponent
-                        name="decay"
-                        minValue={DefaultParams.adsrMin}
-                        maxValue={DefaultParams.adsrMax}
-                        value={decay}
-                        onChange={(changedValue: number) => handleAdsrChange('decay', changedValue, setDecay)}
-                        defaultValue={DefaultParams.decay}
-                        step={0.1}
-                    />
-                </div>
-                <div className="column-5">
-                    <SliderComponent
-                        name="sustain"
-                        minValue={DefaultParams.adsrMin}
-                        maxValue={DefaultParams.adsrMax}
-                        value={sustain}
-                        onChange={(changedValue: number) => handleAdsrChange('sustain', changedValue, setSustain)}
-                        defaultValue={DefaultParams.sustain}
-                        step={0.1}
-                    />
-                </div>
-                <div className="column-5">
-                    <SliderComponent
-                        name="release"
-                        minValue={DefaultParams.adsrMin}
-                        maxValue={DefaultParams.adsrMax}
-                        value={release}
-                        onChange={(changedValue: number) => handleAdsrChange('release', changedValue, setRelease)}
-                        defaultValue={DefaultParams.release}
-                        step={0.1}
-                    />
-                </div>
+                {Object.keys(synthParameters.current.adsr).map((adsrParam) => {
+                    return (
+                        <div className="column-5" key={adsrParam}>
+                            <SliderComponent
+                                name={adsrParam}
+                                minValue={DefaultParams.adsrMin}
+                                maxValue={DefaultParams.adsrMax}
+                                value={(adsr as StringIndex)[adsrParam]}
+                                onChange={(changedValue: number) => handleAdsrChangeNew(adsrParam, changedValue)}
+                                defaultValue={DefaultParams[adsrParam]}
+                                step={0.1}
+                            />
+                        </div>
+                    );
+                })}
             </div>
             <div className="columns bottom-labels text-center">
                 <div className="column-5">
                     <label></label>
                 </div>
                 <div className="column-5">
-                    <label htmlFor="attack-control">{attack}</label>
+                    <label htmlFor="attack-control">{adsr.attack}</label>
                 </div>
                 <div className="column-5">
-                    <label htmlFor="decay-control">{decay}</label>
+                    <label htmlFor="decay-control">{adsr.decay}</label>
                 </div>
                 <div className="column-5">
-                    <label htmlFor="sustain-control">{sustain}</label>
+                    <label htmlFor="sustain-control">{adsr.sustain}</label>
                 </div>
                 <div className="column-5">
-                    <label htmlFor="release-control">{release}</label>
+                    <label htmlFor="release-control">{adsr.release}</label>
                 </div>
             </div>
         </div>

@@ -9,11 +9,12 @@ export const createSynthParameters = (): SynthParametersModel => {
         secondOscillatorDetune: DefaultParams.detune,
         secondOscillatorWaveForm: DefaultParams.secondOscillatorWaveForm,
 
-        attack: DefaultParams.attack,
-        decay: DefaultParams.decay,
-        sustain: DefaultParams.sustain,
-        release: DefaultParams.release,
-
+        adsr: {
+            attack: DefaultParams.attack,
+            decay: DefaultParams.decay,
+            sustain: DefaultParams.sustain,
+            release: DefaultParams.release,
+        },
         // todo make enum
         envelope: 'env',
     };

@@ -1,8 +1,8 @@
 import { SynthEngineModel } from '../models/SynthEngineModel';
 import { MutableRefObject } from 'react';
-import { Instrument } from '../models/Instrument';
+import { InstrumentModel } from '../models/InstrumentModel';
 
-export class Kick implements Instrument {
+export class Kick implements InstrumentModel {
     private synthEngine: MutableRefObject<SynthEngineModel>;
     public tone: number;
     public decay: number;
