@@ -2,8 +2,6 @@ import { WaveformEnum } from '../models/WaveformEnum';
 import { FilterTypeEnum } from '../models/FilterTypeEnum';
 import { StringIndex } from '../types';
 
-const oscillators = 2;
-
 export const DefaultParams: StringIndex = {
     firstOscillatorWaveForm: WaveformEnum.SAWTOOTH,
     secondOscillatorWaveForm: WaveformEnum.SQUARE,
@@ -22,9 +20,9 @@ export const DefaultParams: StringIndex = {
     adsrMin: 0,
     adsrMax: 1,
 
-    gain: 0.25,
+    gain: 1,
     gainMin: 0,
-    gainMax: 1 / oscillators / 2,
+    gainMax: 1,
 
     masterVcaGain: 0.7,
     masterVcaGainMin: 0,
@@ -67,4 +65,15 @@ export const DefaultParams: StringIndex = {
     qualityFactor: 0,
     qualityFactorMin: 0,
     qualityFactorMax: 20,
+};
+
+export const getDefaultWaveForm = (oscName: string): WaveformEnum => {
+    switch (oscName) {
+        case 'primary':
+            return WaveformEnum.SAWTOOTH;
+        case 'secondary':
+            return WaveformEnum.SQUARE;
+        default:
+            return WaveformEnum.SINE;
+    }
 };

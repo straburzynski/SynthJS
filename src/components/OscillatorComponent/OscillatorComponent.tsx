@@ -9,61 +9,51 @@ import { SynthParametersModel } from '../../models/SynthParametersModel';
 type OscillatorComponentProps = {
     synthEngine: React.MutableRefObject<SynthEngineModel>;
     synthParameters: React.MutableRefObject<SynthParametersModel>;
-    primary: boolean;
+    oscName: string;
 };
-const OscillatorComponent: FC<OscillatorComponentProps> = ({ synthEngine, synthParameters, primary }) => {
+const OscillatorComponent: FC<OscillatorComponentProps> = ({ synthEngine, synthParameters, oscName }) => {
     const [volume, setVolume] = useState<number>(DefaultParams.gain);
     const [waveForm, setWaveForm] = useState<OscillatorType>(
-        primary ? synthParameters.current.firstOscillatorWaveForm : synthParameters.current.secondOscillatorWaveForm
+        synthParameters.current.oscillatorsParams.get(oscName)!.waveForm
     );
     const [detune, setDetune] = useState<number>(DefaultParams.detune);
 
     const handleWaveformChange = useCallback(
-        (primary: boolean, event: React.ChangeEvent<HTMLInputElement>) => {
+        (oscName: string, event: React.ChangeEvent<HTMLInputElement>) => {
             const changedWaveForm = event.target.value as OscillatorType;
             console.log(event.target.name, changedWaveForm);
-            const oscillatorNode = primary ? synthEngine.current.primaryVco : synthEngine.current.secondaryVco;
+            const oscillatorNode = synthEngine.current.oscillatorsGroup.get(oscName)!.vcoNode;
             oscillatorNode.type = changedWaveForm;
             setWaveForm(changedWaveForm);
-            // todo more generic solution for multiple oscillators
-            if (primary) {
-                synthParameters.current.firstOscillatorWaveForm = changedWaveForm;
-            } else {
-                synthParameters.current.secondOscillatorWaveForm = changedWaveForm;
-            }
+            synthParameters.current.oscillatorsParams.get(oscName)!.waveForm = changedWaveForm;
         },
         [synthEngine, synthParameters]
     );
 
     const handleDetuneChange = useCallback(
         (changedDetune: number) => {
-            console.log((primary ? 'Primary' : 'Secondary') + ' detune change: ', changedDetune);
-            const oscillatorNode = primary ? synthEngine.current.primaryVco : synthEngine.current.secondaryVco;
+            console.log(oscName + ' detune change: ', changedDetune);
+            const oscillatorNode = synthEngine.current.oscillatorsGroup.get(oscName)!.vcoNode;
             oscillatorNode.detune.setValueAtTime(changedDetune, synthEngine.current.audioContext.currentTime); // value in cents
             setDetune(changedDetune);
-            // todo more generic solution for multiple oscillators
-            if (primary) {
-                synthParameters.current.firstOscillatorDetune = changedDetune;
-            } else {
-                synthParameters.current.secondOscillatorDetune = changedDetune;
-            }
+            synthParameters.current.oscillatorsParams.get(oscName)!.detune = changedDetune;
         },
-        [primary, synthEngine, synthParameters]
+        [oscName, synthEngine, synthParameters]
     );
 
     const handleVolumeChange = useCallback(
         (changedVolume: number) => {
-            console.log((primary ? 'Primary' : 'Secondary') + ' volume change: ', changedVolume);
-            const volumeNode = primary ? synthEngine.current.primaryVca : synthEngine.current.secondaryVca;
+            console.log(oscName + ' volume change: ', changedVolume);
+            const volumeNode = synthEngine.current.oscillatorsGroup.get(oscName)!.vcaNode;
             volumeNode.gain.value = changedVolume;
             setVolume(changedVolume);
         },
-        [primary, synthEngine]
+        [oscName, synthEngine]
     );
 
     return (
         <div className="component-wrapper">
-            <p className="title orange">{primary ? 'Primary' : 'Secondary'} OSC</p>
+            <p className="title orange">{oscName} OSC</p>
             <div className="columns top-labels text-center">
                 <div className="column-3">
                     <label>Wave</label>
@@ -79,18 +69,14 @@ const OscillatorComponent: FC<OscillatorComponentProps> = ({ synthEngine, synthP
                 <div className="column-3">
                     {Object.values(WaveformEnum).map((w, i) => {
                         return (
-                            <label
-                                htmlFor={w + '-wave-' + (primary ? 'primary' : 'secondary')}
-                                className="icon-label"
-                                key={i}
-                            >
+                            <label htmlFor={w + '-wave-' + oscName} className="icon-label" key={i}>
                                 <input
                                     className="icon-input"
                                     type="radio"
-                                    id={w + '-wave-' + (primary ? 'primary' : 'secondary')}
-                                    name={(primary ? 'primary' : 'secondary') + '-waveform'}
+                                    id={w + '-wave-' + oscName}
+                                    name={oscName + '-waveform'}
                                     value={w}
-                                    onChange={(e) => handleWaveformChange(primary, e)}
+                                    onChange={(e) => handleWaveformChange(oscName, e)}
                                     checked={w === waveForm}
                                 />
                                 <span>
@@ -102,7 +88,7 @@ const OscillatorComponent: FC<OscillatorComponentProps> = ({ synthEngine, synthP
                 </div>
                 <div className="column-3">
                     <SliderComponent
-                        name={primary ? 'primary-detune' : 'secondary-detune'}
+                        name={oscName + '-detune'}
                         minValue={DefaultParams.detuneMin}
                         maxValue={DefaultParams.detuneMax}
                         value={detune}
@@ -113,7 +99,7 @@ const OscillatorComponent: FC<OscillatorComponentProps> = ({ synthEngine, synthP
                 </div>
                 <div className="column-3">
                     <SliderComponent
-                        name={primary ? 'primary-vca' : 'secondary-vca'}
+                        name={oscName + '-vca'}
                         minValue={DefaultParams.gainMin}
                         maxValue={DefaultParams.gainMax}
                         value={volume}

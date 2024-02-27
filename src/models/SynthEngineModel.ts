@@ -1,11 +1,6 @@
 export interface SynthEngineModel {
     audioContext: AudioContext;
-    primaryVco: OscillatorNode;
-    secondaryVco: OscillatorNode;
-    primaryAdsr: GainNode;
-    secondaryAdsr: GainNode;
-    primaryVca: GainNode;
-    secondaryVca: GainNode;
+    oscillatorsGroup: Map<string, OscillatorNodeGroup>;
     filter: BiquadFilterNode;
     limiter: DynamicsCompressorNode;
     distortion: WaveShaperNode;
@@ -20,4 +15,10 @@ export interface SynthEngineModel {
     masterVca: GainNode;
     analyserNode: AnalyserNode;
     analyserData: Uint8Array;
+}
+
+export interface OscillatorNodeGroup {
+    vcoNode: OscillatorNode;
+    adsrNode: GainNode;
+    vcaNode: GainNode;
 }

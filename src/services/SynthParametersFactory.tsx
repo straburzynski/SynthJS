@@ -1,14 +1,20 @@
 import { SynthParametersModel } from '../models/SynthParametersModel';
-import { DefaultParams } from '../consts/DefaultParams';
+import { DefaultParams, getDefaultWaveForm } from '../consts/DefaultParams';
+import { namesOfOscillators } from './SynthEngineFactory';
 
 export const createSynthParameters = (): SynthParametersModel => {
+    const oscillatorsParams = new Map(
+        namesOfOscillators.map((osc) => [
+            osc,
+            {
+                waveForm: getDefaultWaveForm(osc),
+                detune: DefaultParams.detune,
+            },
+        ])
+    );
+
     return {
-        firstOscillatorDetune: DefaultParams.detune,
-        firstOscillatorWaveForm: DefaultParams.firstOscillatorWaveForm,
-
-        secondOscillatorDetune: DefaultParams.detune,
-        secondOscillatorWaveForm: DefaultParams.secondOscillatorWaveForm,
-
+        oscillatorsParams: oscillatorsParams,
         adsr: {
             attack: DefaultParams.attack,
             decay: DefaultParams.decay,

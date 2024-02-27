@@ -10,16 +10,20 @@ const audioContext = new AudioContext({
     sampleRate: 44100,
 });
 
-export const createSynthEngine = (): SynthEngineModel => {
-    // create oscillators
-    const primaryVco = audioContext.createOscillator();
-    const secondaryVco = audioContext.createOscillator();
+export const namesOfOscillators = ['primary', 'secondary'];
 
-    // create adsr's and vca's
-    let primaryAdsr = audioContext.createGain();
-    let secondaryAdsr = audioContext.createGain();
-    let primaryVca = audioContext.createGain();
-    let secondaryVca = audioContext.createGain();
+export const createSynthEngine = (): SynthEngineModel => {
+    // create oscillators with vco, adsr and vca
+    const oscillators = new Map(
+        namesOfOscillators.map((oscName) => [
+            oscName,
+            {
+                vcoNode: audioContext.createOscillator(),
+                adsrNode: audioContext.createGain(),
+                vcaNode: audioContext.createGain(),
+            },
+        ])
+    );
     let allOscillatorsVca = audioContext.createGain();
 
     // create filter
@@ -75,6 +79,7 @@ export const createSynthEngine = (): SynthEngineModel => {
     analyser.fftSize = 512;
     const analyserBufferLength = analyser.fftSize;
 
+    // configure limiter
     const limiter = audioContext.createDynamicsCompressor();
     limiter.threshold.setValueAtTime(-2, audioContext.currentTime);
     limiter.knee.setValueAtTime(0, audioContext.currentTime);
@@ -86,9 +91,9 @@ export const createSynthEngine = (): SynthEngineModel => {
     masterVca.gain.value = DefaultParams.gain;
 
     // connect nodes
-    primaryAdsr.connect(primaryVca).connect(allOscillatorsVca);
-    secondaryAdsr.connect(secondaryVca).connect(allOscillatorsVca);
-    allOscillatorsVca.connect(filter)
+    oscillators.forEach((oscValue) =>
+        oscValue.adsrNode.connect(oscValue.vcaNode).connect(allOscillatorsVca));
+    allOscillatorsVca.connect(filter);
     lfo1.connect(lfo1Gain).connect(filter.detune);
     lfo2.connect(lfo2Gain).connect(allOscillatorsVca.gain);
     filter.connect(distortion).connect(limiter).connect(masterVca).connect(analyser).connect(audioContext.destination);
@@ -97,17 +102,11 @@ export const createSynthEngine = (): SynthEngineModel => {
     distortion.connect(reverbGain).connect(reverbNode).connect(distortion); // reverb
 
     // start oscillators
-    primaryVco.start();
-    secondaryVco.start();
+    oscillators.forEach((oscValue) => oscValue.vcoNode.start());
 
     return {
         audioContext: audioContext,
-        primaryVco: primaryVco,
-        secondaryVco: secondaryVco,
-        primaryAdsr: primaryAdsr,
-        secondaryAdsr: secondaryAdsr,
-        primaryVca: primaryVca,
-        secondaryVca: secondaryVca,
+        oscillatorsGroup: oscillators,
         filter: filter,
         limiter: limiter,
         distortion: distortion,

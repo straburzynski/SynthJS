@@ -22,6 +22,7 @@ import { SynthParametersModel } from '../../models/SynthParametersModel';
 import DrumPadsComponent from '../DrumPadsComponent/DrumPadsComponent';
 import { midiMessageConverter } from '../../services/Converter';
 import { ADSRModel } from '../../models/ADSRModel';
+import { namesOfOscillators } from '../../services/SynthEngineFactory';
 import './synthComponent.scss';
 
 type SynthComponentProps = {
@@ -69,18 +70,16 @@ const SynthComponent: FC<SynthComponentProps> = ({ synthEngine, synthParameters 
     }, [synthEngine]);
 
     const createOscillator = useCallback(
-        (freq: number | null | undefined, isPrimary: boolean, detune: number) => {
-            console.log('createOscillator ', isPrimary);
+        (freq: number | null | undefined, oscName: string, detune: number) => {
+            console.log('createOscillator ', oscName);
             if (freq == null) {
-                throw new Error('unrecognized note');
+                throw new Error('Unrecognized note');
             } else {
                 const osc = synthEngine.current.audioContext.createOscillator();
-                osc.type = isPrimary
-                    ? synthParameters.current.firstOscillatorWaveForm
-                    : synthParameters.current.secondOscillatorWaveForm;
+                osc.type = synthParameters.current.oscillatorsParams.get(oscName)!.waveForm;
                 osc.frequency.value = freq;
                 osc.detune.value = detune;
-                osc.connect(isPrimary ? synthEngine.current.primaryAdsr : synthEngine.current.secondaryAdsr);
+                osc.connect(synthEngine.current.oscillatorsGroup.get(oscName)!.adsrNode);
                 return osc;
             }
         },
@@ -90,18 +89,16 @@ const SynthComponent: FC<SynthComponentProps> = ({ synthEngine, synthParameters 
     const killOscillators = useCallback(
         (t = 0, note?: string) => {
             const s = synthEngine.current;
-            s.primaryAdsr.gain.cancelAndHoldAtTime && s.primaryAdsr.gain.cancelAndHoldAtTime(t);
-            s.secondaryAdsr.gain.cancelAndHoldAtTime && s.secondaryAdsr.gain.cancelAndHoldAtTime(t);
+            s.oscillatorsGroup.forEach((oscValue, oscName) => {
+                oscValue.adsrNode.gain.cancelAndHoldAtTime && oscValue.adsrNode.gain.cancelAndHoldAtTime(t);
+                if (oscValue.vcoNode) {
+                    oscValue.vcoNode.stop(t);
+                    oscValue.vcoNode.onended = () => {
+                        if (note) currentNote.set(undefined);
+                    };
+                }
+            });
             s.filter.frequency.cancelAndHoldAtTime && s.filter.frequency.cancelAndHoldAtTime(t);
-            if (s.primaryVco) {
-                s.primaryVco.stop(t);
-                s.primaryVco.onended = () => {
-                    if (note) currentNote.set(undefined);
-                };
-            }
-            if (s.secondaryVco) {
-                s.secondaryVco.stop(t);
-            }
         },
         [currentNote, synthEngine]
     );
@@ -158,13 +155,18 @@ const SynthComponent: FC<SynthComponentProps> = ({ synthEngine, synthParameters 
             const actives = document.querySelectorAll('.btn-active');
             actives.forEach((a) => a.id !== currentNote.get() && a.classList.remove('btn-active'));
             Array.from(document.getElementsByClassName(note)).forEach((el) => el.classList.add('btn-active'));
-            engine.primaryVco = createOscillator(freq, true, params.firstOscillatorDetune);
-            engine.secondaryVco = createOscillator(freq, false, params.secondOscillatorDetune);
-            // todo make envelopeOn play all oscillators
-            envelopeOn(engine.primaryAdsr.gain, params.adsr, params.envelope);
-            envelopeOn(engine.secondaryAdsr.gain, params.adsr, params.envelope);
-            engine.primaryVco.start();
-            engine.secondaryVco.start();
+            engine.oscillatorsGroup.forEach((_oscValue, oscName) => {
+                engine.oscillatorsGroup.get(oscName)!.vcoNode = createOscillator(
+                    freq,
+                    oscName,
+                    params.oscillatorsParams.get(oscName)!.detune
+                );
+            });
+            engine.oscillatorsGroup.forEach((_oscValue, oscName) => {
+                console.log('play note - osc', oscName);
+                envelopeOn(engine.oscillatorsGroup.get(oscName)!.adsrNode.gain, params.adsr, params.envelope);
+                engine.oscillatorsGroup.get(oscName)!.vcoNode.start();
+            });
         },
         [createOscillator, currentNote, envelopeOn, killOscillators, synthEngine, synthParameters]
     );
@@ -179,8 +181,9 @@ const SynthComponent: FC<SynthComponentProps> = ({ synthEngine, synthParameters 
             });
             console.log('Current note', currentNote.get());
             if (currentNote.get() === note) {
-                envelopeOff(engine.primaryAdsr.gain, params.adsr.release, params.envelope, note);
-                envelopeOff(engine.secondaryAdsr.gain, params.adsr.release, params.envelope, note);
+                engine.oscillatorsGroup.forEach((_oscValue, oscName) => {
+                    envelopeOff(engine.oscillatorsGroup.get(oscName)!.adsrNode.gain, params.adsr.release, note);
+                });
             }
         },
         [currentNote, envelopeOff, synthEngine, synthParameters]
@@ -304,12 +307,15 @@ const SynthComponent: FC<SynthComponentProps> = ({ synthEngine, synthParameters 
                 </div>
             </div>
             <div className="first container">
-                <div className="flex-100">
-                    <OscillatorComponent synthEngine={synthEngine} synthParameters={synthParameters} primary={true} />
-                </div>
-                <div className="flex-100">
-                    <OscillatorComponent synthEngine={synthEngine} synthParameters={synthParameters} primary={false} />
-                </div>
+                {namesOfOscillators.map((oscName) => (
+                    <div className="flex-100" key={oscName}>
+                        <OscillatorComponent
+                            synthEngine={synthEngine}
+                            synthParameters={synthParameters}
+                            oscName={oscName}
+                        />
+                    </div>
+                ))}
                 <div className="flex-100">
                     <AdsrComponent synthParameters={synthParameters} />
                 </div>
