@@ -1,4 +1,4 @@
-import React, { FC, MutableRefObject, useCallback, useEffect, useRef, useState } from 'react';
+import React, { FC, MutableRefObject, useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import { LfoTargetEnum } from '../../models/LfoTargetEnum';
 import { Midi as TonaljsMidi, Note } from '@tonaljs/tonal';
 import { SynthEngineModel } from '../../models/SynthEngineModel';
@@ -22,6 +22,7 @@ import { SynthParametersModel } from '../../models/SynthParametersModel';
 import DrumPadsComponent from '../DrumPadsComponent/DrumPadsComponent';
 import { midiMessageConverter } from '../../services/Converter';
 import { ADSRModel } from '../../models/ADSRModel';
+import { MidiPlayerStatusEnum } from '../../models/MidiPlayerStatus';
 import { namesOfOscillators } from '../../services/SynthEngineFactory';
 import './synthComponent.scss';
 
@@ -31,9 +32,11 @@ type SynthComponentProps = {
 };
 
 const SynthComponent: FC<SynthComponentProps> = ({ synthEngine, synthParameters }) => {
-    // todo make player with start, stop
+    // todo create tempo variable
+    const [, forceUpdate] = useReducer((x) => x + 1, 0);
     const [midi, setMidi] = useState<MidiFileModel | undefined>(undefined);
     const [midiDevice, setMidiDevice] = useState<MIDIInput>();
+    const midiPlayerStatusRef = useRef<MidiPlayerStatusEnum>(MidiPlayerStatusEnum.STOPPED);
     const [, setMidiDeviceList] = useState<MIDIInput[]>([]);
     const currentNote = useSyncState<string | undefined>(undefined);
     const canvasRef = useRef<any>();
@@ -247,7 +250,9 @@ const SynthComponent: FC<SynthComponentProps> = ({ synthEngine, synthParameters 
         }
     }, []);
 
-    async function handlePlay() {
+    const handlePlay = useCallback(async () => {
+        midiPlayerStatusRef.current = MidiPlayerStatusEnum.STARTED;
+        forceUpdate();
         const sleep = (s: number) => new Promise((r) => setTimeout(r, s));
         const playAndStopNote = async (note: string, stopAfterMs: number) => {
             playNote(note);
@@ -263,16 +268,24 @@ const SynthComponent: FC<SynthComponentProps> = ({ synthEngine, synthParameters 
         let currentTime = 0;
 
         for (let i = 0; i < notes.length; i++) {
+            if ((midiPlayerStatusRef.current as MidiPlayerStatusEnum) === MidiPlayerStatusEnum.STOPPED) return;
             await sleep(notes[i].ticks * tickMsValue - currentTime);
             currentTime = notes[i].ticks * tickMsValue;
             const currentNote = TonaljsMidi.midiToNoteName(notes[i].midi, { sharps: true });
             playAndStopNote(currentNote, notes[i].durationTicks * tickMsValue);
         }
-    }
+    }, [midi, midiPlayerStatusRef, playNote, stopNote]);
+
+    const handleStop = useCallback(() => {
+        console.log('stop');
+        midiPlayerStatusRef.current = MidiPlayerStatusEnum.STOPPED;
+        forceUpdate();
+    }, [midiPlayerStatusRef]);
 
     const handleClear = () => {
         fileUploadRef.current.value = '';
         setMidi(undefined);
+        handleStop();
     };
 
     const handleLoadMidiFile = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>): void => {
@@ -361,7 +374,7 @@ const SynthComponent: FC<SynthComponentProps> = ({ synthEngine, synthParameters 
                             id="file-upload"
                             onChange={handleLoadMidiFile}
                             type="file"
-                            accept="*.mid, *.midi"
+                            accept=".mid, .midi,"
                             style={{ display: 'none' }}
                         />
                         <label htmlFor="file-upload">Upload midi file</label>
@@ -375,12 +388,17 @@ const SynthComponent: FC<SynthComponentProps> = ({ synthEngine, synthParameters 
                                 >
                                     X
                                 </div>
+
                                 <div
                                     className="button1"
-                                    onClick={handlePlay}
+                                    onClick={
+                                        midiPlayerStatusRef.current === MidiPlayerStatusEnum.STOPPED
+                                            ? handlePlay
+                                            : handleStop
+                                    }
                                     style={{ display: 'inline-block', padding: '3px 20px', marginLeft: '20px' }}
                                 >
-                                    Play
+                                    {midiPlayerStatusRef.current === MidiPlayerStatusEnum.STOPPED ? 'Play' : 'Stop'}
                                 </div>
                             </>
                         )}
