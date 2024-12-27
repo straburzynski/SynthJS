@@ -185,7 +185,12 @@ const SynthComponent: FC<SynthComponentProps> = ({ synthEngine, synthParameters 
             console.log('Current note', currentNote.get());
             if (currentNote.get() === note) {
                 engine.oscillatorsGroup.forEach((_oscValue, oscName) => {
-                    envelopeOff(engine.oscillatorsGroup.get(oscName)!.adsrNode.gain, params.adsr.release, note);
+                    envelopeOff(
+                        engine.oscillatorsGroup.get(oscName)!.adsrNode.gain,
+                        params.adsr.release,
+                        params.envelope,
+                        note
+                    );
                 });
             }
         },

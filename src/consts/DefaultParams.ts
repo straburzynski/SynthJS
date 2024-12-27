@@ -39,8 +39,8 @@ export const DefaultParams: StringIndex = {
     lfoFrequencyMax: 20,
 
     filter: 2000,
-    filterMin: 50,
-    filterMax: 10000,
+    filterMin: 0,
+    filterMax: 20000,
 
     distortion: 5,
     distortionMin: 0,
@@ -50,7 +50,7 @@ export const DefaultParams: StringIndex = {
     delayTimeMin: 0,
     delayTimeMax: 1,
 
-    delayFeedback: 0.2,
+    delayFeedback: 0.0,
     delayFeedbackMin: 0,
     delayFeedbackMax: 1,
 
@@ -58,7 +58,7 @@ export const DefaultParams: StringIndex = {
     reverbLengthMin: 0.1,
     reverbLengthMax: 5,
 
-    reverbGain: 0.3,
+    reverbGain: 0.0,
     reverbGainMin: 0,
     reverbGainMax: 1,
 

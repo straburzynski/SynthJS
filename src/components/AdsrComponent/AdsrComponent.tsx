@@ -59,8 +59,8 @@ const AdsrComponent: FC<AdsrComponentProps> = ({ synthParameters }) => {
                             className={styles.verticalRadioInput}
                             type="radio"
                             id="env"
-                            name={'envelope'}
-                            value={'env'}
+                            name='envelope'
+                            value='env'
                             onChange={handleEnvelopeChange}
                             checked={'env' === envelope}
                         />
@@ -69,9 +69,9 @@ const AdsrComponent: FC<AdsrComponentProps> = ({ synthParameters }) => {
                         <input
                             className={styles.verticalRadioInput}
                             type="radio"
-                            id={'gate'}
-                            name={'envelope'}
-                            value={'gate'}
+                            id='gate'
+                            name='envelope'
+                            value='gate'
                             onChange={handleEnvelopeChange}
                             checked={'gate' === envelope}
                         />
